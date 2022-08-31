@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".controller.ChangeContactActivity">
+
+    <TextView
+        android:id="@+id/textView17"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="36dp"
+        android:fontFamily="@font/poppins_regular"
+        android:text="@string/welcome"
+        android:textColor="@color/dark_black"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView18"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:fontFamily="@font/poppins_regular"
+        android:text="@string/old_ph_no"
+        android:textColor="@color/dark_black"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="@+id/textView17"
+        app:layout_constraintTop_toBottomOf="@+id/textView17" />
+
+    <View
+        android:id="@+id/country_picker1"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/old_ph"
+        app:layout_constraintStart_toStartOf="@+id/textView18"
+        app:layout_constraintTop_toTopOf="@+id/old_ph"
+        app:layout_constraintEnd_toEndOf="@id/dropdown_iv"/>
+
+    <ImageView
+        android:id="@+id/flag_iv"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/country_picker1"
+        app:layout_constraintStart_toStartOf="@+id/country_picker1"
+        app:layout_constraintTop_toTopOf="@+id/country_picker1"
+        app:srcCompat="@drawable/user_logo" />
+
+    <TextView
+        android:id="@+id/cell_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:fontFamily="@font/poppins_medium"
+        android:textColor="@color/dark_black"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@+id/flag_iv"
+        app:layout_constraintStart_toEndOf="@+id/flag_iv"
+        app:layout_constraintTop_toTopOf="@+id/flag_iv" />
+
+    <ImageView
+        android:id="@+id/dropdown_iv"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:layout_marginStart="2dp"
+        app:layout_constraintBottom_toBottomOf="@+id/flag_iv"
+        app:layout_constraintStart_toEndOf="@+id/cell_code"
+        app:layout_constraintTop_toTopOf="@+id/flag_iv"
+        app:srcCompat="@drawable/down_errow" />
+
+    <EditText
+        android:id="@+id/old_ph"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/grey_rc"
+        android:ems="10"
+        android:enabled="false"
+        android:hint="@string/enter_ph"
+        android:inputType="phone"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:textAllCaps="false"
+        android:textColor="@color/grey_3"
+        android:textColorHint="@color/grey_3"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/dropdown_iv"
+        app:layout_constraintTop_toBottomOf="@+id/textView18" />
+
+    <TextView
+        android:id="@+id/textView19"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/poppins_regular"
+        android:text="@string/new_ph_no"
+        android:textColor="@color/dark_black"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="@+id/textView17"
+        app:layout_constraintTop_toBottomOf="@+id/old_ph" />
+
+    <View
+        android:id="@+id/country_picker2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/new_ph"
+        app:layout_constraintStart_toStartOf="@+id/flag_iv2"
+        app:layout_constraintTop_toTopOf="@+id/new_ph"
+        app:layout_constraintEnd_toEndOf="@id/dropdown_iv2"/>
+    <ImageView
+        android:id="@+id/flag_iv2"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/new_ph"
+        app:layout_constraintStart_toStartOf="@+id/textView19"
+        app:layout_constraintTop_toTopOf="@+id/new_ph"
+        app:srcCompat="@drawable/user_logo" />
+
+    <TextView
+        android:id="@+id/cell_code2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:fontFamily="@font/poppins_medium"
+        android:text=""
+        android:textColor="@color/dark_black"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@+id/flag_iv2"
+        app:layout_constraintStart_toEndOf="@+id/flag_iv2"
+        app:layout_constraintTop_toTopOf="@+id/flag_iv2" />
+
+    <ImageView
+        android:id="@+id/dropdown_iv2"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:layout_marginStart="2dp"
+        app:layout_constraintBottom_toBottomOf="@+id/flag_iv2"
+        app:layout_constraintStart_toEndOf="@+id/cell_code"
+        app:layout_constraintTop_toTopOf="@+id/flag_iv2"
+        app:srcCompat="@drawable/down_errow" />
+
+    <EditText
+        android:id="@+id/new_ph"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/grey_rc"
+        android:ems="10"
+        android:enabled="false"
+        android:hint="@string/enter_ph"
+        android:inputType="phone"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:textAllCaps="false"
+        android:textColor="@color/grey_3"
+        android:textColorHint="@color/grey_3"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/dropdown_iv2"
+        app:layout_constraintTop_toBottomOf="@+id/textView19" />
+
+    <include
+        android:id="@+id/included2"
+        layout="@layout/continue_btn"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="60dp"
+        app:layout_constraintEnd_toEndOf="@id/new_ph"
+        app:layout_constraintStart_toStartOf="@id/flag_iv"
+        app:layout_constraintTop_toBottomOf="@+id/new_ph" />
+
+    <TextView
+        android:id="@+id/txt_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/poppins_bold"
+        android:text=""
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="12sp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/included2"
+        app:layout_constraintTop_toBottomOf="@id/new_ph"/>
+
+    <com.github.ybq.android.spinkit.SpinKitView
+        android:id="@+id/progress_bar"
+        style="@style/SpinKitView.ThreeBounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:SpinKit_Color="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/included2"
+        app:layout_constraintTop_toBottomOf="@id/new_ph" />
+
+        <include
+            android:id="@+id/included"
+            layout="@layout/fragment_code"
+            android:visibility="invisible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

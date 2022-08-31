@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:paddingBottom="24dp">
+
+    <ImageView
+        android:id="@+id/photo_iv"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/dot_rc"
+        android:scaleType="fitXY"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <VideoView
+        android:id="@+id/video_v"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="20dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/choose_iv"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        app:layout_constraintBottom_toBottomOf="@+id/photo_iv"
+        app:layout_constraintEnd_toEndOf="@+id/photo_iv"
+        app:layout_constraintStart_toStartOf="@+id/photo_iv"
+        app:layout_constraintTop_toTopOf="@+id/photo_iv"
+        app:srcCompat="@drawable/choose_ic" />
+
+    <TextView
+        android:id="@+id/textView22"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:fontFamily="@font/poppins_medium"
+        android:text="@string/choose_ph"
+        android:textColor="@color/dark_purple"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@+id/choose_iv"
+        app:layout_constraintHorizontal_bias="0.508"
+        app:layout_constraintStart_toStartOf="@+id/choose_iv"
+        app:layout_constraintTop_toBottomOf="@+id/choose_iv" />
+
+    <TextView
+        android:id="@+id/textView24"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/poppins_medium"
+        android:text="@string/description"
+        android:textColor="@color/grey_2"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@+id/photo_iv"
+        app:layout_constraintTop_toBottomOf="@+id/photo_iv" />
+
+    <EditText
+        android:id="@+id/description_tv"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/grey_rc"
+        android:gravity="start"
+        android:hint="@string/enter_des"
+        android:inputType="textPersonName"
+        android:maxLines="4"
+        android:padding="8dp"
+        android:textColor="@color/grey_3"
+        android:textColorHint="@color/grey_3"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="@id/photo_iv"
+        app:layout_constraintStart_toStartOf="@+id/textView24"
+        app:layout_constraintTop_toBottomOf="@+id/textView24" />
+
+    <TextView
+        android:id="@+id/textView26"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/poppins_medium"
+        android:text="@string/add_tag"
+        android:textColor="@color/grey_2"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@+id/description_tv"
+        app:layout_constraintTop_toBottomOf="@+id/description_tv" />
+
+    <EditText
+        android:id="@+id/tag_tv"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/grey_rc"
+        android:gravity="start|center_vertical"
+        android:inputType="textPersonName"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:hint="dsagf"
+        android:textColor="@color/grey_3"
+        android:textColorHint="@color/grey_3"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="@+id/description_tv"
+        app:layout_constraintStart_toStartOf="@+id/textView26"
+        app:layout_constraintTop_toBottomOf="@+id/textView26" />
+
+    <LinearLayout
+        android:id="@+id/tags_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tag_tv">
+
+<!--        <LinearLayout-->
+<!--            android:id="@+id/tag_view"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:gravity="center_vertical"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:background="@drawable/purple_rc"-->
+<!--            android:orientation="horizontal">-->
+
+<!--            <TextView-->
+<!--                android:id="@+id/tags"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="start"-->
+<!--                android:layout_marginStart="4dp"-->
+<!--                android:gravity="center_vertical"-->
+<!--                android:padding="4dp"-->
+<!--                android:text="@string/search"-->
+<!--                android:textColor="@color/black" />-->
+
+<!--            <ImageView-->
+<!--                android:id="@+id/cancel"-->
+<!--                android:layout_width="18dp"-->
+<!--                android:layout_height="18dp"-->
+<!--                android:padding="0dp"-->
+<!--                android:src="@drawable/ic_baseline_arrow_back_24" />-->
+<!--        </LinearLayout>-->
+
+    </LinearLayout>
+
+    <include
+        android:id="@+id/included2"
+        layout="@layout/continue_btn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="@id/tag_tv"
+        app:layout_constraintStart_toStartOf="@+id/tag_tv"
+        app:layout_constraintTop_toBottomOf="@+id/tags_container" />
+
+    <com.github.ybq.android.spinkit.SpinKitView
+        android:id="@+id/progress_bar"
+        style="@style/SpinKitView.ThreeBounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:layout_marginTop="12dp"
+        android:visibility="gone"
+        app:SpinKit_Color="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/included2" />
+
+    <!--    <View-->
+    <!--        android:id="@+id/tag_list"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="50dp"-->
+    <!--        android:layout_marginTop="8dp"-->
+    <!--        android:background="@drawable/grey_rc"-->
+    <!--        android:textColor="@color/grey_3"-->
+    <!--        android:textSize="14sp"-->
+    <!--        app:layout_constraintStart_toStartOf="@+id/tag_tv"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/tag_tv" />-->
+</androidx.constraintlayout.widget.ConstraintLayout>

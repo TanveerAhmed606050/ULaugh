@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "265664653769",
+    "firebase_url": "https://ulaugh-85aa8-default-rtdb.firebaseio.com",
+    "project_id": "ulaugh-85aa8",
+    "storage_bucket": "ulaugh-85aa8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:265664653769:android:2a17f8e3e60ac6edc22018",
+        "android_client_info": {
+          "package_name": "com.example.ulaugh"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "265664653769-lsi9algrgv2uqipstofmhaiv9pu307a0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7beyPa91xzqE5NCBEoyl4XXhn5orj0Y4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "265664653769-lsi9algrgv2uqipstofmhaiv9pu307a0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <include
+        android:id="@+id/included"
+        layout="@layout/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="134dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/poppins_bold"
+        android:text="@string/reset_pass"
+        android:textColor="@color/dark_black"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/included" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/new_pass_ti"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="24dp"
+        app:hintEnabled="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/textView6"
+        app:layout_constraintTop_toBottomOf="@+id/textView6"
+        app:passwordToggleEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/new_pass"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/grey_rc"
+            android:fontFamily="@font/poppins_regular"
+            android:gravity="center_vertical"
+            android:hint="@string/new_pass"
+            android:inputType="textPassword"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textColor="@color/grey_3"
+            android:textColorHint="@color/grey_3"
+            android:textCursorDrawable="@null"
+            android:textSize="12sp"
+            android:theme="@style/ThemeOverlay.AppTheme.TextInputEditText.Outlined" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/re_new_pass_ti"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="24dp"
+        app:hintEnabled="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/new_pass_ti"
+        app:layout_constraintTop_toBottomOf="@+id/new_pass_ti"
+        app:passwordToggleEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/re_new_pass"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/grey_rc"
+            android:fontFamily="@font/poppins_regular"
+            android:gravity="center_vertical"
+            android:hint="@string/confirm_new_pass"
+            android:inputType="textPassword"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textColor="@color/grey_3"
+            android:textColorHint="@color/grey_3"
+            android:textCursorDrawable="@null"
+            android:textSize="12sp"
+            android:theme="@style/ThemeOverlay.AppTheme.TextInputEditText.Outlined" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <include
+        android:id="@+id/included2"
+        layout="@layout/continue_btn"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="46dp"
+        app:layout_constraintEnd_toEndOf="@id/re_new_pass_ti"
+        app:layout_constraintStart_toStartOf="@id/re_new_pass_ti"
+        app:layout_constraintTop_toBottomOf="@+id/re_new_pass_ti" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

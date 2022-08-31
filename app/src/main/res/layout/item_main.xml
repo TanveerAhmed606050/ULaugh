@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:background="@color/app_bg">
+
+    <com.makeramen.roundedimageview.RoundedImageView
+        android:id="@+id/cover_photo"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_weight="1"
+        app:riv_corner_radius="12dp"
+        android:src="@drawable/yooseungho"
+        android:scaleType="fitXY"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/react_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="10dp"
+        android:fontFamily="@font/poppins_bold"
+        android:text="2.9k"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/cover_photo"
+        app:layout_constraintStart_toStartOf="@+id/cover_photo" />
+
+    <ImageView
+        android:id="@+id/react_iv"
+        android:layout_width="90dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="4dp"
+        android:src="@drawable/react_group"
+        app:layout_constraintBottom_toBottomOf="@+id/react_count"
+        app:layout_constraintStart_toEndOf="@+id/react_count"
+        app:layout_constraintTop_toTopOf="@+id/react_count" />
+
+    <View
+        android:id="@+id/react_view"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/purple_rc"
+        app:layout_constraintBottom_toBottomOf="@+id/cover_photo"
+        app:layout_constraintEnd_toEndOf="@+id/cover_photo" />
+
+    <ImageView
+        android:id="@+id/emoji"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="4dp"
+        android:src="@drawable/bland_emoji"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@id/react_view"
+        app:layout_constraintStart_toStartOf="@+id/react_view"
+        app:layout_constraintTop_toTopOf="@+id/react_view" />
+
+    <TextView
+        android:id="@+id/emoji_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:fontFamily="@font/poppins_medium"
+        android:text="React"
+        android:textColor="@color/white"
+        android:textSize="10sp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@id/emoji"
+        app:layout_constraintStart_toEndOf="@+id/emoji"
+        app:layout_constraintTop_toTopOf="@+id/emoji" />
+
+    <TextView
+        android:id="@+id/reacted_emoji"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="&#128522;"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/react_view"
+        app:layout_constraintStart_toStartOf="@+id/react_view"
+        app:layout_constraintTop_toTopOf="@+id/react_view" />
+
+    <TextView
+        android:id="@+id/reacted_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/poppins_medium"
+        android:textColor="@color/white"
+        android:textSize="10sp"
+        android:text="Reacted"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/react_view"
+        app:layout_constraintEnd_toEndOf="@id/react_view"
+        app:layout_constraintStart_toStartOf="@+id/react_view"
+        app:layout_constraintTop_toBottomOf="@+id/reacted_emoji" />
+
+
+    <com.mikhaellopez.circularimageview.CircularImageView
+        android:id="@+id/user_photo"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/user_logo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cover_photo" />
+
+    <TextView
+        android:id="@+id/name_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/poppins_regular"
+        android:text="John Smith"
+        android:textColor="@color/dark_black"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@+id/user_photo"
+        app:layout_constraintTop_toTopOf="@+id/user_photo" />
+
+    <TextView
+        android:id="@+id/time_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/poppins_regular"
+        android:text="2 min ago"
+        android:textColor="@color/light_black"
+        android:textSize="8sp"
+        app:layout_constraintStart_toStartOf="@+id/name_tv"
+        app:layout_constraintTop_toBottomOf="@+id/name_tv" />
+
+    <View
+        android:id="@+id/follow_view"
+        android:layout_width="70dp"
+        android:layout_height="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/user_photo"
+        app:layout_constraintEnd_toEndOf="@id/cover_photo"
+        app:layout_constraintTop_toTopOf="@+id/user_photo" />
+
+    <ImageView
+        android:id="@+id/plus_iv"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_baseline_add_24"
+        app:layout_constraintBottom_toBottomOf="@+id/follow_view"
+        app:layout_constraintStart_toStartOf="@id/follow_view"
+        app:layout_constraintTop_toTopOf="@+id/follow_view" />
+
+    <TextView
+        android:id="@+id/follow_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:fontFamily="@font/poppins_medium"
+        android:text="@string/follow"
+        android:textColor="@color/dark_purple"
+        android:textSize="11sp"
+        app:layout_constraintBottom_toBottomOf="@+id/follow_view"
+        app:layout_constraintStart_toEndOf="@id/plus_iv"
+        app:layout_constraintTop_toTopOf="@+id/follow_view" />
+
+    <TextView
+        android:id="@+id/image_detail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/poppins_regular"
+        android:text="Hello My Friends, Today I Visted My Dream Place Check It Out. It Was Creazy Exprience."
+        android:textColor="@color/light_black"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="@+id/follow_tv"
+        app:layout_constraintStart_toStartOf="@+id/user_photo"
+        app:layout_constraintTop_toBottomOf="@+id/user_photo" />
+
+    <TextView
+        android:id="@+id/textView34"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/poppins_regular"
+        android:text="#travel #time #firsttime #viral"
+        android:textColor="#757476"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="@+id/image_detail"
+        app:layout_constraintStart_toStartOf="@+id/image_detail"
+        app:layout_constraintTop_toBottomOf="@+id/image_detail" />
+</androidx.constraintlayout.widget.ConstraintLayout>

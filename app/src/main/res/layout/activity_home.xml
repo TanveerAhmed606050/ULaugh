@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".controller.HomeActivity">
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:foregroundGravity="center_vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:tabGravity="center"
+        app:tabPaddingTop="8dp"
+        app:tabSelectedTextColor="@color/white"
+        app:tabTextColor="@color/light_purple"
+        app:tabIndicatorColor="@color/dark_purple"
+        app:tabIndicatorHeight="0dp"
+        app:tabBackground="@color/dark_purple"
+        app:tabTextAppearance="@style/MineCustomTabText"/>
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/view_pager"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/tabLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/edit_view"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        app:backgroundTint="@color/dark_purple"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_edit"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toTopOf="@+id/tabLayout"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+<!--    <ImageView-->
+<!--        android:id="@+id/edit_iv"-->
+<!--        android:layout_width="16dp"-->
+<!--        android:layout_height="16dp"-->
+<!--        android:fontFamily="@font/poppins_semi_bold_italic"-->
+<!--        android:src="@drawable/ic_edit"-->
+<!--        android:textColor="@color/white"-->
+<!--        android:textSize="13sp"-->
+<!--        android:visibility="visible"-->
+<!--        app:layout_constraintBottom_toBottomOf="@+id/edit_view"-->
+<!--        app:layout_constraintEnd_toEndOf="@+id/edit_view"-->
+<!--        app:layout_constraintStart_toStartOf="@+id/edit_view"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/edit_view" />-->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

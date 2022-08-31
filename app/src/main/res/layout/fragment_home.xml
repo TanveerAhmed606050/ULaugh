@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragment.HomeFragment">
+
+    <include
+        android:id="@+id/toolbar1"
+        layout="@layout/toolbar" />
+
+    <include
+        android:id="@+id/search_tool"
+        layout="@layout/search_toolbar"
+        android:visibility="gone" />
+
+    <!--    <View-->
+    <!--        android:id="@+id/search_v"-->
+    <!--        android:layout_width="40dp"-->
+    <!--        android:layout_height="40dp"-->
+    <!--        android:layout_marginEnd="20dp"-->
+    <!--        android:background="@drawable/grey_circle"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@+id/profile_iv"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="@+id/profile_iv" />-->
+
+    <!--    <ImageView-->
+    <!--        android:id="@+id/menu_iv"-->
+    <!--        android:layout_width="24dp"-->
+    <!--        android:layout_height="24dp"-->
+    <!--        android:src="@drawable/ic_baseline_search_24"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@+id/search_v"-->
+    <!--        app:layout_constraintEnd_toEndOf="@id/search_v"-->
+    <!--        app:layout_constraintStart_toStartOf="@id/search_v"-->
+    <!--        app:layout_constraintTop_toTopOf="@+id/search_v" />-->
+
+    <!--    <com.mikhaellopez.circularimageview.CircularImageView-->
+    <!--        android:id="@+id/profile_iv"-->
+    <!--        android:layout_width="40dp"-->
+    <!--        android:layout_height="40dp"-->
+    <!--        android:layout_marginStart="20dp"-->
+    <!--        android:layout_marginTop="20dp"-->
+    <!--        android:src="@drawable/user_logo"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <!--    <TextView-->
+    <!--        android:id="@+id/name_tv"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="8dp"-->
+    <!--        android:fontFamily="@font/poppins_semibold"-->
+    <!--        android:text="John Smith"-->
+    <!--        android:textColor="@color/dark_black"-->
+    <!--        android:textSize="13sp"-->
+    <!--        app:layout_constraintStart_toEndOf="@+id/profile_iv"-->
+    <!--        app:layout_constraintTop_toTopOf="@+id/profile_iv" />-->
+
+    <!--    <TextView-->
+    <!--        android:id="@+id/status_tv"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:fontFamily="@font/poppins_semibold"-->
+    <!--        android:text="abc"-->
+    <!--        android:textColor="@color/grey_status"-->
+    <!--        android:textSize="8sp"-->
+    <!--        app:layout_constraintStart_toStartOf="@+id/name_tv"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/name_tv" />-->
+
+    <TextView
+        android:id="@+id/textView31"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/poppins_bold"
+        android:text="@string/trending"
+        android:textColor="@color/dark_black"
+        android:textSize="22sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar1" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="30dp"
+        android:orientation="vertical"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView31" />
+
+    <com.github.ybq.android.spinkit.SpinKitView
+        android:id="@+id/progress_bar"
+        style="@style/SpinKitView.ThreeBounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="0dp"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:SpinKit_Color="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/textView31"
+        app:layout_constraintTop_toTopOf="@+id/textView31" />
+
+    <TextView
+        android:id="@+id/txt_error"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/poppins_bold"
+        android:maxLines="1"
+        android:text=""
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@id/textView31"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/textView31"
+        app:layout_constraintTop_toTopOf="@+id/textView31" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

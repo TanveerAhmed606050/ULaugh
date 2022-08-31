@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.ulaugh">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <application
+        android:name=".LaughApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/NoActionBar"
+        tools:targetApi="31">
+        <activity
+            android:name=".controller.CameraActivity"
+            android:exported="false"
+            android:theme="@style/NoStatus" />
+        <activity
+            android:name=".controller.UserReactActivity"
+            android:exported="false" />
+        <activity
+            android:name=".controller.RewardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".controller.ReactDetailActivity"
+            android:exported="true"
+            android:theme="@style/NoStatus" />
+        <activity
+            android:name=".controller.SettingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".controller.ChangeContactActivity"
+            android:exported="true">
+
+        </activity>
+        <activity
+            android:name=".controller.EditProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".controller.ChatActivity"
+            android:exported="false" />
+        <activity
+            android:name=".controller.LoginActivity"
+            android:exported="false"
+            android:theme="@style/NoNavigation" />
+        <activity
+            android:name=".controller.SplashActivity"
+            android:exported="true"
+            android:theme="@style/NoNavigation">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".controller.HomeActivity"
+            android:exported="true"
+            android:theme="@style/NoStatus" />
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
+        <!--        <provider-->
+        <!--            android:authorities="com.example.ulaugh.fileProvider"-->
+        <!--            android:name="androidx.core.content.FileProvider"-->
+        <!--            android:exported="false"-->
+        <!--            android:grantUriPermissions="true"/>-->
+        <!--        <meta-data android:name="android.support.FILE_PROVIDER_PATH"-->
+        <!--            android:resource="@xml/file_path"/>-->
+    </application>
+
+</manifest>
