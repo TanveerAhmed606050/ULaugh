@@ -18,12 +18,12 @@ class SharePref @Inject constructor(@ApplicationContext context: Context){
 //        editor.apply()
 //    }
 
-    fun writeBoolean(context: Context?, key: String?, value: Boolean) {
+    fun writeBoolean(key: String?, value: Boolean) {
         prefs.edit().putBoolean(key, value).commit()
     }
 
     fun readBoolean(
-        context: Context?, key: String?,
+        key: String?,
         defValue: Boolean
     ): Boolean {
 

@@ -18,7 +18,8 @@ import com.example.ulaugh.model.HomeRecyclerViewItem
 import com.example.ulaugh.utils.Constants.TAG
 import com.google.android.gms.ads.*
 
-class HomeAdapter(val context: Context, private val items: ArrayList<HomeRecyclerViewItem>): RecyclerView.Adapter<HomeAdapter.HomeRecyclerViewHolder>() {
+class HomeAdapter(val context: Context, private val itemsList: ArrayList<HomeRecyclerViewItem>) :
+    RecyclerView.Adapter<HomeAdapter.HomeRecyclerViewHolder>() {
 //    var items = listOf<HomeRecyclerViewItem>()
 //        set(value) {
 //            field = value
@@ -54,16 +55,25 @@ class HomeAdapter(val context: Context, private val items: ArrayList<HomeRecycle
 
     override fun onBindViewHolder(holder: HomeRecyclerViewHolder, position: Int) {
         when (holder) {
-            is HomeRecyclerViewHolder.AdsViewHolder -> holder.bind(context, items[position] as HomeRecyclerViewItem.GoogleAds)
-            is HomeRecyclerViewHolder.NewsViewHolder -> holder.bind(context, items[position] as HomeRecyclerViewItem.NewsFeed)
-            is HomeRecyclerViewHolder.FriendsViewHolder -> holder.bind(items[position] as HomeRecyclerViewItem.Friends)
+            is HomeRecyclerViewHolder.AdsViewHolder -> holder.bind(
+                context,
+                itemsList[position] as HomeRecyclerViewItem.GoogleAds
+            )
+            is HomeRecyclerViewHolder.NewsViewHolder -> holder.bind(
+                context,
+                itemsList[position] as HomeRecyclerViewItem.NewsFeed
+            )
+            is HomeRecyclerViewHolder.FriendsViewHolder -> holder.bind(
+                context,
+                itemsList[position] as HomeRecyclerViewItem.Friends
+            )
         }
     }
 
-    override fun getItemCount() = items.size
+    override fun getItemCount() = itemsList.size
 
     override fun getItemViewType(position: Int): Int {
-        return when (items[position]) {
+        return when (itemsList[position]) {
             is HomeRecyclerViewItem.GoogleAds -> R.layout.item_google_ad
             is HomeRecyclerViewItem.NewsFeed -> R.layout.item_main
             is HomeRecyclerViewItem.Friends -> R.layout.adapter_home_flist
@@ -72,7 +82,7 @@ class HomeAdapter(val context: Context, private val items: ArrayList<HomeRecycle
 
     sealed class HomeRecyclerViewHolder(binding: ViewBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        val homeFriendsAdapter = HomeFriendsAdapter()
+        var homeFriendsAdapter: HomeFriendsAdapter? = null
 
         class NewsViewHolder(private val binding: ItemMainBinding) :
             HomeRecyclerViewHolder(binding) {
@@ -141,11 +151,11 @@ class HomeAdapter(val context: Context, private val items: ArrayList<HomeRecycle
 
         class FriendsViewHolder(private val binding: AdapterHomeFlistBinding) :
             HomeRecyclerViewHolder(binding) {
-            fun bind(friends: HomeRecyclerViewItem.Friends) {
+            fun bind(mContext: Context, friends: HomeRecyclerViewItem.Friends) {
                 binding.rv.apply {
                     setHasFixedSize(true)
 //                    layoutManager = GridLayoutManager(context, 2, GridLayoutManager.VERTICAL, false)
-                    adapter = homeFriendsAdapter
+                    adapter = HomeFriendsAdapter(mContext, friends)
                 }
             }
         }

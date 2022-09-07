@@ -2,23 +2,31 @@ package com.example.ulaugh.model
 
 sealed class HomeRecyclerViewItem {
 
-    class NewsFeed(
-        val id: Int,
-        val title: String
+    data class NewsFeed(
+        val firebase_id: String = "",
+        val image_url: String = "",
+        val description: String="",
+        val date_time:String,
+        val user_name:String,
+        val full_name:String,
+        val tagsList: String,
+        val reaction:String
     ) : HomeRecyclerViewItem()
 
-    class GoogleAds(
+    data class GoogleAds(
         val id: Int,
         val title: String,
         val thumbnail: String,
         val release_date: String
     ) : HomeRecyclerViewItem()
 
-    class Friends(
-        val id: Int,
-        val name: String,
-        val avatar: String,
-        val movie_count: Int
+    data class Friends(
+        var phone_no: String? = null,
+        val email: String?=null,
+        val full_name:String?=null,
+        val user_name:String?=null,
+        var firebase_id: String?=null,
+        val profile_pic:String?=null
     ) : HomeRecyclerViewItem()
 
 }

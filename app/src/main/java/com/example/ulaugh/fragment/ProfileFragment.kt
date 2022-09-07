@@ -86,7 +86,13 @@ class ProfileFragment : Fragment() {
         fullName = sharePref.readString(Constants.FULL_NAME, "").toString()
 
         if (url != null)
-            Glide.with(this).load(url).into(binding.profileIv)
+            Glide.with(requireContext())
+                .load(url)
+                .centerCrop()
+                .fitCenter()
+//                .thumbnail(0.3f)
+                .placeholder(R.drawable.seokangjoon)
+                .into(binding.profileIv)
         binding.nameTv.text = fullName
         binding.idTv.text = "@$userName"
         binding.rv.layoutManager =

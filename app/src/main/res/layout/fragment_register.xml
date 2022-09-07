@@ -188,7 +188,7 @@
             android:layout_marginEnd="24dp"
             android:background="@drawable/grey_rc"
             android:ems="10"
-            android:enabled="false"
+            android:enabled="true"
             android:hint="@string/enter_ph"
             android:inputType="phone"
             android:paddingStart="8dp"

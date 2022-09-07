@@ -75,7 +75,8 @@ class EditProfileActivity : AppCompatActivity() {
             finish()
         }
         val url = sharePref.readString(PROFILE_PIC, "")
-        Glide.with(this).load(url).into(binding.profileIv)
+        if (url!!.isNotEmpty())
+            Glide.with(this).load(url).into(binding.profileIv)
         binding.nameTv.text = sharePref.readString(FULL_NAME, "")
         binding.statusTv.text = "@${sharePref.readString(USER_NAME, "")}"
         binding.userName.setText(sharePref.readString(USER_NAME, ""))
@@ -111,7 +112,6 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun updateProfilePic() {
-
         storageProfilePicReference = FirebaseStorage.getInstance().reference.child(PROFILE_PIC)
         fileRef = storageProfilePicReference.child("pic" + ".png")
         fileRef.putFile(imageUri!!).addOnSuccessListener { task ->
@@ -152,6 +152,10 @@ class EditProfileActivity : AppCompatActivity() {
                                     .child(
                                         PROFILE_PIC
                                     ).setValue(taskUrl.result.toString())
+                                sharePref.writeString(
+                                    PROFILE_PIC,
+                                    snapshot.child(PROFILE_PIC).value.toString()
+                                )
                                 if (userName.isNotEmpty()) {
                                     databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
                                         .child(
@@ -177,9 +181,15 @@ class EditProfileActivity : AppCompatActivity() {
                                         .child(
                                             EMAIL
                                         ).setValue(email)
-                                    sharePref.writeString(EMAIL, snapshot.child(EMAIL).value.toString())
+                                    sharePref.writeString(
+                                        EMAIL,
+                                        snapshot.child(EMAIL).value.toString()
+                                    )
                                 }
-                                sharePref.writeString(PROFILE_PIC, snapshot.child(PROFILE_PIC).value.toString())
+                                sharePref.writeString(
+                                    PROFILE_PIC,
+                                    snapshot.child(PROFILE_PIC).value.toString()
+                                )
                                 Toast.makeText(
                                     this@EditProfileActivity,
                                     "Update successfully",

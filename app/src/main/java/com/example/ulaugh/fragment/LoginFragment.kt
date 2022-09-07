@@ -1,7 +1,9 @@
 package com.example.ulaugh.fragment
 
 import android.app.Activity
+import android.app.ProgressDialog.show
 import android.content.Intent
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.os.Bundle
 import android.telephony.PhoneNumberUtils
 import android.util.Log
@@ -104,14 +106,15 @@ class LoginFragment : Fragment() {
                 loginWithEmail()
                 inVisibleLoginView()
             } else if (validationResult == "Phone" && !binding.otpEt.isVisible) {
+                binding.progressBar.visibility = View.VISIBLE
                 loginWithPhone(binding.phoneNo.text.toString())
-                inVisibleLoginView()
             } else if (binding.otpEt.isVisible && binding.otpEt.text.toString().length == 6) {
                 val credential = PhoneAuthProvider.getCredential(
                     mVerificationId!!,
                     binding.otpEt.text.toString()
                 )
                 signInWithPhoneAuthCredential(credential)
+                binding.progressBar.visibility = View.VISIBLE
                 disableViews(binding.signupBtn, binding.included2.continueBtn, binding.loginGoogle)
             }
         }
@@ -210,6 +213,7 @@ class LoginFragment : Fragment() {
                     verificationId: String,
                     token: ForceResendingToken
                 ) {
+                    inVisibleLoginView()
                     mVerificationId = verificationId
                     mResendToken = token
                     enableViews(
@@ -217,16 +221,17 @@ class LoginFragment : Fragment() {
                         binding.signupBtn,
                         binding.included2.continueBtn
                     )
+                    binding.progressBar.visibility = View.GONE
                 }
 
                 override fun onVerificationCompleted(phoneAuthCredential: PhoneAuthCredential) {
                     mVerificationInProgress = false
                     val code = phoneAuthCredential.smsCode
-//                    if (code != null) {
-//                        binding.otpEt.setText(code)
-//                        val credential = PhoneAuthProvider.getCredential(mVerificationId!!, code)
-//                        signInWithPhoneAuthCredential(credential)
-//                    }
+                    if (code != null) {
+                        binding.otpEt.setText(code)
+                        val credential = PhoneAuthProvider.getCredential(mVerificationId!!, code)
+                        signInWithPhoneAuthCredential(credential)
+                    }
                 }
 
                 override fun onVerificationFailed(e: FirebaseException) {
@@ -247,63 +252,79 @@ class LoginFragment : Fragment() {
     private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
         firebaseAuth.signInWithCredential(credential)
             .addOnCompleteListener(activity!!) { task ->
+                binding.progressBar.visibility = View.GONE
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
                     val reference = FirebaseDatabase.getInstance()
-                        .getReference(Constants.USERS_REF)
-                        .child(FirebaseAuth.getInstance().currentUser!!.uid)
+                        .getReference(Constants.USERS_REF).child(FirebaseAuth.getInstance().currentUser!!.uid)
                     reference.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onDataChange(dataSnapshot: DataSnapshot) {
-                            Toast.makeText(requireContext(), "Success", Toast.LENGTH_SHORT)
-                                .show()
-                            if (!userRequest.email.isNullOrEmpty()) {
-                                reference.child(Constants.EMAIL).setValue(userRequest.email)
-                                sharePref.writeString(
-                                    Constants.EMAIL,
-                                    dataSnapshot.child(Constants.EMAIL).value.toString()
-                                )
+                            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                if (!dataSnapshot.exists()) {
+                                    Toast.makeText(requireContext(), "Success", Toast.LENGTH_SHORT)
+                                        .show()
+//                                    if (!userRequest.email.isNullOrEmpty()) {
+//                                        reference.child(Constants.EMAIL).setValue(userRequest.email)
+                                        sharePref.writeString(
+                                            Constants.EMAIL,
+                                            dataSnapshot.child(Constants.EMAIL).value.toString()
+                                        )
+//                                    }
+//                                    if (!userRequest.user_name.isNullOrEmpty()) {
+//                                        reference.child(Constants.USER_NAME)
+//                                            .setValue(userRequest.user_name)
+                                        sharePref.writeString(
+                                            Constants.USER_NAME,
+                                            dataSnapshot.child(Constants.USER_NAME).value.toString()
+                                        )
+//                                    }
+//                                    if (!userRequest.full_name.isNullOrEmpty()) {
+//                                        reference.child(Constants.FULL_NAME)
+//                                            .setValue(userRequest.full_name)
+                                        sharePref.writeString(
+                                            Constants.FULL_NAME,
+                                            dataSnapshot.child(Constants.FULL_NAME).value.toString()
+                                        )
+//                                    }
+                                    sharePref.writeString(
+                                        Constants.PROFILE_PIC,
+                                        dataSnapshot.child(Constants.PROFILE_PIC).value.toString()
+                                    )
+                                    sharePref.writeBoolean(
+                                        Constants.IS_PRIVATE,
+                                        dataSnapshot.child(Constants.IS_PRIVATE).value.toString()
+                                            .toBoolean()
+                                    )
+                                    requireContext().startActivity(
+                                        Intent(
+                                            requireContext(),
+                                            HomeActivity::class.java
+                                        )
+                                    )
+                                    activity!!.finish()
+                                } else
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Error:User not Exist",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
                             }
-                            if (!userRequest.user_name.isNullOrEmpty()) {
-                                reference.child(Constants.USER_NAME).setValue(userRequest.user_name)
-                                sharePref.writeString(
-                                    Constants.USER_NAME,
-                                    dataSnapshot.child(Constants.USER_NAME).value.toString()
-                                )
-                            }
-                            if (!userRequest.full_name.isNullOrEmpty()) {
-                                reference.child(Constants.FULL_NAME).setValue(userRequest.full_name)
-                                sharePref.writeString(
-                                    Constants.FULL_NAME,
-                                    dataSnapshot.child(Constants.FULL_NAME).value.toString()
-                                )
-                            }
-                            sharePref.writeString(
-                                Constants.PROFILE_PIC,
-                                dataSnapshot.child(Constants.PROFILE_PIC).value.toString()
-                            )
-                        }
 
-                        override fun onCancelled(error: DatabaseError) {
-                            visibleLoginView()
-                            enableViews(
-                                binding.signupBtn,
-                                binding.loginGoogle,
-                                binding.included2.continueBtn
-                            )
-                            Toast.makeText(requireContext(), "Canceled", Toast.LENGTH_SHORT)
-                                .show()
-                        }
+                            override fun onCancelled(error: DatabaseError) {
+                                visibleLoginView()
+                                binding.progressBar.visibility = View.GONE
+                                enableViews(
+                                    binding.signupBtn,
+                                    binding.loginGoogle,
+                                    binding.included2.continueBtn
+                                )
+                                Toast.makeText(requireContext(), "Canceled", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
 
-                    })
+                        })
 //                    userViewModel.signWithPhoneAuthCredential(credential, userRequest)
-                    requireContext().startActivity(
-                        Intent(
-                            requireContext(),
-                            HomeActivity::class.java
-                        )
-                    )
-                    activity!!.finish()
 //                    val user = task.result?.user
                 } else {
                     // Sign in failed, display a message and update the UI
@@ -454,7 +475,7 @@ class LoginFragment : Fragment() {
     }
 
     private fun visibleLoginView() {
-        binding.progressBar.visibility = View.INVISIBLE
+//        binding.progressBar.visibility = View.INVISIBLE
         binding.loginGoogle.visibility = View.VISIBLE
         binding.signupBtn.visibility = View.VISIBLE
         binding.otpEt.visibility = View.GONE
@@ -468,7 +489,7 @@ class LoginFragment : Fragment() {
     }
 
     private fun inVisibleLoginView() {
-        binding.progressBar.visibility = View.VISIBLE
+//        binding.progressBar.visibility = View.VISIBLE
         binding.textView2.setTextColor(ContextCompat.getColor(requireContext(), R.color.dark_black))
         binding.textView2.text = "${getText(R.string.hint_otp)} ${binding.phoneNo.text}"
         binding.loginGoogle.visibility = View.GONE

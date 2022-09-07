@@ -59,7 +59,7 @@ class RegisterFragment : Fragment() {
 
     //    @Inject
 //    lateinit var authFirebase: AuthFirebase
-    lateinit var authFirebase: FirebaseAuth
+//    lateinit var authFirebase: FirebaseAuth
 
     @Inject
     lateinit var sharePref: SharePref
@@ -76,7 +76,7 @@ class RegisterFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         // Initialize phone auth callbacks
-        authFirebase = FirebaseAuth.getInstance()
+        firebaseAuth = FirebaseAuth.getInstance()
         callBacks()
 //        getBundle()
         clickListener()
@@ -92,65 +92,17 @@ class RegisterFragment : Fragment() {
             hideKeyboard(it)
 
             if (validateUserInput() && !binding.otpEt.isVisible) {
-                inVisibleLoginView()
                 disableViews(binding.loginBtn, binding.included2.continueBtn, binding.loginGoogle)
+                binding.progressBar.visibility = View.VISIBLE
                 userRequest = getUserRequest()
                 loginWithPhone(binding.phoneNo.text.toString().trim())//+923454568270
-//                val reference = FirebaseDatabase.getInstance().getReference(Constants.USERS_REF)
-//                    .child(authFirebase.currentUser!!.uid)
-//                reference.addListenerForSingleValueEvent(object : ValueEventListener {
-//                    override fun onDataChange(dataSnapshot: DataSnapshot) {
-//                        inVisibleView()
-//                        Toast.makeText(requireContext(), "Success", Toast.LENGTH_SHORT)
-//                            .show()
-//                        if (!userRequest.email.isNullOrEmpty()) {
-//                            reference.child(Constants.EMAIL).setValue(userRequest.email)
-//                            sharePref.writeString(
-//                                Constants.EMAIL,
-//                                dataSnapshot.child(Constants.EMAIL).value.toString()
-//                            )
-//                        }
-//                        if (!userRequest.user_name.isNullOrEmpty()) {
-//                            reference.child(Constants.USER_NAME).setValue(userRequest.user_name)
-//                            sharePref.writeString(
-//                                Constants.USER_NAME,
-//                                dataSnapshot.child(Constants.USER_NAME).value.toString()
-//                            )
-//                        }
-//                        if (!userRequest.full_name.isNullOrEmpty()) {
-//                            reference.child(Constants.FULL_NAME).setValue(userRequest.full_name)
-//                            sharePref.writeString(
-//                                Constants.FULL_NAME,
-//                                dataSnapshot.child(Constants.FULL_NAME).value.toString()
-//                            )
-//                        }
-//                        sharePref.writeString(
-//                            Constants.PROFILE_PIC,
-//                            dataSnapshot.child(Constants.PROFILE_PIC).value.toString()
-//                        )
-//                        requireActivity().finish()
-//                    }
-//
-//                    override fun onCancelled(error: DatabaseError) {
-//                        inVisibleView()
-//                        binding.progressBar.visibility = View.GONE
-//                        enableViews(
-//                            binding.loginBtn,
-//                            binding.loginGoogle,
-//                            binding.included2.continueBtn
-//                        )
-//                        Toast.makeText(requireContext(), "Canceled", Toast.LENGTH_SHORT)
-//                            .show()
-//                    }
-//
-//                })
-//                    val credential = PhoneAuthProvider.getCredential(mVerificationId!!, otp!!)
-//                    userViewModels.signWithPhoneAuthCredential(credential, userRequest)
+
             } else if (binding.otpEt.isVisible && binding.otpEt.text.toString().length == 6) {
                 val credential = PhoneAuthProvider.getCredential(
                     mVerificationId!!,
                     binding.otpEt.text.toString()
                 )
+                binding.progressBar.visibility = View.VISIBLE
                 signInWithPhoneAuthCredential(credential)
                 disableViews(binding.loginBtn, binding.included2.continueBtn, binding.loginGoogle)
             }
@@ -220,57 +172,91 @@ class RegisterFragment : Fragment() {
                     Log.d(TAG, "signInWithCredential:success")
                     val reference = FirebaseDatabase.getInstance()
                         .getReference(Constants.USERS_REF)
-                        .child(FirebaseAuth.getInstance().currentUser!!.uid)
-                    reference.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onDataChange(dataSnapshot: DataSnapshot) {
-                            Toast.makeText(requireContext(), "Success", Toast.LENGTH_SHORT)
-                                .show()
-                            if (!userRequest.email.isNullOrEmpty()) {
-                                reference.child(Constants.EMAIL).setValue(userRequest.email)
-                                sharePref.writeString(
-                                    Constants.EMAIL,
-                                    dataSnapshot.child(Constants.EMAIL).value.toString()
-                                )
-                            }
-                            if (!userRequest.user_name.isNullOrEmpty()) {
-                                reference.child(Constants.USER_NAME).setValue(userRequest.user_name)
-                                sharePref.writeString(
-                                    Constants.USER_NAME,
-                                    dataSnapshot.child(Constants.USER_NAME).value.toString()
-                                )
-                            }
-                            if (!userRequest.full_name.isNullOrEmpty()) {
-                                reference.child(Constants.FULL_NAME).setValue(userRequest.full_name)
-                                sharePref.writeString(
-                                    Constants.FULL_NAME,
-                                    dataSnapshot.child(Constants.FULL_NAME).value.toString()
-                                )
-                            }
-                            sharePref.writeString(
-                                Constants.PROFILE_PIC,
-                                dataSnapshot.child(Constants.PROFILE_PIC).value.toString()
-                            )
-                        }
+                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                if (!dataSnapshot.exists()) {
+                                    Toast.makeText(requireContext(), "Success", Toast.LENGTH_SHORT)
+                                        .show()
+                                    userRequest.firebase_id =
+                                        FirebaseAuth.getInstance().currentUser!!.uid
+//                                    reference
+//                                        .setValue(userRequest)
+                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                        .child(Constants.IS_PRIVATE).setValue(false)
+                                    sharePref.writeBoolean(Constants.IS_PRIVATE, false)
+//                                    if (!userRequest.email.isNullOrEmpty()) {
+                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                        .child(Constants.EMAIL).setValue(userRequest.email)
+                                    sharePref.writeString(
+                                        Constants.EMAIL,
+                                        userRequest.email
+                                    )
+//                                    }
+//                                    if (!userRequest.user_name.isNullOrEmpty()) {
+                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                        .child(Constants.USER_NAME)
+                                        .setValue(userRequest.user_name)
+                                    sharePref.writeString(
+                                        Constants.USER_NAME,
+                                        userRequest.user_name
+                                    )
+//                                    }
+//                                    if (!userRequest.full_name.isNullOrEmpty()) {
+                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                        .child(Constants.FULL_NAME)
+                                        .setValue(userRequest.full_name)
+                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                        .child(Constants.FIREBASE_ID)
+                                        .setValue(userRequest.firebase_id)
+                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                        .child(Constants.PHONE_NO)
+                                        .setValue(userRequest.phone_no)
 
-                        override fun onCancelled(error: DatabaseError) {
-                            visibleLoginView()
-                            enableViews(
-                                binding.loginBtn,
-                                binding.loginGoogle,
-                                binding.included2.continueBtn
-                            )
-                            Toast.makeText(requireContext(), "Canceled", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                    })
+                                    sharePref.writeString(
+                                        Constants.FULL_NAME,
+                                        userRequest.full_name
+                                    )
+//                                    }
+//                                    if (!userRequest.full_name.isNullOrEmpty()) {
+//                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                                        .child(Constants.PHONE_NO)
+//                                        .setValue(userRequest.phone_no)
+//                                    }
+                                    sharePref.writeString(
+                                        Constants.PROFILE_PIC,
+                                        userRequest.profile_pic
+                                    )
+                                    binding.progressBar.visibility = View.GONE
+                                    requireContext().startActivity(
+                                        Intent(
+                                            requireContext(),
+                                            HomeActivity::class.java
+                                        )
+                                    )
+                                    activity!!.finish()
+                                } else {
+                                    binding.progressBar.visibility = View.GONE
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Already register",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                visibleLoginView()
+                                enableViews(
+                                    binding.loginBtn,
+                                    binding.loginGoogle,
+                                    binding.included2.continueBtn
+                                )
+                                Toast.makeText(requireContext(), "Canceled", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        })
 //                    userViewModel.signWithPhoneAuthCredential(credential, userRequest)
-                    requireContext().startActivity(
-                        Intent(
-                            requireContext(),
-                            HomeActivity::class.java
-                        )
-                    )
-                    activity!!.finish()
 //                    val user = task.result?.user
                 } else {
                     // Sign in failed, display a message and update the UI
@@ -400,19 +386,19 @@ class RegisterFragment : Fragment() {
     }
 
     private fun validateUserInput(): Boolean {
-        val fullName = binding.fullName.text.toString()
-        val userName = binding.userName.text.toString()
-        val email = binding.emailEt.text.toString()
+        val fullName = binding.fullName.text.toString().trim()
+        val userName = binding.userName.text.toString().trim()
+        val email = binding.emailEt.text.toString().trim()
         if (fullName.isEmpty()) {
             showValidationErrors("Please Enter name")
             return false
         } else if (userName.isEmpty()) {
             showValidationErrors("Please Enter username")
             return false
-        } else if (!Helper.isValidEmail(email)) {
-            showValidationErrors("Please Enter valid Email")
+        } else if (!Helper.isValidEmail(email) && email.isNotEmpty()) {
+            showValidationErrors("Please Enter Email")
             return false
-        } else if (!PhoneNumberUtils.isGlobalPhoneNumber(binding.emailEt.text.toString())) {
+        } else if (!PhoneNumberUtils.isGlobalPhoneNumber(binding.phoneNo.text.toString().trim())) {
             showValidationErrors("Please Enter valid Phone number")
             return false
         }
@@ -437,7 +423,9 @@ class RegisterFragment : Fragment() {
                 binding.phoneNo.text.toString(),
                 emailEt.text.toString(),
                 fullName.text.toString(),
-                userName.text.toString()
+                userName.text.toString(),
+                "",
+                ""
             )
         }
     }
@@ -466,10 +454,11 @@ class RegisterFragment : Fragment() {
                 verificationId: String,
                 token: PhoneAuthProvider.ForceResendingToken
             ) {
+                binding.progressBar.visibility = View.GONE
+                inVisibleLoginView()
                 enableViews(binding.loginBtn, binding.loginGoogle, binding.included2.continueBtn)
                 mVerificationId = verificationId
                 mResendToken = token
-
             }
         }
     }
@@ -517,7 +506,7 @@ class RegisterFragment : Fragment() {
     }
 
     private fun visibleLoginView() {
-        binding.progressBar.visibility = View.INVISIBLE
+//        binding.progressBar.visibility = View.VISIBLE
         binding.loginGoogle.visibility = View.VISIBLE
         binding.loginBtn.visibility = View.VISIBLE
         binding.otpEt.visibility = View.GONE
@@ -541,7 +530,7 @@ class RegisterFragment : Fragment() {
     }
 
     private fun inVisibleLoginView() {
-        binding.progressBar.visibility = View.VISIBLE
+//        binding.progressBar.visibility = View.INVISIBLE
         binding.loginGoogle.visibility = View.INVISIBLE
         binding.textView18.visibility = View.INVISIBLE
         binding.googleIcon.visibility = View.INVISIBLE
