@@ -10,13 +10,12 @@ import com.example.ulaugh.R
 import com.example.ulaugh.adapter.HomeAdapter
 import com.example.ulaugh.databinding.FragmentHomeBinding
 import com.example.ulaugh.model.HomeRecyclerViewItem
-import com.example.ulaugh.model.UserRequest
+import com.example.ulaugh.model.SuggestFriends
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.SharePref
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import com.google.firebase.database.ktx.getValue
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.collections.ArrayList
@@ -35,8 +34,8 @@ class HomeFragment : Fragment() {
     private var homeList: ArrayList<HomeRecyclerViewItem> = ArrayList()
     private var newsFeedList: ArrayList<HomeRecyclerViewItem.NewsFeed> = ArrayList()
     private var googleAdsList: ArrayList<HomeRecyclerViewItem.GoogleAds> = ArrayList()
-    private var usersList: ArrayList<HomeRecyclerViewItem.Friends> = ArrayList()
-    private var adapter:HomeAdapter? = null
+    private var suggestFriendsList: ArrayList<SuggestFriends> = ArrayList()
+    private var adapter: HomeAdapter? = null
 //    private var friendsList: ArrayList<UserRequest> = ArrayList()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -128,10 +127,10 @@ class HomeFragment : Fragment() {
     private fun getHomeData() {
         binding.progressBar.visibility = View.VISIBLE
         homeList = ArrayList()
-        usersList = ArrayList()
+        suggestFriendsList = ArrayList()
         var newsFeed: HomeRecyclerViewItem.NewsFeed? = null
         var googleAd: HomeRecyclerViewItem.GoogleAds? = null
-        var friends: HomeRecyclerViewItem.Friends? = null
+        var friends: SuggestFriends? = null
 //        databaseReference?.child(FirebaseAuth.getInstance().currentUser!!.uid)!!
 //            .addValueEventListener(object : ValueEventListener {
 //                override fun onDataChange(snapshot: DataSnapshot) {
@@ -174,7 +173,7 @@ class HomeFragment : Fragment() {
 //                    binding.txtError.text = error.message
 //                }
 //            })
-        if (usersList.isEmpty()) {
+        if (suggestFriendsList.isEmpty()) {
             usersDbRef!!.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     binding.txtError.text = ""
@@ -186,19 +185,20 @@ class HomeFragment : Fragment() {
                             val friends =
                                 postSnapshot.child(FirebaseAuth.getInstance().currentUser!!.uid)
                                     .child(Constants.FRIENDS_REF).child(postSnapshot.key!!)
-                                    .getValue(HomeRecyclerViewItem.Friends::class.java)
-                            usersList.add(friends!!)
-                            if (usersList.size > 10)
+                                    .getValue(SuggestFriends::class.java)
+                            suggestFriendsList.add(friends!!)
+                            if (suggestFriendsList.size > 10)
                                 break
                         }
-                    } else if (snapshot.exists()){
-                        for (dataSnap in snapshot.children) {
-                            val user:HomeRecyclerViewItem.Friends = dataSnap
-                                .getValue(HomeRecyclerViewItem.Friends::class.java)!!
-                            usersList.add(user)
-                            if (usersList.size > 10)
-                                break
-                        }
+                    } else if (snapshot.exists()) {
+//                        for (dataSnap in snapshot.children) {
+//                            val user:SuggestFriends = dataSnap
+//                                .getValue(SuggestFriends::class.java)!!
+//                            usersList.add(user)
+//                            if (usersList.size > 10)
+//                                break
+//                        }
+
                     }
                     if (newsFeedList.isNotEmpty()) {
                         for (newsItem in 0 until newsFeedList.size) {
@@ -212,15 +212,16 @@ class HomeFragment : Fragment() {
                                     )
                                 )
                             if (newsItem == 3) {
-                                for (user in 0 until usersList.size) {
-                                    homeList.add(usersList[user])
+                                for (user in 0 until suggestFriendsList.size) {
+                                    homeList.add(suggestFriendsList[user])
                                 }
                             }
                         }
-                    }else{
-                        for (user in 0 until usersList.size) {
-                            homeList.add(usersList[user])
-                        }
+                    } else {
+                        val suggestList = HomeRecyclerViewItem.SuggestList(suggestFriendsList)
+//                        for (user in 0 until suggestFriendsList.size) {
+                            homeList.add(suggestList)
+//                        }
                     }
                     setAdapter()
 //                    adapter?.notifyDataSetChanged()

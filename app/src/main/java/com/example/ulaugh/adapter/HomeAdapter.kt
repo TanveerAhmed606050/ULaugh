@@ -15,6 +15,7 @@ import com.example.ulaugh.databinding.AdapterHomeFlistBinding
 import com.example.ulaugh.databinding.ItemGoogleAdBinding
 import com.example.ulaugh.databinding.ItemMainBinding
 import com.example.ulaugh.model.HomeRecyclerViewItem
+import com.example.ulaugh.model.SuggestFriends
 import com.example.ulaugh.utils.Constants.TAG
 import com.google.android.gms.ads.*
 
@@ -65,7 +66,7 @@ class HomeAdapter(val context: Context, private val itemsList: ArrayList<HomeRec
             )
             is HomeRecyclerViewHolder.FriendsViewHolder -> holder.bind(
                 context,
-                itemsList[position] as HomeRecyclerViewItem.Friends
+                itemsList[position] as ArrayList<SuggestFriends>
             )
         }
     }
@@ -76,7 +77,8 @@ class HomeAdapter(val context: Context, private val itemsList: ArrayList<HomeRec
         return when (itemsList[position]) {
             is HomeRecyclerViewItem.GoogleAds -> R.layout.item_google_ad
             is HomeRecyclerViewItem.NewsFeed -> R.layout.item_main
-            is HomeRecyclerViewItem.Friends -> R.layout.adapter_home_flist
+            is SuggestFriends -> R.layout.adapter_home_flist
+            else -> {Log.d("", "error")}
         }
     }
 
@@ -151,7 +153,7 @@ class HomeAdapter(val context: Context, private val itemsList: ArrayList<HomeRec
 
         class FriendsViewHolder(private val binding: AdapterHomeFlistBinding) :
             HomeRecyclerViewHolder(binding) {
-            fun bind(mContext: Context, friends: HomeRecyclerViewItem.Friends) {
+            fun bind(mContext: Context, friends: ArrayList<SuggestFriends>) {
                 binding.rv.apply {
                     setHasFixedSize(true)
 //                    layoutManager = GridLayoutManager(context, 2, GridLayoutManager.VERTICAL, false)

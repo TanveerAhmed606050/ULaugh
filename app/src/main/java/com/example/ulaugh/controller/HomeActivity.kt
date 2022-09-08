@@ -40,7 +40,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.messaging.FirebaseMessaging
+//import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import dagger.hilt.android.AndroidEntryPoint
@@ -96,20 +96,20 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
     }
 
     private fun init() {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
-            }
-
-            // Get new FCM registration token
-            val token = task.result
-
-            // Log and toast
-            val msg = getString(R.string.msg_token_fmt, token)
-            Log.d(TAG, msg)
-//            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-        })
+//        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+//            if (!task.isSuccessful) {
+//                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+//                return@OnCompleteListener
+//            }
+//
+//            // Get new FCM registration token
+//            val token = task.result
+//
+//            // Log and toast
+//            val msg = getString(R.string.msg_token_fmt, token)
+//            Log.d(TAG, msg)
+////            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+//        })
         // Assign FirebaseDatabase instance with root database name.
         databaseReference = FirebaseDatabase.getInstance().reference.child(Constants.POST_SHARE_REF)
         storageRef =

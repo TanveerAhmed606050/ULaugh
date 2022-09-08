@@ -420,10 +420,10 @@ class RegisterFragment : Fragment() {
     private fun getUserRequest(): UserRequest {
         return binding.run {
             UserRequest(
-                binding.phoneNo.text.toString(),
-                emailEt.text.toString(),
-                fullName.text.toString(),
-                userName.text.toString(),
+                binding.phoneNo.text.toString().trim(),
+                emailEt.text.toString().trim(),
+                fullName.text.toString().trim(),
+                userName.text.toString().trim(),
                 "",
                 ""
             )
@@ -437,15 +437,21 @@ class RegisterFragment : Fragment() {
                 enableViews(binding.loginBtn, binding.loginGoogle, binding.included2.continueBtn)
                 mVerificationInProgress = false
                 val code = phoneAuthCredential.smsCode
-                if (code != null) {
-                    binding.otpEt.setText(code)
-                    val credential = PhoneAuthProvider.getCredential(mVerificationId!!, code)
-                    signInWithPhoneAuthCredential(credential)
-                }
+//                if (code != null) {
+//                    binding.otpEt.setText(code)
+//                    val credential = PhoneAuthProvider.getCredential(mVerificationId!!, code)
+//                    signInWithPhoneAuthCredential(credential)
+//                }
             }
 
             override fun onVerificationFailed(e: FirebaseException) {
                 mVerificationInProgress = false
+                binding.progressBar.visibility = View.GONE
+                Toast.makeText(
+                    requireContext(),
+                    "Failed: ${e.message.toString()}",
+                    Toast.LENGTH_SHORT
+                ).show()
                 visibleLoginView()
                 enableViews(binding.loginBtn, binding.loginGoogle, binding.included2.continueBtn)
             }
@@ -551,6 +557,7 @@ class RegisterFragment : Fragment() {
         binding.phoneNo.visibility = View.INVISIBLE
         binding.textView12.visibility = View.INVISIBLE
         binding.txtError.text = ""
+
     }
 
     private fun disableViews(vararg views: View) {

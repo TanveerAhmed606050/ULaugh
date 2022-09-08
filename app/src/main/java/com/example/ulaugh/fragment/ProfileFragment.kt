@@ -27,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class ProfileFragment : Fragment() {
 
@@ -85,20 +84,39 @@ class ProfileFragment : Fragment() {
         userName = sharePref.readString(Constants.USER_NAME, "").toString()
         fullName = sharePref.readString(Constants.FULL_NAME, "").toString()
 
-        if (url != null)
+        if (url != null) {
             Glide.with(requireContext())
                 .load(url)
                 .centerCrop()
                 .fitCenter()
-//                .thumbnail(0.3f)
+                .thumbnail(0.3f)
                 .placeholder(R.drawable.seokangjoon)
                 .into(binding.profileIv)
+
+            Glide.with(requireContext())
+                .load(url)
+                .centerCrop()
+                .fitCenter()
+                .thumbnail(0.3f)
+                .placeholder(R.drawable.seokangjoon)
+                .into(binding.coverIv)
+        }
         binding.nameTv.text = fullName
         binding.idTv.text = "@$userName"
-        binding.rv.layoutManager =
-            StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        postsAdapter = PostsAdapter(requireActivity(), postItemsList)
-        binding.rv.adapter = postsAdapter
+        if (sharePref.readBoolean(Constants.IS_PRIVATE, false)){
+            binding.lockLogo.visibility = View.VISIBLE
+            binding.textView20.visibility = View.VISIBLE
+            binding.textView21.visibility = View.VISIBLE
+        }else{
+            binding.lockLogo.visibility = View.GONE
+            binding.textView20.visibility = View.GONE
+            binding.textView21.visibility = View.GONE
+
+        }
+            binding.rv.layoutManager =
+                StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+            postsAdapter = PostsAdapter(requireActivity(), postItemsList)
+            binding.rv.adapter = postsAdapter
     }
 
     private fun getProfileData() {
