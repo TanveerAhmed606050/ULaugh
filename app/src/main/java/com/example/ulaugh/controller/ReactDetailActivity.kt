@@ -18,7 +18,8 @@ import com.github.aachartmodel.aainfographics.aaoptionsmodel.AAMarkerHover
 import com.github.aachartmodel.aainfographics.aaoptionsmodel.AAMarkerStates
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-
+//
+//AIzaSyD7beyPa91xzqE5NCBEoyl4XXhn5orj0Y4
 
 @AndroidEntryPoint
 class ReactDetailActivity : AppCompatActivity() {
@@ -45,11 +46,15 @@ class ReactDetailActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
             )
         }
-
+        initViews()
         setToolbarFun()
         setGraph()
         setAdapter()
         setAppBar()
+    }
+
+    private fun initViews(){
+        binding.emoji.text = "U+1F970 U+1F602 U+1F92A"
     }
 
     private fun setAdapter() {
@@ -109,7 +114,6 @@ class ReactDetailActivity : AppCompatActivity() {
                         .data(
                             Array(arrayList1.size) { i -> (arrayList1[i]) }
                         )
-
                 )
             )
 

@@ -97,26 +97,26 @@ class LoginFragment : Fragment() {
 //        binding.cellCode.text = "+1"
         binding.included2.continueBtn.setOnClickListener {
             hideKeyboard(it)
-//            (activity)!!.finish()
-//            startActivity(Intent(activity!!, HomeActivity::class.java))
+            (activity)!!.finish()
+            startActivity(Intent(activity!!, HomeActivity::class.java))
             userRequest = getUserRequest()
             val validationResult = checkValidation()
-            if (validationResult == "Email") {
-                disableViews(binding.signupBtn, binding.included2.continueBtn, binding.loginGoogle)
-                loginWithEmail()
-                inVisibleLoginView()
-            } else if (validationResult == "Phone" && !binding.otpEt.isVisible) {
-                binding.progressBar.visibility = View.VISIBLE
-                loginWithPhone(binding.phoneNo.text.toString())
-            } else if (binding.otpEt.isVisible && binding.otpEt.text.toString().length == 6) {
-                val credential = PhoneAuthProvider.getCredential(
-                    mVerificationId!!,
-                    binding.otpEt.text.toString()
-                )
-                signInWithPhoneAuthCredential(credential)
-                binding.progressBar.visibility = View.VISIBLE
-                disableViews(binding.signupBtn, binding.included2.continueBtn, binding.loginGoogle)
-            }
+//            if (validationResult == "Email") {
+//                disableViews(binding.signupBtn, binding.included2.continueBtn, binding.loginGoogle)
+//                loginWithEmail()
+//                inVisibleLoginView()
+//            } else if (validationResult == "Phone" && !binding.otpEt.isVisible) {
+//                binding.progressBar.visibility = View.VISIBLE
+//                loginWithPhone(binding.phoneNo.text.toString())
+//            } else if (binding.otpEt.isVisible && binding.otpEt.text.toString().length == 6) {
+//                val credential = PhoneAuthProvider.getCredential(
+//                    mVerificationId!!,
+//                    binding.otpEt.text.toString()
+//                )
+//                signInWithPhoneAuthCredential(credential)
+//                binding.progressBar.visibility = View.VISIBLE
+//                disableViews(binding.signupBtn, binding.included2.continueBtn, binding.loginGoogle)
+//            }
         }
 //        binding.countryPicker.setOnClickListener {
 //            openCountryPickerDialog()
@@ -240,6 +240,7 @@ class LoginFragment : Fragment() {
                         binding.loginGoogle,
                         binding.included2.continueBtn
                     )
+                    binding.progressBar.visibility = View.GONE
                     visibleLoginView()
                     mVerificationInProgress = false
                     binding.txtError.text = e.message

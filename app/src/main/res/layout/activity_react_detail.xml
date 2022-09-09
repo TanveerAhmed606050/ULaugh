@@ -33,7 +33,7 @@
                     android:layout_height="match_parent"
                     android:fitsSystemWindows="true"
                     android:scaleType="centerCrop"
-                    android:src=""
+                    android:src="@drawable/seokangjoon"
                     app:layout_collapseMode="parallax" />
 
                 <TextView
@@ -57,7 +57,7 @@
                     android:layout_marginBottom="20dp"
                     android:layout_toEndOf="@id/count_react"
                     android:fontFamily="@font/poppins_bold"
-                    android:text="U+1F632"
+                    android:text=""
                     android:textColor="@color/white"
                     android:textSize="16sp" />
             </RelativeLayout>

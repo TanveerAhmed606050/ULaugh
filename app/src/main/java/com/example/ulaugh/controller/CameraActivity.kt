@@ -75,12 +75,8 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener {
                 .also {
                     it.setSurfaceProvider(binding.preview.surfaceProvider)
                 }
-
             imageCapture = ImageCapture.Builder().build()
-            cameraSelector = if (isFront)
-                CameraSelector.DEFAULT_FRONT_CAMERA
-            else
-                CameraSelector.DEFAULT_BACK_CAMERA
+            CameraSelector.DEFAULT_FRONT_CAMERA
             try {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(
@@ -100,7 +96,6 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener {
             SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis()) + ".jpg"
         )
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
@@ -109,7 +104,6 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
                     return
                 }
-
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     imageUri = Uri.fromFile(photoFile)
                     val imageUri = compressImage(imageUri.toString())
@@ -305,6 +299,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener {
         }
         return filename
     }
+
     private fun getFilename(): String? {
         val file =
             File(Environment.getExternalStorageDirectory().path, "MyFolder/Images")
