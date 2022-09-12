@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/plus_iv"
+        android:id="@+id/add_friend"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginTop="10dp"
@@ -36,9 +36,9 @@
         android:textSize="20sp"
         android:textColor="@color/dark_black"
         android:fontFamily="@font/poppins_regular"
-        app:layout_constraintEnd_toEndOf="@+id/plus_iv"
-        app:layout_constraintStart_toStartOf="@+id/plus_iv"
-        app:layout_constraintTop_toBottomOf="@+id/plus_iv" />
+        app:layout_constraintEnd_toEndOf="@+id/add_friend"
+        app:layout_constraintStart_toStartOf="@+id/add_friend"
+        app:layout_constraintTop_toBottomOf="@+id/add_friend" />
 
     <TextView
         android:id="@+id/status_tv"

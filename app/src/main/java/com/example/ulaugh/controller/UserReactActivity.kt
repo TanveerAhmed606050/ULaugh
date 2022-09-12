@@ -8,11 +8,11 @@ import com.example.ulaugh.R
 import com.example.ulaugh.databinding.ActivityReactDetailBinding
 import com.example.ulaugh.databinding.ActivityUserReactBinding
 import com.example.ulaugh.utils.SharePref
-import com.google.android.gms.vision.face.FaceDetector.ACCURATE_MODE
-import com.google.firebase.ml.vision.FirebaseVision
-import com.google.firebase.ml.vision.common.FirebaseVisionImage
-import com.google.firebase.ml.vision.face.FirebaseVisionFace
-import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
+//import com.google.android.gms.vision.face.FaceDetector.ACCURATE_MODE
+//import com.google.firebase.ml.vision.FirebaseVision
+//import com.google.firebase.ml.vision.common.FirebaseVisionImage
+//import com.google.firebase.ml.vision.face.FirebaseVisionFace
+//import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

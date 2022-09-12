@@ -1,6 +1,6 @@
 package com.example.ulaugh.model
 
-sealed class HomeRecyclerViewItem{
+sealed class HomeRecyclerViewItem {
 
     data class NewsFeed(
         val firebase_id: String = "",
@@ -20,7 +20,7 @@ sealed class HomeRecyclerViewItem{
         val release_date: String
     ) : HomeRecyclerViewItem()
 
-    data class SuggestList(val friends: ArrayList<SuggestFriends>):HomeRecyclerViewItem()
+    data class SuggestList(val friends: ArrayList<SuggestFriends>) : HomeRecyclerViewItem()
 }
 
 data class SuggestFriends(
