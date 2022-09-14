@@ -6,11 +6,12 @@ sealed class HomeRecyclerViewItem {
         val firebase_id: String = "",
         val image_url: String = "",
         val description: String = "",
-        val date_time: String,
-        val user_name: String,
-        val full_name: String,
-        val tagsList: String,
-        val reaction: String
+        val date_time: String = "",
+        val user_name: String = "",
+        val full_name: String = "",
+        val tagsList: String = "",
+        var reaction: ArrayList<Reactions>? = null,
+        var user_react: String? = null
     ) : HomeRecyclerViewItem()
 
     data class GoogleAds(
@@ -31,3 +32,10 @@ data class SuggestFriends(
     var firebase_id: String? = null,
     val profile_pic: String? = null
 ) : HomeRecyclerViewItem()
+
+data class Reactions(
+    val reaction_type: String? = null,
+    val user_id: String? = null
+)
+
+data class ReactionDetail(val total: Long?, val reaction_type: String?)

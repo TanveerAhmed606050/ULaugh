@@ -6,8 +6,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
+import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.controller.CameraActivity
 import com.example.ulaugh.controller.ReactDetailActivity
@@ -17,6 +19,7 @@ import com.example.ulaugh.databinding.ItemMainBinding
 import com.example.ulaugh.interfaces.OnClickListener
 import com.example.ulaugh.model.HomeRecyclerViewItem
 import com.example.ulaugh.utils.Constants.TAG
+import com.example.ulaugh.utils.Helper
 import com.google.android.gms.ads.*
 
 class HomeAdapter(
@@ -83,7 +86,9 @@ class HomeAdapter(
             is HomeRecyclerViewItem.GoogleAds -> R.layout.item_google_ad
             is HomeRecyclerViewItem.NewsFeed -> R.layout.item_main
             is HomeRecyclerViewItem.SuggestList -> R.layout.adapter_home_flist
-            else -> {Log.d("", "error")}
+            else -> {
+                Log.d("", "error")
+            }
         }
     }
 
@@ -92,7 +97,25 @@ class HomeAdapter(
 
         class NewsViewHolder(private val binding: ItemMainBinding) :
             HomeRecyclerViewHolder(binding) {
-            fun bind(context: Context, newsFeed: HomeRecyclerViewItem.NewsFeed) {
+            fun bind(context: Context, post: HomeRecyclerViewItem.NewsFeed) {
+                Glide.with(context)
+                    .load(post.image_url)
+                    .centerCrop()
+                    .fitCenter()
+                    .thumbnail(0.3f)
+                    .placeholder(R.drawable.seokangjoon)
+                    .into(binding.coverPhoto)
+                binding.nameTv.text = post.full_name
+                binding.postDetail.text = post.description
+                binding.tagsTv.text = post.tagsList
+
+                val date = Helper.convertToLocal(post.date_time)
+                binding.timeTv.text = Helper.covertTimeToText(date)
+                binding.reactCount.text = "${Helper.prettyCount(post.reaction!!.size)}"
+                if (post.user_react!!.isNotEmpty()) {
+                    binding.reactedTxt.text = "Reacted"
+                    binding.reactedEmoji.text = post.user_react
+                }
                 binding.coverPhoto.setOnClickListener {
                     context.startActivity(Intent(context, ReactDetailActivity::class.java))
                 }
@@ -157,7 +180,11 @@ class HomeAdapter(
 
         class FriendsViewHolder(private val binding: AdapterHomeFlistBinding) :
             HomeRecyclerViewHolder(binding) {
-            fun bind(mContext: Context, friends: HomeRecyclerViewItem.SuggestList, onClickListener: OnClickListener) {
+            fun bind(
+                mContext: Context,
+                friends: HomeRecyclerViewItem.SuggestList,
+                onClickListener: OnClickListener
+            ) {
                 binding.rv.apply {
                     setHasFixedSize(true)
                     adapter = HomeFriendsAdapter(mContext, friends, onClickListener)

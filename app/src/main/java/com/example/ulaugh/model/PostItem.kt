@@ -1,10 +1,12 @@
 package com.example.ulaugh.model
 
 data class PostItem(
-    val key: String,
-    var date_time: String,
-    val description: String,
-    val image_url: String,
-    val tagsList: String
+    val firebase_id: String = "",
+    val image_url: String = "",
+    val description: String = "",
+    val date_time: String = "",
+    val user_name: String = "",
+    val full_name: String = "",
+    val tagsList: String = "",
 )
 

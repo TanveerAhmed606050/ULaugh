@@ -12,7 +12,6 @@
         android:layout_height="180dp"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_weight="1"
         app:riv_corner_radius="12dp"
         android:src="@drawable/yooseungho"
         android:scaleType="fitXY"
@@ -54,40 +53,40 @@
         app:layout_constraintBottom_toBottomOf="@+id/cover_photo"
         app:layout_constraintEnd_toEndOf="@+id/cover_photo" />
 
-    <ImageView
-        android:id="@+id/emoji"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="4dp"
-        android:src="@drawable/bland_emoji"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="@id/react_view"
-        app:layout_constraintStart_toStartOf="@+id/react_view"
-        app:layout_constraintTop_toTopOf="@+id/react_view" />
+<!--    <ImageView-->
+<!--        android:id="@+id/emoji"-->
+<!--        android:layout_width="24dp"-->
+<!--        android:layout_height="24dp"-->
+<!--        android:layout_marginStart="4dp"-->
+<!--        android:src="@drawable/bland_emoji"-->
+<!--        android:visibility="visible"-->
+<!--        app:layout_constraintBottom_toBottomOf="@id/react_view"-->
+<!--        app:layout_constraintStart_toStartOf="@+id/react_view"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/react_view" />-->
 
-    <TextView
-        android:id="@+id/emoji_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:fontFamily="@font/poppins_medium"
-        android:text="React"
-        android:textColor="@color/white"
-        android:textSize="10sp"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="@id/emoji"
-        app:layout_constraintStart_toEndOf="@+id/emoji"
-        app:layout_constraintTop_toTopOf="@+id/emoji" />
+<!--    <TextView-->
+<!--        android:id="@+id/emoji_txt"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="4dp"-->
+<!--        android:fontFamily="@font/poppins_medium"-->
+<!--        android:text="React"-->
+<!--        android:textColor="@color/white"-->
+<!--        android:textSize="10sp"-->
+<!--        android:visibility="visible"-->
+<!--        app:layout_constraintBottom_toBottomOf="@id/emoji"-->
+<!--        app:layout_constraintStart_toEndOf="@+id/emoji"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/emoji" />-->
 
     <TextView
         android:id="@+id/reacted_emoji"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:text="&#128522;"
+        android:text=""
         android:textColor="@color/white"
         android:textSize="12sp"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="@+id/react_view"
         app:layout_constraintStart_toStartOf="@+id/react_view"
         app:layout_constraintTop_toTopOf="@+id/react_view" />
@@ -99,8 +98,8 @@
         android:fontFamily="@font/poppins_medium"
         android:textColor="@color/white"
         android:textSize="10sp"
-        android:text="Reacted"
-        android:visibility="gone"
+        android:text="React"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="@id/react_view"
         app:layout_constraintEnd_toEndOf="@id/react_view"
         app:layout_constraintStart_toStartOf="@+id/react_view"
@@ -171,7 +170,7 @@
         app:layout_constraintTop_toTopOf="@+id/follow_view" />
 
     <TextView
-        android:id="@+id/image_detail"
+        android:id="@+id/post_detail"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -184,7 +183,7 @@
         app:layout_constraintTop_toBottomOf="@+id/user_photo" />
 
     <TextView
-        android:id="@+id/textView34"
+        android:id="@+id/tags_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -192,7 +191,7 @@
         android:text="#travel #time #firsttime #viral"
         android:textColor="#757476"
         android:textSize="10sp"
-        app:layout_constraintEnd_toEndOf="@+id/image_detail"
-        app:layout_constraintStart_toStartOf="@+id/image_detail"
-        app:layout_constraintTop_toBottomOf="@+id/image_detail" />
+        app:layout_constraintEnd_toEndOf="@+id/post_detail"
+        app:layout_constraintStart_toStartOf="@+id/post_detail"
+        app:layout_constraintTop_toBottomOf="@+id/post_detail" />
 </androidx.constraintlayout.widget.ConstraintLayout>
