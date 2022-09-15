@@ -7,7 +7,6 @@ import android.graphics.PorterDuff
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
@@ -17,29 +16,23 @@ import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.TypedArrayUtils.getText
-import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.ViewPagerAdapter
 import com.example.ulaugh.databinding.ActivityHomeBinding
 import com.example.ulaugh.model.PostShareInfo
 import com.example.ulaugh.model.ReactionDetails
 import com.example.ulaugh.utils.Constants
-import com.example.ulaugh.utils.Constants.TAG
 import com.example.ulaugh.utils.DecodeImage
 import com.example.ulaugh.utils.Helper
 import com.example.ulaugh.utils.SharePref
 import com.github.ybq.android.spinkit.SpinKitView
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.ktx.Firebase
 //import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -149,7 +142,7 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
                             if (it.isSuccessful) {
                                 Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show()
                                 databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid).child(imageUploadId)
-                                    .child(Constants.REACTION).child(imageUploadId).setValue(reaction)
+                                    .child(Constants.REACTION).child(FirebaseAuth.getInstance().currentUser!!.uid).setValue(reaction)
                             } else
                                 Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
                             dialog!!.dismiss()

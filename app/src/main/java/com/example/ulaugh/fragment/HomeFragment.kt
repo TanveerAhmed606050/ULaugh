@@ -1,5 +1,6 @@
 package com.example.ulaugh.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,14 +10,18 @@ import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.HomeAdapter
+import com.example.ulaugh.controller.CameraActivity
+import com.example.ulaugh.controller.ReactDetailActivity
 import com.example.ulaugh.databinding.FragmentHomeBinding
 import com.example.ulaugh.interfaces.OnClickListener
+import com.example.ulaugh.interfaces.PostClickListener
 import com.example.ulaugh.model.*
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.SharePref
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +31,7 @@ import javax.inject.Inject
 import kotlin.collections.ArrayList
 
 @AndroidEntryPoint
-class HomeFragment : Fragment(), OnClickListener {
+class HomeFragment : Fragment(), OnClickListener, PostClickListener {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private var postShareRef: DatabaseReference? = null
@@ -36,8 +41,8 @@ class HomeFragment : Fragment(), OnClickListener {
     @Inject
     lateinit var sharePref: SharePref
     private var homeList: ArrayList<HomeRecyclerViewItem> = ArrayList()
-    private var newsFeedList: ArrayList<HomeRecyclerViewItem.NewsFeed> = ArrayList()
-    private var postsList: ArrayList<HomeRecyclerViewItem.NewsFeed> = ArrayList()
+    private var newsFeedList: ArrayList<HomeRecyclerViewItem.SharePostData> = ArrayList()
+    private var postsList: ArrayList<HomeRecyclerViewItem.SharePostData> = ArrayList()
     private var googleAdsList: ArrayList<HomeRecyclerViewItem.GoogleAds> = ArrayList()
     private val friendsList: ArrayList<String> = ArrayList()
     private var suggestFriendsList: ArrayList<SuggestFriends> = ArrayList()
@@ -53,12 +58,12 @@ class HomeFragment : Fragment(), OnClickListener {
         setAdapter()
         CoroutineScope(Dispatchers.IO).launch {
             getFriends()
-            delay(700)
+            delay(500)
             getHomeData()
         }
         CoroutineScope(Dispatchers.Main).launch {
             binding.progressBar.visibility = View.VISIBLE
-            delay(1700)
+            delay(2000)
             getSuggestedFriends()
             binding.progressBar.visibility = View.GONE
         }
@@ -117,7 +122,7 @@ class HomeFragment : Fragment(), OnClickListener {
     private fun setAdapter() {
 //        binding.recyclerView.apply {
         binding.recyclerView.setHasFixedSize(true)
-        adapter = HomeAdapter(requireActivity(), homeList, this)
+        adapter = HomeAdapter(requireActivity(), homeList, this, this)
         binding.recyclerView.adapter = adapter
 //        }
     }
@@ -140,6 +145,11 @@ class HomeFragment : Fragment(), OnClickListener {
         allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
             .child(Constants.FRIENDS_REF).addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
+//                    Toast.makeText(
+//                        requireContext(),
+//                        "${snapshot.children.count()}",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
                     if (snapshot.hasChildren()) {
                         for (friendsSnap in snapshot.children) {
                             friendsList.add(friendsSnap.value.toString())
@@ -164,7 +174,8 @@ class HomeFragment : Fragment(), OnClickListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (postSnap in snapshot.children) {
 //                        val totalReactions = postSnap.child(Constants.FRIENDS_REF).childrenCount
-                        val userReaction = postSnap.child(Constants.FRIENDS_REF).child(FirebaseAuth.getInstance().currentUser!!.uid).value.toString()
+                        val userReaction = postSnap.child(Constants.FRIENDS_REF)
+                            .child(FirebaseAuth.getInstance().currentUser!!.uid).value.toString()
                         reactionsList.clear()
                         for (reactionItem in postSnap.child(Constants.FRIENDS_REF).children) {
                             val reactions =
@@ -173,7 +184,7 @@ class HomeFragment : Fragment(), OnClickListener {
                         }
 //                        val reactionDetail = ReactionDetail(totalReactions, reacted)
                         val post = postSnap.getValue(PostItem::class.java)
-                        val postItem = HomeRecyclerViewItem.NewsFeed(
+                        val postItem = HomeRecyclerViewItem.SharePostData(
                             post!!.firebase_id,
                             post.image_url,
                             post.description,
@@ -203,7 +214,7 @@ class HomeFragment : Fragment(), OnClickListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 suggestFriendsList.clear()
                 homeList.clear()
-                binding.progressBar.visibility = View.GONE
+//                binding.progressBar.visibility = View.GONE
                 for (userSnap in snapshot.children) {
                     val userData =
                         userSnap.getValue(SuggestFriends::class.java)
@@ -437,7 +448,6 @@ class HomeFragment : Fragment(), OnClickListener {
                                     val nextKey = lastKey.toInt() + 1
                                     mutableData.child("" + nextKey).value =
                                         suggestFriends.firebase_id
-
                                     // Set value and report transaction success
                                     return Transaction.success(mutableData)
                                 }
@@ -465,6 +475,28 @@ class HomeFragment : Fragment(), OnClickListener {
 
                 override fun onCancelled(error: DatabaseError) {}
             })
+    }
+
+    override fun onClick(post: Any, type: String) {
+        when (type) {
+            Constants.POST -> {
+                val intent = Intent(requireContext(), ReactDetailActivity::class.java)
+                intent.putExtra(Constants.POST, Gson().toJson(post))
+                requireContext().startActivity(intent)
+            }
+            Constants.REACTION -> {
+                requireContext().startActivity(Intent(requireContext(), CameraActivity::class.java))
+            }
+            Constants.PROFILE -> {
+                requireContext().startActivity(Intent(requireContext(), CameraActivity::class.java))
+//                val sharePostData = post as HomeRecyclerViewItem.SharePostData
+//                val transaction = parentFragmentManager.beginTransaction()
+//                transaction.replace(R.id.parent, ProfileFragment(sharePostData.firebase_id))
+//                transaction.disallowAddToBackStack()
+//                transaction.commit()
+
+            }
+        }
     }
 
 

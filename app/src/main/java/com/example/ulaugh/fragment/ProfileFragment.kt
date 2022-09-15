@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ProfileFragment : Fragment() {
+class ProfileFragment() : Fragment() {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
@@ -61,8 +61,6 @@ class ProfileFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             getProfileData()
         }
-
-
 //        postItems.add(PostItem(R.drawable.seokangjoon))
 //        postItems.add(PostItem(R.drawable.parkseojoon))
 //        postItems.add(PostItem(R.drawable.yooseungho))
@@ -124,16 +122,17 @@ class ProfileFragment : Fragment() {
         databaseReference.child(Firebase.auth.currentUser!!.uid)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    for (dataSnapshot in snapshot.children) {
-                        postItemsList.add(
-                            PostItem(
-                                dataSnapshot.key.toString(),
-                                dataSnapshot.child(Constants.DATE_TIME).value.toString(),
-                                dataSnapshot.child(Constants.DESCRIPTION).value.toString(),
-                                dataSnapshot.child(Constants.IMAGE_URL).value.toString(),
-                                dataSnapshot.child(Constants.TAGS_LIST).value.toString()
-                            )
-                        )
+                    for (postSnap in snapshot.children) {
+                        postItemsList.add(postSnap.getValue(PostItem::class.java)!!)
+//                        postItemsList.add(
+//                            PostItem(
+//                                dataSnapshot.key.toString(),
+//                                dataSnapshot.child(Constants.DATE_TIME).value.toString(),
+//                                dataSnapshot.child(Constants.DESCRIPTION).value.toString(),
+//                                dataSnapshot.child(Constants.IMAGE_URL).value.toString(),
+//                                dataSnapshot.child(Constants.TAGS_LIST).value.toString()
+//                            )
+//                        )
                     }
                     binding.progressBar.visibility = View.GONE
                     postsAdapter.notifyDataSetChanged()

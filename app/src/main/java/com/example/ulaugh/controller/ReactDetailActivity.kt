@@ -3,37 +3,42 @@ package com.example.ulaugh.controller
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.ReactAdapter
 import com.example.ulaugh.databinding.ActivityReactDetailBinding
+import com.example.ulaugh.model.HomeRecyclerViewItem
+import com.example.ulaugh.utils.Constants
+import com.example.ulaugh.utils.Helper
 import com.example.ulaugh.utils.SharePref
 import com.github.aachartmodel.aainfographics.aachartcreator.*
 import com.github.aachartmodel.aainfographics.aaoptionsmodel.AAMarker
 import com.github.aachartmodel.aainfographics.aaoptionsmodel.AAMarkerHover
 import com.github.aachartmodel.aainfographics.aaoptionsmodel.AAMarkerStates
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-//
-//AIzaSyD7beyPa91xzqE5NCBEoyl4XXhn5orj0Y4
 
 @AndroidEntryPoint
 class ReactDetailActivity : AppCompatActivity() {
     private var _binding: ActivityReactDetailBinding? = null
     private val binding get() = _binding!!
     private var state: CollapsingToolbarLayoutState? = null
+    private var postDetail: HomeRecyclerViewItem.SharePostData? = null
 
     private enum class CollapsingToolbarLayoutState {
         EXPANDED, COLLAPSED, INTERNEDIATE
     }
-//    private val authViewModel by activityViewModels<AuthViewModel>()
 
+    //    private val authViewModel by activityViewModels<AuthViewModel>()
     @Inject
-    lateinit var tokenManager: SharePref
+    lateinit var sharePref: SharePref
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityReactDetailBinding.inflate(layoutInflater)
@@ -53,7 +58,25 @@ class ReactDetailActivity : AppCompatActivity() {
         setAppBar()
     }
 
-    private fun initViews(){
+    private fun initViews() {
+        if (intent != null)
+            postDetail =
+                Gson().fromJson(
+                    intent.getStringExtra(Constants.POST),
+                    object : TypeToken<HomeRecyclerViewItem.SharePostData>() {}.type
+                )
+        if (postDetail != null){
+            Glide.with(this)
+                .load(postDetail!!.image_url)
+                .centerCrop()
+                .fitCenter()
+                .thumbnail(0.3f)
+                .placeholder(R.drawable.seokangjoon)
+                .into(binding.profileIv)
+            binding.included.postDetail.text = postDetail!!.description
+            binding.included.trendingTv.text = postDetail!!.tagsList
+            binding.countReact.text = Helper.prettyCount(postDetail!!.reaction!!.size)
+        }
         binding.emoji.text = "U+1F970 U+1F602 U+1F92A"
     }
 
@@ -136,7 +159,13 @@ class ReactDetailActivity : AppCompatActivity() {
 //                    binding.hideShowAppbar.visibility = View.VISIBLE
 //                    binding.toolbarImage.setImageResource(R.drawable.ic_lock_lock)
                     binding.toolbar.title = "google"
-                    binding.toolbarImage.background = getDrawable(R.drawable.seokangjoon)
+                    Glide.with(this)
+                        .load(postDetail!!.image_url)
+                        .centerCrop()
+                        .fitCenter()
+                        .thumbnail(0.3f)
+                        .placeholder(R.drawable.seokangjoon)
+                        .into(binding.profileIv)
                     state =
                         CollapsingToolbarLayoutState.COLLAPSED
                     //                        danmakuView.pause()

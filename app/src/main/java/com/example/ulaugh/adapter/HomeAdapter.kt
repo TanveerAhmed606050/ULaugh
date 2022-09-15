@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.bumptech.glide.Glide
@@ -17,7 +16,9 @@ import com.example.ulaugh.databinding.AdapterHomeFlistBinding
 import com.example.ulaugh.databinding.ItemGoogleAdBinding
 import com.example.ulaugh.databinding.ItemMainBinding
 import com.example.ulaugh.interfaces.OnClickListener
+import com.example.ulaugh.interfaces.PostClickListener
 import com.example.ulaugh.model.HomeRecyclerViewItem
+import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Constants.TAG
 import com.example.ulaugh.utils.Helper
 import com.google.android.gms.ads.*
@@ -25,7 +26,8 @@ import com.google.android.gms.ads.*
 class HomeAdapter(
     val context: Context,
     private val itemsList: ArrayList<HomeRecyclerViewItem>,
-    val onClickListener: OnClickListener
+    private val onClickListener: OnClickListener,
+    private val onPostClickListener: PostClickListener
 ) :
     RecyclerView.Adapter<HomeAdapter.HomeRecyclerViewHolder>() {
 //    var items = listOf<HomeRecyclerViewItem>()
@@ -68,8 +70,9 @@ class HomeAdapter(
                 itemsList[position] as HomeRecyclerViewItem.GoogleAds
             )
             is HomeRecyclerViewHolder.NewsViewHolder -> holder.bind(
+                onPostClickListener,
                 context,
-                itemsList[position] as HomeRecyclerViewItem.NewsFeed
+                itemsList[position] as HomeRecyclerViewItem.SharePostData
             )
             is HomeRecyclerViewHolder.FriendsViewHolder -> holder.bind(
                 context,
@@ -84,7 +87,7 @@ class HomeAdapter(
     override fun getItemViewType(position: Int): Int {
         return when (itemsList[position]) {
             is HomeRecyclerViewItem.GoogleAds -> R.layout.item_google_ad
-            is HomeRecyclerViewItem.NewsFeed -> R.layout.item_main
+            is HomeRecyclerViewItem.SharePostData -> R.layout.item_main
             is HomeRecyclerViewItem.SuggestList -> R.layout.adapter_home_flist
             else -> {
                 Log.d("", "error")
@@ -97,7 +100,11 @@ class HomeAdapter(
 
         class NewsViewHolder(private val binding: ItemMainBinding) :
             HomeRecyclerViewHolder(binding) {
-            fun bind(context: Context, post: HomeRecyclerViewItem.NewsFeed) {
+            fun bind(
+                onClickListener: PostClickListener,
+                context: Context,
+                post: HomeRecyclerViewItem.SharePostData
+            ) {
                 Glide.with(context)
                     .load(post.image_url)
                     .centerCrop()
@@ -111,16 +118,19 @@ class HomeAdapter(
 
                 val date = Helper.convertToLocal(post.date_time)
                 binding.timeTv.text = Helper.covertTimeToText(date)
-                binding.reactCount.text = "${Helper.prettyCount(post.reaction!!.size)}"
-                if (post.user_react!!.isNotEmpty()) {
+                binding.reactCount.text = Helper.prettyCount(post.reaction!!.size)
+                if (post.user_react != null) {
                     binding.reactedTxt.text = "Reacted"
                     binding.reactedEmoji.text = post.user_react
                 }
                 binding.coverPhoto.setOnClickListener {
-                    context.startActivity(Intent(context, ReactDetailActivity::class.java))
+                    onClickListener.onClick(post, Constants.POST)
                 }
                 binding.reactView.setOnClickListener {
-                    context.startActivity(Intent(context, CameraActivity::class.java))
+                    onClickListener.onClick(post, Constants.REACTION)
+                }
+                binding.userPhoto.setOnClickListener {
+                    onClickListener.onClick(post, Constants.PROFILE)
                 }
 //                binding.coverPhoto.setImageResource(R.drawable.seokangjoon)
 //                binding.emoji.text = String(Character.toChars(0x1F60A))

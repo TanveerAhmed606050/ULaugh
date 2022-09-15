@@ -2,7 +2,7 @@ package com.example.ulaugh.model
 
 sealed class HomeRecyclerViewItem {
 
-    data class NewsFeed(
+    data class SharePostData(
         val firebase_id: String = "",
         val image_url: String = "",
         val description: String = "",
@@ -11,7 +11,7 @@ sealed class HomeRecyclerViewItem {
         val full_name: String = "",
         val tagsList: String = "",
         var reaction: ArrayList<Reactions>? = null,
-        var user_react: String? = null
+        var user_react: String? = null,
     ) : HomeRecyclerViewItem()
 
     data class GoogleAds(
