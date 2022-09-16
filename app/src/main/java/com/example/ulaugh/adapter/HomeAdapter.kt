@@ -119,7 +119,7 @@ class HomeAdapter(
                 val date = Helper.convertToLocal(post.date_time)
                 binding.timeTv.text = Helper.covertTimeToText(date)
                 binding.reactCount.text = Helper.prettyCount(post.reaction!!.size)
-                if (post.user_react != null) {
+                if (post.user_react != "null") {
                     binding.reactedTxt.text = "Reacted"
                     binding.reactedEmoji.text = post.user_react
                 }

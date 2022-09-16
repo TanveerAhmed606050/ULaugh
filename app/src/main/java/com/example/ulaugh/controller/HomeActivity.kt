@@ -3,6 +3,8 @@ package com.example.ulaugh.controller
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.PorterDuff
 import android.media.MediaPlayer
 import android.net.Uri
@@ -63,6 +65,7 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
     private var postBtn: AppCompatButton? = null
     private var container_ll: LinearLayout? = null
     private var imageUri: Uri? = null
+    private var mediaTypeRaw = ""
 
     //    private val storagePath = "All_Image_Uploads/"
     var storageRef: StorageReference? = null
@@ -73,7 +76,7 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
     var userId = ""
     var userName = ""
     var fullName = ""
-    var reaction: ReactionDetails? = null
+//    var reaction: ReactionDetails? = null
 
     //    var tags: String? = null
     @Inject
@@ -118,8 +121,12 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
     }
 
     private fun sharePost(tagsList: String, time: String) {
-        storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
-            .child("${System.currentTimeMillis()}.png")
+        if (mediaTypeRaw.startsWith("image"))
+            storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                .child("${System.currentTimeMillis()}.png")
+        else
+            storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                .child("${System.currentTimeMillis()}.mp4")
         storageRef!!.putFile(imageUri!!).addOnSuccessListener { taskSnapshot ->
             if (taskSnapshot.metadata != null) {
                 val taskUrl = storageRef!!.downloadUrl
@@ -133,16 +140,21 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
                         userName,
                         fullName,
                         tagsList,
-                        Constants.REACTION
+                        Constants.REACTION,
+                        mediaTypeRaw
                     )
                     val imageUploadId = databaseReference.push().key
 
-                    databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid).child(imageUploadId!!).setValue(shareInfo)
+                    databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                        .child(imageUploadId!!).setValue(shareInfo)
                         .addOnCompleteListener {
                             if (it.isSuccessful) {
                                 Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show()
-                                databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid).child(imageUploadId)
-                                    .child(Constants.REACTION).child(FirebaseAuth.getInstance().currentUser!!.uid).setValue(reaction)
+                                databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                    .child(imageUploadId)
+                                    .child(Constants.REACTION)
+                                    .child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                    .setValue("")
                             } else
                                 Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
                             dialog!!.dismiss()
@@ -271,12 +283,12 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
             description = descriptionEt.text.toString()
             tagList = tagEt.text.toString()
             if (description == null || tagList.isEmpty() || imageUri == null) {
-                Toast.makeText(this, "Enter Required Fields", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Required Fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             val time = localToGMT()
             CoroutineScope(Dispatchers.IO).launch {
-                reaction = ReactionDetails(FirebaseAuth.getInstance().currentUser!!.uid, "")
+//                reaction = ReactionDetails(FirebaseAuth.getInstance().currentUser!!.uid, "")
                 sharePost(tagList, time)
             }
         }
@@ -307,14 +319,16 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
 
                 val data: Intent = it.data!!
                 imageUri = data.data
-                val mediaTypeRaw = contentResolver.getType(imageUri!!)
-                if (mediaTypeRaw?.startsWith("image") == true) {
+                mediaTypeRaw = contentResolver.getType(imageUri!!)!!
+                if (mediaTypeRaw.startsWith("image")) {
                     photoView.setImageURI(imageUri)
+//                    mediaTypeRaw = "image"
                     CoroutineScope(Dispatchers.IO).launch {
                         imageUri = DecodeImage.compressImage(imageUri!!, this@HomeActivity)
                     }
                 }
-                if (mediaTypeRaw?.startsWith("video") == true)
+                if (mediaTypeRaw.startsWith("video"))
+//                    mediaTypeRaw = "video"
                     videoChooser(imageUri!!)
             }
         }

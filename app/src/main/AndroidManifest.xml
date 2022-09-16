@@ -20,7 +20,7 @@
         android:theme="@style/NoActionBar"
         tools:targetApi="31">
         <activity
-            android:name=".ProfileDetailActivity"
+            android:name=".controller.ProfileDetailActivity"
             android:exported="false" />
         <activity
             android:name=".controller.CameraActivity"

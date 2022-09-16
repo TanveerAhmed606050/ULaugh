@@ -58,8 +58,10 @@ class ProfileFragment() : Fragment() {
         initViews()
         createBlurImage()
         clickListener()
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.Main).launch {
+            binding.progressBar.visibility = View.VISIBLE
             getProfileData()
+            binding.progressBar.visibility = View.GONE
         }
 //        postItems.add(PostItem(R.drawable.seokangjoon))
 //        postItems.add(PostItem(R.drawable.parkseojoon))
@@ -95,33 +97,34 @@ class ProfileFragment() : Fragment() {
                 .load(url)
                 .centerCrop()
                 .fitCenter()
-                .thumbnail(0.3f)
+                .thumbnail()
+                .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 4)))
                 .placeholder(R.drawable.seokangjoon)
                 .into(binding.coverIv)
         }
         binding.nameTv.text = fullName
         binding.idTv.text = "@$userName"
-        if (sharePref.readBoolean(Constants.IS_PRIVATE, false)){
+        if (sharePref.readBoolean(Constants.IS_PRIVATE, false)) {
             binding.lockLogo.visibility = View.VISIBLE
             binding.textView20.visibility = View.VISIBLE
             binding.textView21.visibility = View.VISIBLE
-        }else{
+        } else {
             binding.lockLogo.visibility = View.GONE
             binding.textView20.visibility = View.GONE
             binding.textView21.visibility = View.GONE
 
         }
-            binding.rv.layoutManager =
-                StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-            postsAdapter = PostsAdapter(requireActivity(), postItemsList)
-            binding.rv.adapter = postsAdapter
+        binding.rv.layoutManager =
+            StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        postsAdapter = PostsAdapter(requireActivity(), postItemsList)
+        binding.rv.adapter = postsAdapter
     }
 
     private fun getProfileData() {
-        binding.progressBar.visibility = View.VISIBLE
         databaseReference.child(Firebase.auth.currentUser!!.uid)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
+                    postItemsList.clear()
                     for (postSnap in snapshot.children) {
                         postItemsList.add(postSnap.getValue(PostItem::class.java)!!)
 //                        postItemsList.add(
@@ -134,7 +137,7 @@ class ProfileFragment() : Fragment() {
 //                            )
 //                        )
                     }
-                    binding.progressBar.visibility = View.GONE
+                    binding.postTv.text = "${postItemsList.size}"
                     postsAdapter.notifyDataSetChanged()
                 }
 
@@ -151,9 +154,8 @@ class ProfileFragment() : Fragment() {
 
     private fun createBlurImage() {
         //Get seekBar progress
-        Glide.with(this).load(R.drawable.seokangjoon)
-            .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 4)))
-            .into(binding.coverIv)
+//        Glide.with(this).load(R.drawable.seokangjoon)
+//            .into(binding.coverIv)
     }
 
     private fun clickListener() {

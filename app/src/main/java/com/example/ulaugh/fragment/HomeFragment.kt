@@ -11,6 +11,7 @@ import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.HomeAdapter
 import com.example.ulaugh.controller.CameraActivity
+import com.example.ulaugh.controller.ProfileDetailActivity
 import com.example.ulaugh.controller.ReactDetailActivity
 import com.example.ulaugh.databinding.FragmentHomeBinding
 import com.example.ulaugh.interfaces.OnClickListener
@@ -56,13 +57,11 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 
         MobileAds.initialize(activity!!) {}
         setAdapter()
-        CoroutineScope(Dispatchers.IO).launch {
-            getFriends()
-            delay(500)
-            getHomeData()
-        }
         CoroutineScope(Dispatchers.Main).launch {
             binding.progressBar.visibility = View.VISIBLE
+            getFriends()
+//            delay(600)
+//            getHomeData()
             delay(2000)
             getSuggestedFriends()
             binding.progressBar.visibility = View.GONE
@@ -154,6 +153,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                         for (friendsSnap in snapshot.children) {
                             friendsList.add(friendsSnap.value.toString())
                         }
+                        getHomeData()
                     } else {
                         Toast.makeText(requireContext(), "No friends", Toast.LENGTH_SHORT).show()
                     }
@@ -488,7 +488,10 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                 requireContext().startActivity(Intent(requireContext(), CameraActivity::class.java))
             }
             Constants.PROFILE -> {
-                requireContext().startActivity(Intent(requireContext(), CameraActivity::class.java))
+                val postData = post as HomeRecyclerViewItem.SharePostData
+                val intent = Intent(requireContext(), ProfileDetailActivity::class.java)
+                intent.putExtra(Constants.FIREBASE_ID, postData.firebase_id)
+                requireContext().startActivity(intent)
 //                val sharePostData = post as HomeRecyclerViewItem.SharePostData
 //                val transaction = parentFragmentManager.beginTransaction()
 //                transaction.replace(R.id.parent, ProfileFragment(sharePostData.firebase_id))

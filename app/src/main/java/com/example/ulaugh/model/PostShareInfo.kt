@@ -8,7 +8,8 @@ data class PostShareInfo(
     val user_name:String,
     val full_name:String,
     val tagsList: String,
-    val reaction:String
+    val reaction:String,
+    val media_type:String
 )
 
 data class TagsInfo(val tags: String)
