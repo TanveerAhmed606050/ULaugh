@@ -78,4 +78,7 @@
     <string name="search">Search</string>
     <string name="default_notification_channel_id">sadgsda</string>
     <string name="msg_token_fmt">lsadjg</string>
+    <string name="faceless">No face detected</string>
+    <string name="face">Face</string>
+
 </resources>

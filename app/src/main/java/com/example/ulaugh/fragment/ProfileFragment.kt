@@ -14,6 +14,7 @@ import com.example.ulaugh.R
 import com.example.ulaugh.adapter.PostsAdapter
 import com.example.ulaugh.controller.SettingActivity
 import com.example.ulaugh.databinding.FragmentProfileBinding
+import com.example.ulaugh.interfaces.PostClickListener
 import com.example.ulaugh.model.PostItem
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.SharePref
@@ -28,7 +29,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ProfileFragment() : Fragment() {
+class ProfileFragment() : Fragment(), PostClickListener {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
@@ -54,9 +55,7 @@ class ProfileFragment() : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         initViews()
-        createBlurImage()
         clickListener()
         CoroutineScope(Dispatchers.Main).launch {
             binding.progressBar.visibility = View.VISIBLE
@@ -89,7 +88,7 @@ class ProfileFragment() : Fragment() {
                 .load(url)
                 .centerCrop()
                 .fitCenter()
-                .thumbnail(0.3f)
+                .thumbnail()
                 .placeholder(R.drawable.seokangjoon)
                 .into(binding.profileIv)
 
@@ -108,15 +107,16 @@ class ProfileFragment() : Fragment() {
             binding.lockLogo.visibility = View.VISIBLE
             binding.textView20.visibility = View.VISIBLE
             binding.textView21.visibility = View.VISIBLE
+            binding.rv.visibility = View.GONE
         } else {
             binding.lockLogo.visibility = View.GONE
             binding.textView20.visibility = View.GONE
             binding.textView21.visibility = View.GONE
-
+            binding.rv.visibility = View.VISIBLE
         }
         binding.rv.layoutManager =
             StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        postsAdapter = PostsAdapter(requireActivity(), postItemsList)
+        postsAdapter = PostsAdapter(requireActivity(), postItemsList, this)
         binding.rv.adapter = postsAdapter
     }
 
@@ -152,20 +152,22 @@ class ProfileFragment() : Fragment() {
             })
     }
 
-    private fun createBlurImage() {
-        //Get seekBar progress
-//        Glide.with(this).load(R.drawable.seokangjoon)
-//            .into(binding.coverIv)
-    }
-
     private fun clickListener() {
         binding.menuIv.setOnClickListener {
             startActivity(Intent(context, SettingActivity::class.java))
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    override fun onClick(post: Any, type: String) {
+
     }
 }

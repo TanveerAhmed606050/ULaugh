@@ -258,8 +258,7 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
 
     private fun setupFullHeight(bottomSheet: View) {
         val layoutParams = bottomSheet.layoutParams
-        layoutParams.height = (resources.displayMetrics.heightPixels * 0.85).toInt()
-
+        layoutParams.height = (resources.displayMetrics.heightPixels * 0.90).toInt()
         bottomSheet.layoutParams = layoutParams
     }
 

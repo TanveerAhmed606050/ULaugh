@@ -36,16 +36,6 @@
         app:layout_constraintStart_toStartOf="@+id/react_iv"
         app:layout_constraintTop_toBottomOf="@+id/react_iv" />
 
-<!--    <View-->
-<!--        android:id="@+id/view3"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:layout_marginTop="20dp"-->
-<!--        android:background="@color/green"-->
-<!--        app:layout_constraintEnd_toEndOf="@+id/react_iv"-->
-<!--        app:layout_constraintStart_toStartOf="@+id/react_iv"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/react_detail" />-->
-
     <TextView
         android:id="@+id/scan_btn"
         android:layout_width="wrap_content"

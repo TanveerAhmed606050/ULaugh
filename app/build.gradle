@@ -29,6 +29,10 @@ android {
     buildFeatures {
         viewBinding true
     }
+    aaptOptions {
+        noCompress "tflite"
+        noCompress "lite"
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -49,10 +53,14 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads-lite:21.1.0'
     implementation 'androidx.camera:camera-view:1.1.0'
     implementation 'androidx.camera:camera-lifecycle:1.1.0'
-    implementation 'com.google.firebase:firebase-messaging:23.0.8'
+//    implementation 'com.google.firebase:firebase-messaging:23.0.8'
     implementation 'com.google.firebase:firebase-core:21.1.1'
     implementation 'androidx.browser:browser:1.4.0'
-//    implementation 'com.google.firebase:firebase-ml-vision:17.0.0'
+    //ml libraries
+    implementation 'com.google.firebase:firebase-ml-vision:24.0.3'
+    implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+
     def hilt_version="2.42"
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"

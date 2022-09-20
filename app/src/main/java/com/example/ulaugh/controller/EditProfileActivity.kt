@@ -75,8 +75,15 @@ class EditProfileActivity : AppCompatActivity() {
             finish()
         }
         val url = sharePref.readString(PROFILE_PIC, "")
-        if (url!!.isNotEmpty())
-            Glide.with(this).load(url).into(binding.profileIv)
+        Glide.with(this)
+            .load(url)
+            .centerCrop()
+            .fitCenter()
+            .thumbnail()
+            .placeholder(R.drawable.seokangjoon)
+            .into(binding.profileIv)
+//        if (url!!.isNotEmpty())
+//            Glide.with(this).load(url).into(binding.profileIv)
         binding.nameTv.text = sharePref.readString(FULL_NAME, "")
         binding.statusTv.text = "@${sharePref.readString(USER_NAME, "")}"
         binding.userName.setText(sharePref.readString(USER_NAME, ""))

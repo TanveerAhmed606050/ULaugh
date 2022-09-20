@@ -1,340 +1,356 @@
 package com.example.ulaugh.controller
 
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.database.Cursor
 import android.graphics.*
-import android.graphics.drawable.Drawable
-import android.media.ExifInterface
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import android.view.View
-import android.view.Window
-import android.view.WindowManager
+import android.util.Pair
+import android.widget.ExpandableListView
+import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.view.isVisible
 import com.example.ulaugh.R
 import com.example.ulaugh.databinding.ActivityCameraBinding
-import com.example.ulaugh.utils.Constants.FILENAME_FORMAT
-import com.example.ulaugh.utils.Constants.REQUEST_CODE_PERMISSIONS
-import com.example.ulaugh.utils.Constants.REQUIRED_PERMISSIONS
-import com.example.ulaugh.utils.Constants.TAG
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import java.io.*
+import com.example.ulaugh.ml.ImageUtils
+import com.example.ulaugh.ml.SortingHelper
+import com.example.ulaugh.ml.TFLiteImageClassifier
+import com.google.firebase.database.core.view.Change
+import com.google.firebase.database.core.view.View
+import com.google.firebase.ml.vision.FirebaseVision
+import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
+import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
-
-class CameraActivity : AppCompatActivity(), View.OnClickListener {
+@AndroidEntryPoint
+class CameraActivity : AppCompatActivity() {
     private var _binding: ActivityCameraBinding? = null
     private val binding get() = _binding!!
-    private lateinit var cameraProvider: ProcessCameraProvider
-    private var imageCapture: ImageCapture? = null
-    private lateinit var outputDirectory: File
-    var imageUri: Uri? = null
-    private var cameraSelector: CameraSelector? = null
-    private var isFront = false
+    private val MODEL_FILE_NAME = "simple_classifier.tflite"
+    private val SCALED_IMAGE_BIGGEST_SIZE = 480
+    private var mClassifier: TFLiteImageClassifier? = null
+    private var mImageView: ImageView? = null
+    private var mClassificationResult: HashMap<String, ArrayList<Pair<String, String>>>? = null
+    lateinit var photoFile: File
+    private var currentPhotoPath = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        fullScreen()
-        if (allPermissionsGranted()) {
-            startCamera(isFront)
-        } else {
-            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
-        }
-        binding.cameraOk.setOnClickListener(this)
-        binding.flipCamera.setOnClickListener(this)
-        outputDirectory = getOutputDirectory()
-    }
-
-    private fun startCamera(isFront: Boolean) {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
-        cameraProviderFuture.addListener({
-            cameraProvider = cameraProviderFuture.get()
-            val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(binding.preview.surfaceProvider)
-                }
-            imageCapture = ImageCapture.Builder().build()
-            CameraSelector.DEFAULT_FRONT_CAMERA
-            try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector!!, preview, imageCapture
-                )
-            } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
-            }
-        }, ContextCompat.getMainExecutor(this))
-    }
-
-    private fun takePhoto(): Boolean {
-        val imageCapture = imageCapture ?: return false
-
-        val photoFile = File(
-            outputDirectory,
-            SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis()) + ".jpg"
+        mClassifier = TFLiteImageClassifier(
+            this.assets,
+            MODEL_FILE_NAME,
+            resources.getStringArray(R.array.emotions)
         )
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-        imageCapture.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(this),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-                    return
-                }
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    imageUri = Uri.fromFile(photoFile)
-                    val imageUri = compressImage(imageUri.toString())
-//                    val stream: InputStream? = contentResolver.openInputStream(imageUri!!)
-//                    val yourDrawable = Drawable.createFromStream(stream, imageUri!!.toString())
-//                    binding.captureIv.background = yourDrawable
-//                    if (photoFile.exists()) {
-//                        if (photoFile.delete()) {
-//                            println("file Deleted :$photoFile")
-//                        } else {
-//                            println("file not Deleted :$photoFile")
-//                        }
-//                    }
-                    val msg = "Photo capture succeeded: $imageUri"
-                    Log.d(TAG, msg)
-                }
-            })
-        return true
+
+        mClassificationResult = LinkedHashMap()
+
+        mImageView = findViewById(R.id.image_view)
+        takePicture()
+//        binding.cameraOk.setOnClickListener({ takePicture() })
+
+
+//        fullScreen()
+//        if (allPermissionsGranted()) {
+//            startCamera(isFront)
+//        } else {
+//            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+//        }
+//        binding.cameraOk.setOnClickListener(this)
+//        binding.flipCamera.setOnClickListener(this)
+//        outputDirectory = getOutputDirectory()
     }
 
-    // creates a folder inside internal storage
-    private fun getOutputDirectory(): File {
-        val mediaDir = externalMediaDirs.firstOrNull()?.let {
-            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
-        }
-        return if (mediaDir != null && mediaDir.exists())
-            mediaDir else filesDir
+    // Function to create an intent to take a photo
+    private fun takePicture() {
+        val pictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        photoFile = createImageFile()
+        val uri =
+            FileProvider.getUriForFile(this, "com.example.ulaugh.fileprovider", photoFile)
+        pictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+        resultLauncher.launch(pictureIntent)
+//        startActivityForResult(pictureIntent, 100)
     }
 
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults:
-        IntArray
-    ) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                startCamera(isFront)
-            } else {
-                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT)
-                    .show()
-                finish()
-            }
-        }
-    }
-
-    private fun fullScreen() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            val window: Window = window
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            )
-        }
+    // Create a temporary file for the image
+    private fun createImageFile(): File {
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
+            .apply { currentPhotoPath = absolutePath }
+//        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir).apply
+//        { currentPhotoPath = absolutePath }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        _binding = null
-    }
-
-    override fun onClick(view: View?) {
-        when (view?.id) {
-            R.id.camera_ok -> {
-                if (takePhoto()) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        delay(2000L)
-                        startActivity(Intent(this@CameraActivity, UserReactActivity::class.java))
-                        finish()
-                    }
-                }
-            }
-            R.id.flip_camera -> {
-                if (isFront) {
-                    isFront = false
-                    startCamera(isFront)
-                } else {
-                    isFront = true
-                    startCamera(isFront)
-                }
-            }
+        mClassifier!!.close()
+        val picturesDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        for (tempFile in picturesDir!!.listFiles()!!) {
+            tempFile.delete()
         }
     }
+    private var resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                // There are no request codes
 
-    fun compressImage(imageUri: String): String? {
-        val filePath = getRealPathFromURI(imageUri)
-        var scaledBitmap: Bitmap? = null
-        val options = BitmapFactory.Options()
-
-//      by setting this field as true, the actual bitmap pixels are not loaded in the memory. Just the bounds are loaded. If
-//      you try the use the bitmap here, you will get null.
-        options.inJustDecodeBounds = true
-        var bmp = BitmapFactory.decodeFile(filePath, options)
-        var actualHeight = options.outHeight
-        var actualWidth = options.outWidth
-
-//      max Height and width values of the compressed image is taken as 816x612
-        val maxHeight = 816.0f
-        val maxWidth = 612.0f
-        var imgRatio = (actualWidth / actualHeight).toFloat()
-        val maxRatio = maxWidth / maxHeight
-
-//      width and height values are set maintaining the aspect ratio of the image
-        if (actualHeight > maxHeight || actualWidth > maxWidth) {
-            if (imgRatio < maxRatio) {
-                imgRatio = maxHeight / actualHeight
-                actualWidth = (imgRatio * actualWidth).toInt()
-                actualHeight = maxHeight.toInt()
-            } else if (imgRatio > maxRatio) {
-                imgRatio = maxWidth / actualWidth
-                actualHeight = (imgRatio * actualHeight).toInt()
-                actualWidth = maxWidth.toInt()
-            } else {
-                actualHeight = maxHeight.toInt()
-                actualWidth = maxWidth.toInt()
+                val imageUri =
+                    FileProvider.getUriForFile(this, "com.example.ulaugh.fileprovider", photoFile)
+                processImageRequestResult(imageUri)
+//                val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
             }
         }
 
-//      setting inSampleSize value allows to load a scaled down version of the original image
-        options.inSampleSize = calculateInSampleSize(options, actualWidth, actualHeight)
+    // Function to handle successful new image acquisition
+    private fun processImageRequestResult(resultImageUri: Uri) {
+        val scaledResultImageBitmap = getScaledImageBitmap(resultImageUri)
+        mImageView!!.setImageBitmap(scaledResultImageBitmap)
 
-//      inJustDecodeBounds set to false to load the actual bitmap
-        options.inJustDecodeBounds = false
+        // Clear the result of a previous classification
+        mClassificationResult!!.clear()
+        setCalculationStatusUI(true)
+        detectFaces(scaledResultImageBitmap)
+    }
 
-//      this options allow android to claim the bitmap memory if it runs low on memory
-        options.inPurgeable = true
-        options.inInputShareable = true
-        options.inTempStorage = ByteArray(16 * 1024)
+    private fun getScaledImageBitmap(imageUri: Uri): Bitmap {
+        var scaledImageBitmap: Bitmap? = null
         try {
-//          load the bitmap from its path
-            bmp = BitmapFactory.decodeFile(filePath, options)
-        } catch (exception: OutOfMemoryError) {
-            exception.printStackTrace()
-        }
-        try {
-            scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888)
-        } catch (exception: OutOfMemoryError) {
-            exception.printStackTrace()
-        }
-        val ratioX = actualWidth / options.outWidth.toFloat()
-        val ratioY = actualHeight / options.outHeight.toFloat()
-        val middleX = actualWidth / 2.0f
-        val middleY = actualHeight / 2.0f
-        val scaleMatrix = Matrix()
-        scaleMatrix.setScale(ratioX, ratioY, middleX, middleY)
-        val canvas = Canvas(scaledBitmap!!)
-        canvas.setMatrix(scaleMatrix)
-        canvas.drawBitmap(
-            bmp,
-            middleX - bmp.width / 2,
-            middleY - bmp.height / 2,
-            Paint(Paint.FILTER_BITMAP_FLAG)
-        )
-
-//      check the rotation of the image and display it properly
-        val exif: ExifInterface
-        try {
-            exif = ExifInterface(filePath!!)
-            val orientation: Int = exif.getAttributeInt(
-                ExifInterface.TAG_ORIENTATION, 0
+            val imageBitmap = MediaStore.Images.Media.getBitmap(
+                this.contentResolver,
+                imageUri
             )
-            Log.d("EXIF", "Exif: $orientation")
-            val matrix = Matrix()
-            if (orientation == 6) {
-                matrix.postRotate(90f)
-                Log.d("EXIF", "Exif: $orientation")
-            } else if (orientation == 3) {
-                matrix.postRotate(180f)
-                Log.d("EXIF", "Exif: $orientation")
-            } else if (orientation == 8) {
-                matrix.postRotate(270f)
-                Log.d("EXIF", "Exif: $orientation")
+            val scaledHeight: Int
+            val scaledWidth: Int
+
+            // How many times you need to change the sides of an image
+            val scaleFactor: Float
+
+            // Get larger side and start from exactly the larger side in scaling
+            if (imageBitmap.height > imageBitmap.width) {
+                scaledHeight = SCALED_IMAGE_BIGGEST_SIZE
+                scaleFactor = scaledHeight / imageBitmap.height.toFloat()
+                scaledWidth = (imageBitmap.width * scaleFactor).toInt()
+            } else {
+                scaledWidth = SCALED_IMAGE_BIGGEST_SIZE
+                scaleFactor = scaledWidth / imageBitmap.width.toFloat()
+                scaledHeight = (imageBitmap.height * scaleFactor).toInt()
             }
-            scaledBitmap = Bitmap.createBitmap(
-                scaledBitmap!!, 0, 0,
-                scaledBitmap.width, scaledBitmap.height, matrix,
+            scaledImageBitmap = Bitmap.createScaledBitmap(
+                imageBitmap,
+                scaledWidth,
+                scaledHeight,
                 true
+            )
+
+            // An image in memory can be rotated
+            scaledImageBitmap = ImageUtils.rotateToNormalOrientation(
+                contentResolver,
+                scaledImageBitmap,
+                imageUri
             )
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        var out: FileOutputStream? = null
-        val filename = getFilename()
-        try {
-            out = FileOutputStream(filename)
-
-//          write the compressed bitmap at the destination specified by filename.
-            scaledBitmap!!.compress(Bitmap.CompressFormat.JPEG, 80, out)
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-        }
-        return filename
+        return scaledImageBitmap!!
     }
 
-    private fun getFilename(): String? {
-        val file =
-            File(Environment.getExternalStorageDirectory().path, "MyFolder/Images")
-        if (!file.exists()) {
-            file.mkdirs()
-        }
-        return file.absolutePath + "/" + System.currentTimeMillis() + ".jpg"
+    private fun detectFaces(imageBitmap: Bitmap) {
+        val faceDetectorOptions = FirebaseVisionFaceDetectorOptions.Builder()
+            .setPerformanceMode(FirebaseVisionFaceDetectorOptions.ACCURATE)
+            .setLandmarkMode(FirebaseVisionFaceDetectorOptions.NO_LANDMARKS)
+            .setClassificationMode(FirebaseVisionFaceDetectorOptions.NO_CLASSIFICATIONS)
+            .setMinFaceSize(0.1f)
+            .build()
+        val faceDetector = FirebaseVision.getInstance()
+            .getVisionFaceDetector(faceDetectorOptions)
+        val firebaseImage = FirebaseVisionImage.fromBitmap(imageBitmap)
+        val result = faceDetector.detectInImage(firebaseImage)
+            .addOnSuccessListener { faces ->
+
+                // When the search for faces was successfully completed
+                val imageBitmap = firebaseImage.bitmap
+                // Temporary Bitmap for drawing
+                val tmpBitmap = Bitmap.createBitmap(
+                    imageBitmap.width,
+                    imageBitmap.height,
+                    imageBitmap.config
+                )
+
+                // Create an image-based canvas
+                val tmpCanvas = Canvas(tmpBitmap)
+                tmpCanvas.drawBitmap(
+                    imageBitmap, 0f, 0f,
+                    null
+                )
+                val paint = Paint()
+                paint.color = Color.GREEN
+                paint.strokeWidth = 2f
+                paint.textSize = 48f
+
+                // Coefficient for indentation of face number
+                val textIndentFactor = 0.1f
+
+                // If at least one face was found
+                if (!faces.isEmpty()) {
+                    // faceId ~ face text number
+                    var faceId = 1
+                    for (face in faces) {
+                        val faceRect: Rect = getInnerRect(
+                            face.boundingBox,
+                            imageBitmap.width,
+                            imageBitmap.height
+                        )!!
+
+                        // Draw a rectangle around a face
+                        paint.style = Paint.Style.STROKE
+                        tmpCanvas.drawRect(faceRect, paint)
+
+                        // Draw a face number in a rectangle
+                        paint.style = Paint.Style.FILL
+                        tmpCanvas.drawText(
+                            Integer.toString(faceId),
+                            faceRect.left +
+                                    faceRect.width() * textIndentFactor,
+                            faceRect.bottom -
+                                    faceRect.height() * textIndentFactor,
+                            paint
+                        )
+
+                        // Get subarea with a face
+                        val faceBitmap = Bitmap.createBitmap(
+                            imageBitmap,
+                            faceRect.left,
+                            faceRect.top,
+                            faceRect.width(),
+                            faceRect.height()
+                        )
+                        classifyEmotions(faceBitmap, faceId)
+                        faceId++
+                    }
+
+                    // Set the image with the face designations
+                    mImageView!!.setImageBitmap(tmpBitmap)
+
+                    // If single face, then immediately open the list
+                    Log.d("lsdagj", "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}")
+                    Toast.makeText(
+                        this@CameraActivity,
+                        mClassificationResult!!["Face 1"]?.get(0)!!.first,
+                        Toast.LENGTH_LONG
+                    ).show()
+//                    if (faces.size == 1) {
+//                        mClassificationExpandableListView!!.expandGroup(0)
+//                    }
+                    // If no faces are found
+                } else {
+                    Toast.makeText(
+                        this@CameraActivity,
+                        getString(R.string.faceless),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                setCalculationStatusUI(false)
+            }
+            .addOnFailureListener { e ->
+                e.printStackTrace()
+                setCalculationStatusUI(false)
+            }
     }
 
-    private fun getRealPathFromURI(contentURI: String): String? {
-        val contentUri = Uri.parse(contentURI)
-        val cursor: Cursor? = contentResolver.query(contentUri, null, null, null, null)
-        return if (cursor == null) {
-            contentUri.path
+    private fun classifyEmotions(imageBitmap: Bitmap, faceId: Int) {
+        val result = mClassifier!!.classify(imageBitmap, true)
+
+        // Sort by increasing probability
+        val sortedResult = SortingHelper.sortByValues(result) as LinkedHashMap<String?, Float>
+        val reversedKeys = ArrayList(sortedResult.keys)
+//         Change the order to get a decrease in probabilities
+        reversedKeys.reverse()
+        val faceGroup = ArrayList<Pair<String, String>>()
+        for (key in reversedKeys) {
+            val percentage = String.format("%.1f%%", sortedResult[key]!! * 100)
+            faceGroup.add(Pair(key, percentage))
+        }
+        val groupName = getString(R.string.face) + " " + faceId
+        mClassificationResult!!.put(groupName, faceGroup)
+    }
+
+    //Change the interface depending on the status of calculations
+    private fun setCalculationStatusUI(isCalculationRunning: Boolean) {
+        if (isCalculationRunning) {
+            binding.classificationProgressBar.visibility = ProgressBar.VISIBLE
         } else {
-            cursor.moveToFirst()
-            val index: Int = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
-            cursor.getString(index)
+            binding.classificationProgressBar.visibility = ProgressBar.INVISIBLE
         }
     }
 
-    fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-        val height = options.outHeight
-        val width = options.outWidth
-        var inSampleSize = 1
-        if (height > reqHeight || width > reqWidth) {
-            val heightRatio = Math.round(height.toFloat() / reqHeight.toFloat())
-            val widthRatio = Math.round(width.toFloat() / reqWidth.toFloat())
-            inSampleSize = if (heightRatio < widthRatio) heightRatio else widthRatio
+    private fun setEmotions(emotion:String){
+        when(emotion ) {
+            "angry" ->{
+                binding.reactDetail.text = "You're feeling angry"
+            }
+            "sad" ->{
+                binding.reactDetail.text = "You're so sad"
+            }
+            "happy" ->{
+                binding.reactDetail.text = "HAHA You're Happy"
+            }
+            "fear" ->{
+                binding.reactDetail.text = "You're in fear"
+            }
+            "surprise" ->{
+                binding.reactDetail.text = "You're surprising"
+            }
+            "neutral" ->{
+                binding.reactDetail.text = "Your expressions are emotionless"
+            }
+            "disgust" ->{
+                binding.reactDetail.text = "You're feeling disgusting"
+            }
         }
-        val totalPixels = (width * height).toFloat()
-        val totalReqPixelsCap = (reqWidth * reqHeight * 2).toFloat()
-        while (totalPixels / (inSampleSize * inSampleSize) > totalReqPixelsCap) {
-            inSampleSize++
-        }
-        return inSampleSize
     }
+
+    // Get a rectangle that lies inside the image area
+    private fun getInnerRect(rect: Rect, areaWidth: Int, areaHeight: Int): Rect {
+        val innerRect = Rect(rect)
+        if (innerRect.top < 0) {
+            innerRect.top = 0
+        }
+        if (innerRect.left < 0) {
+            innerRect.left = 0
+        }
+        if (rect.bottom > areaHeight) {
+            innerRect.bottom = areaHeight
+        }
+        if (rect.right > areaWidth) {
+            innerRect.right = areaWidth
+        }
+        return innerRect
+    }
+
+    private fun visibleViews(vararg views: android.view.View) {
+        for (v in views) {
+            v.visibility = android.view.View.VISIBLE
+        }
+    }
+
+    private fun invisibleViews(vararg views: android.view.View){
+        for (view in views)
+            view.visibility = android.view.View.GONE
+    }
+
 }

@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.example.ulaugh.R
 import com.example.ulaugh.controller.CameraActivity
 import com.example.ulaugh.controller.ReactDetailActivity
@@ -22,6 +23,7 @@ import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Constants.TAG
 import com.example.ulaugh.utils.Helper
 import com.google.android.gms.ads.*
+import jp.wasabeef.glide.transformations.BlurTransformation
 
 class HomeAdapter(
     val context: Context,
@@ -105,13 +107,6 @@ class HomeAdapter(
                 context: Context,
                 post: HomeRecyclerViewItem.SharePostData
             ) {
-                Glide.with(context)
-                    .load(post.image_url)
-                    .centerCrop()
-                    .fitCenter()
-                    .thumbnail(0.3f)
-                    .placeholder(R.drawable.seokangjoon)
-                    .into(binding.coverPhoto)
                 binding.nameTv.text = post.full_name
                 binding.postDetail.text = post.description
                 binding.tagsTv.text = post.tagsList
@@ -120,8 +115,24 @@ class HomeAdapter(
                 binding.timeTv.text = Helper.covertTimeToText(date)
                 binding.reactCount.text = Helper.prettyCount(post.reaction!!.size)
                 if (post.user_react != "null") {
+                    Glide.with(context)
+                        .load(post.image_url)
+                        .centerCrop()
+                        .fitCenter()
+                        .thumbnail()
+                        .placeholder(R.drawable.seokangjoon)
+                        .into(binding.coverPhoto)
                     binding.reactedTxt.text = "Reacted"
                     binding.reactedEmoji.text = post.user_react
+                }else{
+                    Glide.with(context)
+                        .load(post.image_url)
+                        .centerCrop()
+                        .fitCenter()
+                        .thumbnail()
+                        .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 4)))
+                        .placeholder(R.drawable.seokangjoon)
+                        .into(binding.coverPhoto)
                 }
                 binding.coverPhoto.setOnClickListener {
                     onClickListener.onClick(post, Constants.POST)

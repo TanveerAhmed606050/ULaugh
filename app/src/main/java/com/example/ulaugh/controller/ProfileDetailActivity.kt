@@ -9,24 +9,21 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.PostsAdapter
-import com.example.ulaugh.databinding.FragmentProfileBinding
-import com.example.ulaugh.model.HomeRecyclerViewItem
+import com.example.ulaugh.databinding.ActivityProfileDetailBinding
+import com.example.ulaugh.interfaces.PostClickListener
 import com.example.ulaugh.model.PostItem
 import com.example.ulaugh.model.UserRequest
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.SharePref
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.*
-import okhttp3.internal.wait
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ProfileDetailActivity : AppCompatActivity() {
-    private var _binding: FragmentProfileBinding? = null
+class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
+    private var _binding: ActivityProfileDetailBinding? = null
     private val binding get() = _binding!!
     private var profileData: UserRequest? = null
     private val postItemsList: MutableList<PostItem> = mutableListOf()
@@ -42,7 +39,7 @@ class ProfileDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _binding = FragmentProfileBinding.inflate(layoutInflater)
+        _binding = ActivityProfileDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initViews()
         clickHandle()
@@ -69,7 +66,7 @@ class ProfileDetailActivity : AppCompatActivity() {
 
         binding.rv.layoutManager =
             StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        postsAdapter = PostsAdapter(this, postItemsList)
+        postsAdapter = PostsAdapter(this, postItemsList, this)
         binding.rv.adapter = postsAdapter
 //        binding.backBtn.visibility = View.VISIBLE
     }
@@ -163,5 +160,9 @@ class ProfileDetailActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    override fun onClick(post: Any, type: String) {
+
     }
 }
