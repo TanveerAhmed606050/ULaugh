@@ -2,6 +2,9 @@ package com.example.ulaugh.ml;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+
+import com.example.ulaugh.interfaces.ClassifyBehavior;
+
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.gpu.GpuDelegate;
 

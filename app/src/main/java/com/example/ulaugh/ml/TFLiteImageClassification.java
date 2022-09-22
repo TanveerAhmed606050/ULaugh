@@ -1,5 +1,7 @@
 package com.example.ulaugh.ml;
 
+import com.example.ulaugh.interfaces.ClassifyBehavior;
+
 import org.tensorflow.lite.Interpreter;
 
 import java.util.Formatter;

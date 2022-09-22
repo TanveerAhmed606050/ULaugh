@@ -1,41 +1,40 @@
 package com.example.ulaugh.controller
 
-import android.content.Intent
+import android.Manifest
+import android.annotation.TargetApi
+import android.content.pm.PackageManager
 import android.graphics.*
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.util.Pair
-import android.widget.ExpandableListView
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
-import androidx.core.view.isVisible
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.ulaugh.R
 import com.example.ulaugh.databinding.ActivityCameraBinding
+import com.example.ulaugh.interfaces.PictureCapturingListener
 import com.example.ulaugh.ml.ImageUtils
 import com.example.ulaugh.ml.SortingHelper
 import com.example.ulaugh.ml.TFLiteImageClassifier
-import com.google.firebase.database.core.view.Change
-import com.google.firebase.database.core.view.View
+import com.example.ulaugh.service.APictureCapturingService
+import com.example.ulaugh.service.PictureCapturingServiceImpl
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 @AndroidEntryPoint
-class CameraActivity : AppCompatActivity() {
+class CameraActivity : AppCompatActivity(), PictureCapturingListener,
+    ActivityCompat.OnRequestPermissionsResultCallback {
     private var _binding: ActivityCameraBinding? = null
     private val binding get() = _binding!!
     private val MODEL_FILE_NAME = "simple_classifier.tflite"
@@ -46,10 +45,25 @@ class CameraActivity : AppCompatActivity() {
     lateinit var photoFile: File
     private var currentPhotoPath = ""
 
+    private val requiredPermissions = arrayOf(
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.CAMERA
+    )
+    private val MY_PERMISSIONS_REQUEST_ACCESS_CODE = 1
+
+    //The capture service
+    private var pictureService: APictureCapturingService? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        checkPermissions()
+        // getting instance of the Service from PictureCapturingServiceImpl
+        pictureService = PictureCapturingServiceImpl.getInstance(this)
+        showToast("Starting capture!")
+        pictureService!!.startCapturing(this)
 
         mClassifier = TFLiteImageClassifier(
             this.assets,
@@ -60,61 +74,61 @@ class CameraActivity : AppCompatActivity() {
         mClassificationResult = LinkedHashMap()
 
         mImageView = findViewById(R.id.image_view)
-        takePicture()
+//        takePicture()
 //        binding.cameraOk.setOnClickListener({ takePicture() })
 
 
 //        fullScreen()
-//        if (allPermissionsGranted()) {
-//            startCamera(isFront)
-//        } else {
-//            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
-//        }
+
 //        binding.cameraOk.setOnClickListener(this)
 //        binding.flipCamera.setOnClickListener(this)
 //        outputDirectory = getOutputDirectory()
     }
 
     // Function to create an intent to take a photo
-    private fun takePicture() {
-        val pictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        photoFile = createImageFile()
-        val uri =
-            FileProvider.getUriForFile(this, "com.example.ulaugh.fileprovider", photoFile)
-        pictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
-        resultLauncher.launch(pictureIntent)
-//        startActivityForResult(pictureIntent, 100)
-    }
+//    private fun takePicture() {
+//        val pictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//        photoFile = createImageFile()
+//        val uri =
+//            FileProvider.getUriForFile(this, "com.example.ulaugh.fileprovider", photoFile)
+//        pictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+//        resultLauncher.launch(pictureIntent)
+////        startActivityForResult(pictureIntent, 100)
+//    }
+//
+//    // Create a temporary file for the image
+//    private fun createImageFile(): File {
+//        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+//        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+//        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
+//            .apply { currentPhotoPath = absolutePath }
+////        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir).apply
+////        { currentPhotoPath = absolutePath }
+//    }
+//
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        mClassifier!!.close()
+//        val picturesDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+//        for (tempFile in picturesDir!!.listFiles()!!) {
+//            tempFile.delete()
+//        }
+//    }
+//    private var resultLauncher =
+//        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+//            if (result.resultCode == RESULT_OK) {
+//                // There are no request codes
+//
+//                val imageUri =
+//                    FileProvider.getUriForFile(this, "com.example.ulaugh.fileprovider", photoFile)
+//                processImageRequestResult(imageUri)
+////                val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
+//            }
+//        }
 
-    // Create a temporary file for the image
-    private fun createImageFile(): File {
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
-            .apply { currentPhotoPath = absolutePath }
-//        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir).apply
-//        { currentPhotoPath = absolutePath }
+    private fun showToast(text: String) {
+        runOnUiThread { Toast.makeText(this, text, Toast.LENGTH_SHORT).show() }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mClassifier!!.close()
-        val picturesDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        for (tempFile in picturesDir!!.listFiles()!!) {
-            tempFile.delete()
-        }
-    }
-    private var resultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                // There are no request codes
-
-                val imageUri =
-                    FileProvider.getUriForFile(this, "com.example.ulaugh.fileprovider", photoFile)
-                processImageRequestResult(imageUri)
-//                val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
-            }
-        }
 
     // Function to handle successful new image acquisition
     private fun processImageRequestResult(resultImageUri: Uri) {
@@ -340,6 +354,69 @@ class CameraActivity : AppCompatActivity() {
             innerRect.right = areaWidth
         }
         return innerRect
+    }
+
+    /**
+     * Displaying the pictures taken.
+     */
+    override fun onCaptureDone(pictureUrl: String?, pictureData: ByteArray?) {
+        if (pictureData != null && pictureUrl != null) {
+            runOnUiThread {
+//                val bitmap = BitmapFactory.decodeByteArray(pictureData, 0, pictureData.size)
+//                val nh = (bitmap.height * (512.0 / bitmap.width)).toInt()
+//                val scaled = Bitmap.createScaledBitmap(bitmap, 512, nh, true)
+
+                val target = File(pictureUrl)
+                val uri = Uri.parse(pictureUrl)
+                processImageRequestResult(uri)
+                //                Log.d(" target_path", "" + pictureUrl);
+                if (target.exists() && target.isFile && target.canWrite()) {
+//                    target.delete()
+                    Log.d("d_file", "" + target.name)
+                }
+            }
+            showToast("Picture saved to $pictureUrl")
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            MY_PERMISSIONS_REQUEST_ACCESS_CODE -> {
+                if (!(grantResults.isNotEmpty()
+                            && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                ) {
+//                    checkPermissions();
+                }
+            }
+        }
+    }
+
+    /**
+     * checking  permissions at Runtime.
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    private fun checkPermissions() {
+        val neededPermissions: ArrayList<String> = ArrayList()
+        for (permission in requiredPermissions) {
+            if (ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    permission
+                ) !== PackageManager.PERMISSION_GRANTED
+            ) {
+                neededPermissions.add(permission)
+            }
+        }
+        if (!neededPermissions.isEmpty()) {
+            requestPermissions(
+                neededPermissions.toArray(arrayOf<String>()),
+                MY_PERMISSIONS_REQUEST_ACCESS_CODE
+            )
+        }
     }
 
     private fun visibleViews(vararg views: android.view.View) {
