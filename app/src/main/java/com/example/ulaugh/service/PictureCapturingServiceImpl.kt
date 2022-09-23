@@ -2,6 +2,8 @@ package com.example.ulaugh.service
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.graphics.ImageFormat
 import android.hardware.camera2.*
@@ -11,11 +13,13 @@ import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.NonNull
+import androidx.camera.core.impl.utils.ContextUtil.getApplicationContext
 import androidx.core.app.ActivityCompat
 import com.example.ulaugh.interfaces.PictureCapturingListener
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -26,6 +30,7 @@ class PictureCapturingServiceImpl
 private constructor(activity: Activity) : APictureCapturingService(activity) {
     private var cameraDevice: CameraDevice? = null
     private var imageReader: ImageReader? = null
+    var currentPhotoPath: String = ""
 
     /***
      * camera ids queue.
@@ -40,6 +45,7 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
      */
     private var picturesTaken: TreeMap<String, ByteArray>? = null
     private var capturingListener: PictureCapturingListener? = null
+    private var photoFile:File? = null
 
     /**
      * Starts pictures capturing treatment.
@@ -77,7 +83,7 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
             ) {
                 manager!!.openCamera("1", stateCallback, null)
             } else {
-                manager!!.openCamera("1", stateCallback, null)
+//                manager!!.openCamera("1", stateCallback, null)
                 Log.e(TAG, " exception occurred while opening camera " + "1")
             }
         } catch (e: CameraAccessException) {
@@ -211,22 +217,25 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
     }
 
     private fun saveImageToDisk(bytes: ByteArray) {
-        val cameraId = if (cameraDevice == null) UUID.randomUUID().toString() else cameraDevice!!.id
-        val file =
-            File(Environment.getExternalStorageDirectory().toString() + "/" + cameraId + "_pic.jpg")
+//        photoFile = createImageFile()
+//        val cameraId = if (cameraDevice == null) UUID.randomUUID().toString() else cameraDevice!!.id
+//        var fileName = Environment.getExternalStorageDirectory().toString() + "/" + cameraId + "_pic.jpg"
+//        fileName = fileName.replace(":", ".")
+        val cw = ContextWrapper(context)
+        // path to /data/data/yourapp/app_data/imageDir
+        val directory = cw.getDir("imageDir", Context.MODE_PRIVATE)
+        // Create imageDir
+        val file = File(directory,"profile.jpg")
+//        val file =
+//            File(mypath)
         try {
-            FileOutputStream(file).use { output ->
-                output.write(bytes)
+//            FileOutputStream(file).use { output ->
+//                output.write(bytes)
                 picturesTaken!!.put(file.path, bytes)
-            }
+//            }
         } catch (e: IOException) {
-            Log.e(TAG, "Exception occurred while saving picture to external storage ", e)
+//            Log.e(TAG, "Exception occurred while saving picture to external storage ", e)
         }
-    }
-
-    private fun takeAnotherPicture() {
-//        this.currentCameraId = this.cameraIds.poll();
-//        openCamera();
     }
 
     private fun closeCamera() {

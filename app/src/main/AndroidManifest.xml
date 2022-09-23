@@ -12,7 +12,6 @@
 
     <application
         android:name=".LaughApplication"
-        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -37,11 +36,7 @@
             android:name=".controller.CameraActivity"
             android:exported="true"
             android:theme="@style/NoStatus">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".controller.UserReactActivity"
@@ -72,7 +67,13 @@
         <activity
             android:name=".controller.SplashActivity"
             android:exported="true"
-            android:theme="@style/NoNavigation" />
+            android:theme="@style/NoNavigation">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".controller.HomeActivity"
             android:exported="true"
@@ -84,13 +85,13 @@
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
             android:value="face" />
-<!--        <service-->
-<!--            android:name=".fcm.MyFirebaseInstanceIdService"-->
-<!--            android:exported="false">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="com.google.firebase.MESSAGING_EVENT" />-->
-<!--            </intent-filter>-->
-<!--        </service>-->
+        <!--        <service-->
+        <!--            android:name=".fcm.MyFirebaseInstanceIdService"-->
+        <!--            android:exported="false">-->
+        <!--            <intent-filter>-->
+        <!--                <action android:name="com.google.firebase.MESSAGING_EVENT" />-->
+        <!--            </intent-filter>-->
+        <!--        </service>-->
         <!--
  Set custom default icon. This is used when no icon is set for incoming notification messages.
      See README(https://goo.gl/l4GJaQ) for more.

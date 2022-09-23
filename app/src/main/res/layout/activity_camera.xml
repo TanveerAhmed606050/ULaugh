@@ -18,11 +18,9 @@
     <ImageView
         android:id="@+id/image_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:adjustViewBounds="true"
         android:background="@android:color/darker_gray"
-        android:maxWidth="240dp"
-        android:maxHeight="240dp"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -40,7 +38,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"
-        tools:visibility="visible" />
+        tools:visibility="invisible" />
 <!--    <androidx.camera.view.PreviewView-->
 <!--        android:id="@+id/preview"-->
 <!--        android:layout_width="match_parent"-->

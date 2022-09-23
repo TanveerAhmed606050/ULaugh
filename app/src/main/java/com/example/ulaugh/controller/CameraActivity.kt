@@ -13,22 +13,33 @@ import android.util.Pair
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.databinding.ActivityCameraBinding
 import com.example.ulaugh.interfaces.PictureCapturingListener
 import com.example.ulaugh.ml.ImageUtils
 import com.example.ulaugh.ml.SortingHelper
 import com.example.ulaugh.ml.TFLiteImageClassifier
+import com.example.ulaugh.model.HomeRecyclerViewItem
 import com.example.ulaugh.service.APictureCapturingService
 import com.example.ulaugh.service.PictureCapturingServiceImpl
+import com.example.ulaugh.utils.Constants
+import com.example.ulaugh.utils.Constants.TAG
+import com.example.ulaugh.utils.Helper
+import com.google.firebase.database.*
+import com.google.firebase.firestore.EventListener
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 
@@ -42,8 +53,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
     private var mClassifier: TFLiteImageClassifier? = null
     private var mImageView: ImageView? = null
     private var mClassificationResult: HashMap<String, ArrayList<Pair<String, String>>>? = null
-    lateinit var photoFile: File
-    private var currentPhotoPath = ""
+    private var postDetail: HomeRecyclerViewItem.SharePostData? = null
 
     private val requiredPermissions = arrayOf(
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -53,17 +63,17 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
 
     //The capture service
     private var pictureService: APictureCapturingService? = null
+    private var postRef: DatabaseReference? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+//        initViews()
+
         checkPermissions()
         // getting instance of the Service from PictureCapturingServiceImpl
-        pictureService = PictureCapturingServiceImpl.getInstance(this)
-        showToast("Starting capture!")
-        pictureService!!.startCapturing(this)
 
         mClassifier = TFLiteImageClassifier(
             this.assets,
@@ -74,65 +84,49 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         mClassificationResult = LinkedHashMap()
 
         mImageView = findViewById(R.id.image_view)
-//        takePicture()
-//        binding.cameraOk.setOnClickListener({ takePicture() })
-
-
-//        fullScreen()
-
-//        binding.cameraOk.setOnClickListener(this)
-//        binding.flipCamera.setOnClickListener(this)
-//        outputDirectory = getOutputDirectory()
     }
 
-    // Function to create an intent to take a photo
-//    private fun takePicture() {
-//        val pictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-//        photoFile = createImageFile()
-//        val uri =
-//            FileProvider.getUriForFile(this, "com.example.ulaugh.fileprovider", photoFile)
-//        pictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
-//        resultLauncher.launch(pictureIntent)
-////        startActivityForResult(pictureIntent, 100)
-//    }
-//
-//    // Create a temporary file for the image
-//    private fun createImageFile(): File {
-//        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-//        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-//        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
-//            .apply { currentPhotoPath = absolutePath }
-////        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir).apply
-////        { currentPhotoPath = absolutePath }
-//    }
-//
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        mClassifier!!.close()
-//        val picturesDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-//        for (tempFile in picturesDir!!.listFiles()!!) {
-//            tempFile.delete()
-//        }
-//    }
-//    private var resultLauncher =
-//        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-//            if (result.resultCode == RESULT_OK) {
-//                // There are no request codes
-//
-//                val imageUri =
-//                    FileProvider.getUriForFile(this, "com.example.ulaugh.fileprovider", photoFile)
-//                processImageRequestResult(imageUri)
-////                val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
-//            }
-//        }
+    private fun initViews() {
+        postRef = FirebaseDatabase.getInstance().getReference(Constants.POST_SHARE_REF)
+        if (intent != null)
+            postDetail =
+                Gson().fromJson(
+                    intent.getStringExtra(Constants.POST),
+                    object : TypeToken<HomeRecyclerViewItem.SharePostData>() {}.type
+                )
+        if (postDetail != null){
+            Glide.with(this)
+                .load(postDetail!!.image_url)
+                .centerCrop()
+                .fitCenter()
+                .thumbnail(0.3f)
+                .placeholder(R.drawable.seokangjoon)
+                .into(binding.imageView)
+        }
+//        Log.d("lsdagj", "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}")
+        postRef!!.child(postDetail!!.firebase_id).addListenerForSingleValueEvent(object :ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (postItem in snapshot.children){
+
+                }
+//                val item = snapshot.getValue(HomeRecyclerViewItem.SharePostData::class.java)
+                Log.d(TAG, "onDataChange: ${snapshot}")
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
+    }
 
     private fun showToast(text: String) {
         runOnUiThread { Toast.makeText(this, text, Toast.LENGTH_SHORT).show() }
     }
 
     // Function to handle successful new image acquisition
-    private fun processImageRequestResult(resultImageUri: Uri) {
-        val scaledResultImageBitmap = getScaledImageBitmap(resultImageUri)
+    private fun processImageRequestResult(scaledResultImageBitmap: Bitmap) {
+//        val scaledResultImageBitmap = getScaledImageBitmap(resultImageUri)
         mImageView!!.setImageBitmap(scaledResultImageBitmap)
 
         // Clear the result of a previous classification
@@ -258,10 +252,21 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                     }
 
                     // Set the image with the face designations
-                    mImageView!!.setImageBitmap(tmpBitmap)
+//                    mImageView!!.setImageBitmap(tmpBitmap)
 
                     // If single face, then immediately open the list
                     Log.d("lsdagj", "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}")
+                    postRef!!.child(postDetail!!.firebase_id).child(postDetail!!.post_id).addListenerForSingleValueEvent(object :ValueEventListener{
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            val item = snapshot.getValue(HomeRecyclerViewItem.SharePostData::class.java)
+                            Log.d(TAG, "onDataChange: $item")
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            TODO("Not yet implemented")
+                        }
+
+                    })
                     Toast.makeText(
                         this@CameraActivity,
                         mClassificationResult!!["Face 1"]?.get(0)!!.first,
@@ -360,23 +365,42 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
      * Displaying the pictures taken.
      */
     override fun onCaptureDone(pictureUrl: String?, pictureData: ByteArray?) {
-        if (pictureData != null && pictureUrl != null) {
+        if (pictureData != null) {
             runOnUiThread {
+                val bitmap = byteToBitmap(pictureData)
 //                val bitmap = BitmapFactory.decodeByteArray(pictureData, 0, pictureData.size)
 //                val nh = (bitmap.height * (512.0 / bitmap.width)).toInt()
 //                val scaled = Bitmap.createScaledBitmap(bitmap, 512, nh, true)
 
-                val target = File(pictureUrl)
-                val uri = Uri.parse(pictureUrl)
-                processImageRequestResult(uri)
-                //                Log.d(" target_path", "" + pictureUrl);
-                if (target.exists() && target.isFile && target.canWrite()) {
-//                    target.delete()
-                    Log.d("d_file", "" + target.name)
+//                val target = File(pictureUrl)
+//                val uri = Uri.parse(path)
+                CoroutineScope(Dispatchers.Main).launch {
+                    processImageRequestResult(bitmap)
                 }
+                //                Log.d(" target_path", "" + pictureUrl);
+//                if (target.exists() && target.isFile && target.canWrite()) {
+//                    target.delete()
+//                    Log.d("d_file", "" + target.name)
+//                }
             }
-            showToast("Picture saved to $pictureUrl")
+//            showToast("Picture saved to $pictureUrl")
         }
+    }
+
+    private fun byteToBitmap(pictureData: ByteArray):Bitmap {
+//        val file = File(this.getApplicationContext().filesDir, "name")
+        try {
+//            FileOutputStream(file).use { output ->
+//                output.write(pictureData)
+//                picturesTaken!!.put(file.path, bytes)
+//                Toast.makeText(this, "Saved", Toast.LENGTH_LONG).show()
+//            }
+        } catch (e: IOException) {
+//            Toast.makeText(this, "Exception occurred while saving picture to external storage $e", Toast.LENGTH_LONG).show()
+        }
+        val bmp = BitmapFactory.decodeByteArray(pictureData, 0, pictureData.size)
+//        binding.imageView.setImageBitmap(bmp)
+        return bmp
     }
 
     override fun onRequestPermissionsResult(
@@ -390,7 +414,10 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                 if (!(grantResults.isNotEmpty()
                             && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 ) {
-//                    checkPermissions();
+                    showToast("Please give permission")
+                }else{
+                    pictureService = PictureCapturingServiceImpl.getInstance(this)
+                    pictureService!!.startCapturing(this)
                 }
             }
         }
@@ -409,9 +436,14 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                 ) !== PackageManager.PERMISSION_GRANTED
             ) {
                 neededPermissions.add(permission)
+            }else{
+                pictureService = PictureCapturingServiceImpl.getInstance(this)
+//        showToast("Starting capture!")
+                pictureService!!.startCapturing(this)
             }
+
         }
-        if (!neededPermissions.isEmpty()) {
+        if (neededPermissions.isNotEmpty()) {
             requestPermissions(
                 neededPermissions.toArray(arrayOf<String>()),
                 MY_PERMISSIONS_REQUEST_ACCESS_CODE

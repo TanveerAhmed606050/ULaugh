@@ -3,7 +3,7 @@ package com.example.ulaugh.utils
 import android.Manifest
 
 object Constants {
-    const val TAG = "NOTESAPPTAG"
+    const val TAG = "NOTESAPPTAG123"
     const val BASE_URL = "https://ulaugh.mlbranch.com/"
     const val USER_TOKEN = "user_token"
     const val USER_NAME = "user_name"
@@ -20,6 +20,7 @@ object Constants {
     const val FRIENDS_REF = "friends"
     const val IS_PRIVATE = "is_private"
     const val POST = "post"
+    const val POST_ID = "post_id"
     const val PROFILE = "profile"
 //    const val USER_TOKEN = "user_token"
     const val FIREBASE_ID = "firebase_id"

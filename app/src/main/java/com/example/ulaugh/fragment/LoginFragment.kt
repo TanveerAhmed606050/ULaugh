@@ -267,7 +267,7 @@ class LoginFragment : Fragment() {
                         .child(FirebaseAuth.getInstance().currentUser!!.uid)
                     reference.addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(dataSnapshot: DataSnapshot) {
-                            if (!dataSnapshot.exists()) {
+                            if (dataSnapshot.exists()) {
                                 Toast.makeText(requireContext(), "Success", Toast.LENGTH_SHORT)
                                     .show()
 //                                    if (!userRequest.email.isNullOrEmpty()) {

@@ -43,8 +43,8 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
     lateinit var sharePref: SharePref
     private var homeList: ArrayList<HomeRecyclerViewItem> = ArrayList()
     private var newsFeedList: ArrayList<HomeRecyclerViewItem.SharePostData> = ArrayList()
-    private var postsList: ArrayList<HomeRecyclerViewItem.SharePostData> = ArrayList()
-    private var googleAdsList: ArrayList<HomeRecyclerViewItem.GoogleAds> = ArrayList()
+//    private var postsList: ArrayList<HomeRecyclerViewItem.SharePostData> = ArrayList()
+//    private var googleAdsList: ArrayList<HomeRecyclerViewItem.GoogleAds> = ArrayList()
     private val friendsList: ArrayList<String> = ArrayList()
     private var suggestFriendsList: ArrayList<SuggestFriends> = ArrayList()
     private var adapter: HomeAdapter? = null
@@ -185,7 +185,8 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                        val reactionDetail = ReactionDetail(totalReactions, reacted)
                         val post = postSnap.getValue(PostItem::class.java)
                         val postItem = HomeRecyclerViewItem.SharePostData(
-                            post!!.firebase_id,
+                            post!!.post_id,
+                            post.firebase_id,
                             post.image_url,
                             post.description,
                             post.date_time,
@@ -485,7 +486,9 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                 requireContext().startActivity(intent)
             }
             Constants.REACTION -> {
-                requireContext().startActivity(Intent(requireContext(), CameraActivity::class.java))
+                val intent = Intent(requireContext(), CameraActivity::class.java)
+                intent.putExtra(Constants.POST, Gson().toJson(post))
+                requireContext().startActivity(intent)
             }
             Constants.PROFILE -> {
                 val postData = post as HomeRecyclerViewItem.SharePostData

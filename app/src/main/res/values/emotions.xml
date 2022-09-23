@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+<!--    <string-array name="emotions">-->
+<!--        <item>U+1F621</item>-->
+<!--        <item>U+1F915</item>-->
+<!--        <item>U+1F922</item>-->
+<!--        <item>U+1F602</item>-->
+<!--        <item>U+1F611</item>-->
+<!--        <item>U+1F62A</item>-->
+<!--        <item>U+1F631</item>-->
+<!--    </string-array>-->
     <string-array name="emotions">
         <item>angry</item>
         <item>disgust</item>

@@ -3,6 +3,7 @@ package com.example.ulaugh.model
 sealed class HomeRecyclerViewItem {
 
     data class SharePostData(
+        val post_id:String = "",
         val firebase_id: String = "",
         val image_url: String = "",
         val description: String = "",

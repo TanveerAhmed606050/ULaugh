@@ -151,10 +151,10 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
                             if (it.isSuccessful) {
                                 Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show()
                                 databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                                    .child(imageUploadId)
-                                    .child(Constants.REACTION)
-                                    .child(FirebaseAuth.getInstance().currentUser!!.uid)
-                                    .setValue("")
+                                    .child(imageUploadId).child(Constants.POST_ID).setValue(imageUploadId)
+//                                    .child(Constants.REACTION)
+//                                    .child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                                    .setValue("")
                             } else
                                 Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
                             dialog!!.dismiss()

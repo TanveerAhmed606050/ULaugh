@@ -1,7 +1,6 @@
 package com.example.ulaugh.adapter
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,8 +10,6 @@ import androidx.viewbinding.ViewBinding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.ulaugh.R
-import com.example.ulaugh.controller.CameraActivity
-import com.example.ulaugh.controller.ReactDetailActivity
 import com.example.ulaugh.databinding.AdapterHomeFlistBinding
 import com.example.ulaugh.databinding.ItemGoogleAdBinding
 import com.example.ulaugh.databinding.ItemMainBinding
