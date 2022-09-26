@@ -10,11 +10,13 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.util.Pair
+import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.example.ulaugh.R
@@ -24,13 +26,13 @@ import com.example.ulaugh.ml.ImageUtils
 import com.example.ulaugh.ml.SortingHelper
 import com.example.ulaugh.ml.TFLiteImageClassifier
 import com.example.ulaugh.model.HomeRecyclerViewItem
+import com.example.ulaugh.model.Reactions
 import com.example.ulaugh.service.APictureCapturingService
 import com.example.ulaugh.service.PictureCapturingServiceImpl
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Constants.TAG
-import com.example.ulaugh.utils.Helper
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import com.google.firebase.firestore.EventListener
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
@@ -70,7 +72,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         _binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-//        initViews()
+        initViews()
 
         checkPermissions()
         // getting instance of the Service from PictureCapturingServiceImpl
@@ -87,14 +89,13 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
     }
 
     private fun initViews() {
-        postRef = FirebaseDatabase.getInstance().getReference(Constants.POST_SHARE_REF)
         if (intent != null)
             postDetail =
                 Gson().fromJson(
                     intent.getStringExtra(Constants.POST),
                     object : TypeToken<HomeRecyclerViewItem.SharePostData>() {}.type
                 )
-        if (postDetail != null){
+        if (postDetail != null) {
             Glide.with(this)
                 .load(postDetail!!.image_url)
                 .centerCrop()
@@ -102,22 +103,74 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                 .thumbnail(0.3f)
                 .placeholder(R.drawable.seokangjoon)
                 .into(binding.imageView)
+            postRef = FirebaseDatabase.getInstance().getReference(Constants.POST_SHARE_REF)
+                .child(postDetail!!.firebase_id).child(postDetail!!.post_id)
+                .child(Constants.REACTION)
         }
-//        Log.d("lsdagj", "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}")
-        postRef!!.child(postDetail!!.firebase_id).addListenerForSingleValueEvent(object :ValueEventListener{
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for (postItem in snapshot.children){
 
-                }
-//                val item = snapshot.getValue(HomeRecyclerViewItem.SharePostData::class.java)
-                Log.d(TAG, "onDataChange: ${snapshot}")
+//        Log.d("lsdagj", "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}")
+    }
+
+    private fun setUserReaction(reaction: String) {
+        postRef!!.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                postRef!!.runTransaction(object : Transaction.Handler {
+                    override fun doTransaction(mutableData: MutableData): Transaction.Result {
+                        val reaction =
+                            Reactions(reaction, FirebaseAuth.getInstance().currentUser!!.uid)
+                        var lastKey = "-1"
+                        for (child in mutableData.children) {
+                            lastKey = child.key!!
+                        }
+                        val nextKey = lastKey.toInt() + 1
+                        mutableData.child("" + nextKey).value = reaction
+
+                        // Set value and report transaction success
+                        return Transaction.success(mutableData)
+                    }
+
+                    override fun onComplete(
+                        databaseError: DatabaseError?, b: Boolean,
+                        dataSnapshot: DataSnapshot?
+                    ) {
+                        Toast.makeText(
+                            this@CameraActivity,
+                            "Success",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        finish()
+                    }
+                })
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                Toast.makeText(
+                    this@CameraActivity,
+                    "onDataChange: ${error.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-
         })
+
+//        postRef!!.addListenerForSingleValueEvent(object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                val hashMap = HashMap<String, String>()
+//                hashMap[Constants.REACTION_TYPE] = reaction
+//                postRef!!.setValue(hashMap)
+////                val item = snapshot.getValue(HomeRecyclerViewItem.SharePostData::class.java)
+//                Log.d(TAG, "onDataChange: $snapshot")
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                Toast.makeText(
+//                    this@CameraActivity,
+//                    "onDataChange: ${error.message}",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+////                Log.d(TAG)
+//            }
+//
+//        })
     }
 
     private fun showToast(text: String) {
@@ -127,7 +180,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
     // Function to handle successful new image acquisition
     private fun processImageRequestResult(scaledResultImageBitmap: Bitmap) {
 //        val scaledResultImageBitmap = getScaledImageBitmap(resultImageUri)
-        mImageView!!.setImageBitmap(scaledResultImageBitmap)
+//        mImageView!!.setImageBitmap(scaledResultImageBitmap)
 
         // Clear the result of a previous classification
         mClassificationResult!!.clear()
@@ -214,7 +267,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                 val textIndentFactor = 0.1f
 
                 // If at least one face was found
-                if (!faces.isEmpty()) {
+                if (faces.isNotEmpty()) {
                     // faceId ~ face text number
                     var faceId = 1
                     for (face in faces) {
@@ -222,7 +275,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                             face.boundingBox,
                             imageBitmap.width,
                             imageBitmap.height
-                        )!!
+                        )
 
                         // Draw a rectangle around a face
                         paint.style = Paint.Style.STROKE
@@ -255,33 +308,42 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
 //                    mImageView!!.setImageBitmap(tmpBitmap)
 
                     // If single face, then immediately open the list
-                    Log.d("lsdagj", "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}")
-                    postRef!!.child(postDetail!!.firebase_id).child(postDetail!!.post_id).addListenerForSingleValueEvent(object :ValueEventListener{
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            val item = snapshot.getValue(HomeRecyclerViewItem.SharePostData::class.java)
-                            Log.d(TAG, "onDataChange: $item")
-                        }
+                    Log.d(
+                        "lsdagj",
+                        "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}"
+                    )
+                    postRef!!.child(postDetail!!.firebase_id).child(postDetail!!.post_id)
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                val item =
+                                    snapshot.getValue(HomeRecyclerViewItem.SharePostData::class.java)
+                                Log.d(TAG, "onDataChange: $item")
+                            }
 
-                        override fun onCancelled(error: DatabaseError) {
-                            TODO("Not yet implemented")
-                        }
+                            override fun onCancelled(error: DatabaseError) {
+                                TODO("Not yet implemented")
+                            }
 
-                    })
+                        })
                     Toast.makeText(
                         this@CameraActivity,
                         mClassificationResult!!["Face 1"]?.get(0)!!.first,
                         Toast.LENGTH_LONG
                     ).show()
+                    setUserReaction(mClassificationResult!!["Face 1"]?.get(0)!!.first)
+                    finish()
 //                    if (faces.size == 1) {
 //                        mClassificationExpandableListView!!.expandGroup(0)
 //                    }
                     // If no faces are found
                 } else {
+                    setUserReaction("U+1F636")
                     Toast.makeText(
                         this@CameraActivity,
                         getString(R.string.faceless),
                         Toast.LENGTH_LONG
                     ).show()
+                    finish()
                 }
                 setCalculationStatusUI(false)
             }
@@ -317,27 +379,27 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         }
     }
 
-    private fun setEmotions(emotion:String){
-        when(emotion ) {
-            "angry" ->{
+    private fun setEmotions(emotion: String) {
+        when (emotion) {
+            "angry" -> {
                 binding.reactDetail.text = "You're feeling angry"
             }
-            "sad" ->{
+            "sad" -> {
                 binding.reactDetail.text = "You're so sad"
             }
-            "happy" ->{
+            "happy" -> {
                 binding.reactDetail.text = "HAHA You're Happy"
             }
-            "fear" ->{
+            "fear" -> {
                 binding.reactDetail.text = "You're in fear"
             }
-            "surprise" ->{
+            "surprise" -> {
                 binding.reactDetail.text = "You're surprising"
             }
-            "neutral" ->{
+            "neutral" -> {
                 binding.reactDetail.text = "Your expressions are emotionless"
             }
-            "disgust" ->{
+            "disgust" -> {
                 binding.reactDetail.text = "You're feeling disgusting"
             }
         }
@@ -387,7 +449,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         }
     }
 
-    private fun byteToBitmap(pictureData: ByteArray):Bitmap {
+    private fun byteToBitmap(pictureData: ByteArray): Bitmap {
 //        val file = File(this.getApplicationContext().filesDir, "name")
         try {
 //            FileOutputStream(file).use { output ->
@@ -415,7 +477,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                             && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 ) {
                     showToast("Please give permission")
-                }else{
+                } else {
                     pictureService = PictureCapturingServiceImpl.getInstance(this)
                     pictureService!!.startCapturing(this)
                 }
@@ -436,7 +498,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                 ) !== PackageManager.PERMISSION_GRANTED
             ) {
                 neededPermissions.add(permission)
-            }else{
+            } else {
                 pictureService = PictureCapturingServiceImpl.getInstance(this)
 //        showToast("Starting capture!")
                 pictureService!!.startCapturing(this)
@@ -457,7 +519,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         }
     }
 
-    private fun invisibleViews(vararg views: android.view.View){
+    private fun invisibleViews(vararg views: android.view.View) {
         for (view in views)
             view.visibility = android.view.View.GONE
     }

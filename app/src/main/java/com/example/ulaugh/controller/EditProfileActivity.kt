@@ -120,7 +120,8 @@ class EditProfileActivity : AppCompatActivity() {
 
     private fun updateProfilePic() {
         storageProfilePicReference = FirebaseStorage.getInstance().reference.child(PROFILE_PIC)
-        fileRef = storageProfilePicReference.child("pic" + ".png")
+        fileRef = storageProfilePicReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+            .child("pic" + ".png")
         fileRef.putFile(imageUri!!).addOnSuccessListener { task ->
             if (task.metadata != null) {
                 val taskUrl = fileRef.downloadUrl
@@ -152,7 +153,7 @@ class EditProfileActivity : AppCompatActivity() {
 //                    if (fullName.isNotEmpty())
 //                        userMap[FULL_NAME] = fullName
 //                    userMap[FIREBASE_ID] = authFirebase.currentUser!!.uid
-                    databaseReference.child(authFirebase.currentUser!!.uid)
+                    databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
@@ -170,7 +171,7 @@ class EditProfileActivity : AppCompatActivity() {
                                         ).setValue(userName)
                                     sharePref.writeString(
                                         USER_NAME,
-                                        snapshot.child(USER_NAME).value.toString()
+                                        userName
                                     )
                                 }
                                 if (fullName.isNotEmpty()) {
@@ -180,7 +181,7 @@ class EditProfileActivity : AppCompatActivity() {
                                         ).setValue(fullName)
                                     sharePref.writeString(
                                         FULL_NAME,
-                                        snapshot.child(FULL_NAME).value.toString()
+                                        fullName
                                     )
                                 }
                                 if (email.isNotEmpty()) {
@@ -190,7 +191,7 @@ class EditProfileActivity : AppCompatActivity() {
                                         ).setValue(email)
                                     sharePref.writeString(
                                         EMAIL,
-                                        snapshot.child(EMAIL).value.toString()
+                                        email
                                     )
                                 }
                                 sharePref.writeString(
@@ -232,7 +233,7 @@ class EditProfileActivity : AppCompatActivity() {
                             ).setValue(userName)
                         sharePref.writeString(
                             USER_NAME,
-                            snapshot.child(USER_NAME).value.toString()
+                            userName
                         )
                     }
                     if (fullName.isNotEmpty()) {
@@ -242,7 +243,7 @@ class EditProfileActivity : AppCompatActivity() {
                             ).setValue(fullName)
                         sharePref.writeString(
                             FULL_NAME,
-                            snapshot.child(FULL_NAME).value.toString()
+                            fullName
                         )
                     }
                     if (email.isNotEmpty()) {
@@ -250,7 +251,9 @@ class EditProfileActivity : AppCompatActivity() {
                             .child(
                                 EMAIL
                             ).setValue(email)
-                        sharePref.writeString(EMAIL, snapshot.child(EMAIL).value.toString())
+                        sharePref.writeString(
+                            EMAIL, email
+                        )
                     }
 
                     Toast.makeText(

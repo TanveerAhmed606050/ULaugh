@@ -1,7 +1,7 @@
 package com.example.ulaugh.model
 
 data class PostItem(
-    val post_id:String = "",
+    var post_id:String = "",
     val firebase_id: String = "",
     val image_url: String = "",
     val description: String = "",

@@ -3,7 +3,7 @@ package com.example.ulaugh.model
 sealed class HomeRecyclerViewItem {
 
     data class SharePostData(
-        val post_id:String = "",
+        var post_id: String = "",
         val firebase_id: String = "",
         val image_url: String = "",
         val description: String = "",
@@ -12,7 +12,7 @@ sealed class HomeRecyclerViewItem {
         val full_name: String = "",
         val tagsList: String = "",
         var reaction: ArrayList<Reactions>? = null,
-        var user_react: String? = null,
+        var reaction_type: String? = null,
     ) : HomeRecyclerViewItem()
 
     data class GoogleAds(
@@ -35,8 +35,8 @@ data class SuggestFriends(
 ) : HomeRecyclerViewItem()
 
 data class Reactions(
-    val reaction_type: String? = null,
-    val user_id: String? = null
+    var reaction_type: String? = null,
+    var user_id: String? = null
 )
 
 data class ReactionDetail(val total: Long?, val reaction_type: String?)

@@ -3,13 +3,10 @@ package com.example.ulaugh.controller
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.PorterDuff
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.widget.*
@@ -22,7 +19,6 @@ import com.example.ulaugh.R
 import com.example.ulaugh.adapter.ViewPagerAdapter
 import com.example.ulaugh.databinding.ActivityHomeBinding
 import com.example.ulaugh.model.PostShareInfo
-import com.example.ulaugh.model.ReactionDetails
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.DecodeImage
 import com.example.ulaugh.utils.Helper
@@ -35,7 +31,6 @@ import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-//import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,8 +40,6 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
-import kotlin.collections.ArrayList
-
 
 @AndroidEntryPoint
 class HomeActivity : AppCompatActivity(), View.OnKeyListener {
@@ -73,7 +66,6 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
     var description: String? = null
 
     //    val authFirebase = Firebase.auth
-    var userId = ""
     var userName = ""
     var fullName = ""
 //    var reaction: ReactionDetails? = null
@@ -121,16 +113,17 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
     }
 
     private fun sharePost(tagsList: String, time: String) {
-        if (mediaTypeRaw.startsWith("image"))
-            storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                .child("${System.currentTimeMillis()}.png")
-        else
-            storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                .child("${System.currentTimeMillis()}.mp4")
-        storageRef!!.putFile(imageUri!!).addOnSuccessListener { taskSnapshot ->
+//        if (mediaTypeRaw.startsWith("image"))
+//            storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                .child("${System.currentTimeMillis()}.png")
+//        else
+//            storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                .child("${System.currentTimeMillis()}.mp4")
+        val systemTime = System.currentTimeMillis().toString()
+        storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid).child("${systemTime}.png").putFile(imageUri!!).addOnSuccessListener { taskSnapshot ->
             if (taskSnapshot.metadata != null) {
-                val taskUrl = storageRef!!.downloadUrl
-                taskUrl.addOnSuccessListener { uri ->
+                val taskUrl = storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid).child("${systemTime}.png").downloadUrl
+                taskUrl.addOnSuccessListener {
                     val imageUrl = taskUrl.result.toString()
                     val shareInfo = PostShareInfo(
                         FirebaseAuth.getInstance().currentUser!!.uid,
@@ -389,43 +382,43 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
 
     }
 
-    private fun setTagsText(tag: ArrayList<String>) {
-        val layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
-        layoutParams.setMargins(4, 0, 0, 0)
-        container_ll?.visibility = View.VISIBLE
-        for (i in 0 until tag.size) {
-            val tagLl = LinearLayout(this)
-            tagLl.layoutParams = layoutParams
-            tagLl.orientation = LinearLayout.HORIZONTAL
-            tagLl.gravity = Gravity.CENTER_VERTICAL
-            tagLl.background = getDrawable(R.drawable.purple_rc)
-            tagLl.id = R.id.tag_tv + i
-
-            //textView
-            val tagTv = TextView(this)
-            tagTv.layoutParams = layoutParams
-            tagTv.text = tag[0]
-            tagTv.textSize = 14f
-            tagTv.id = R.id.id_tv + i
-            tagTv.setPadding(4, 4, 4, 4)
-            tagTv.gravity = Gravity.CENTER_VERTICAL
-            tagTv.setTextColor(getColor(R.color.white))
-//            tagTv.text = tagList[i]
-
-            //ImageView
-            val cancelIv = ImageView(this)
-            cancelIv.layoutParams = LinearLayout.LayoutParams(18, 18)
-            cancelIv.setImageResource(R.drawable.bell)
-            tagLl.addView(tagTv)
-            tagLl.addView(cancelIv)
-
-            container_ll?.addView(tagLl)
-
-        }
-    }
+//    private fun setTagsText(tag: ArrayList<String>) {
+//        val layoutParams = LinearLayout.LayoutParams(
+//            LinearLayout.LayoutParams.WRAP_CONTENT,
+//            LinearLayout.LayoutParams.WRAP_CONTENT
+//        )
+//        layoutParams.setMargins(4, 0, 0, 0)
+//        container_ll?.visibility = View.VISIBLE
+//        for (i in 0 until tag.size) {
+//            val tagLl = LinearLayout(this)
+//            tagLl.layoutParams = layoutParams
+//            tagLl.orientation = LinearLayout.HORIZONTAL
+//            tagLl.gravity = Gravity.CENTER_VERTICAL
+//            tagLl.background = getDrawable(R.drawable.purple_rc)
+//            tagLl.id = R.id.tag_tv + i
+//
+//            //textView
+//            val tagTv = TextView(this)
+//            tagTv.layoutParams = layoutParams
+//            tagTv.text = tag[0]
+//            tagTv.textSize = 14f
+//            tagTv.id = R.id.id_tv + i
+//            tagTv.setPadding(4, 4, 4, 4)
+//            tagTv.gravity = Gravity.CENTER_VERTICAL
+//            tagTv.setTextColor(getColor(R.color.white))
+////            tagTv.text = tagList[i]
+//
+//            //ImageView
+//            val cancelIv = ImageView(this)
+//            cancelIv.layoutParams = LinearLayout.LayoutParams(18, 18)
+//            cancelIv.setImageResource(R.drawable.bell)
+//            tagLl.addView(tagTv)
+//            tagLl.addView(cancelIv)
+//
+//            container_ll?.addView(tagLl)
+//
+//        }
+//    }
 
     override fun onDestroy() {
         super.onDestroy()

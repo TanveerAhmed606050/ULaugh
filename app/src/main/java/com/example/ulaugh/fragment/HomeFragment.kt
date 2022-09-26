@@ -2,6 +2,7 @@ package com.example.ulaugh.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,8 @@ import com.example.ulaugh.interfaces.OnClickListener
 import com.example.ulaugh.interfaces.PostClickListener
 import com.example.ulaugh.model.*
 import com.example.ulaugh.utils.Constants
+import com.example.ulaugh.utils.Constants.TAG
+import com.example.ulaugh.utils.Constants.USER_NAME
 import com.example.ulaugh.utils.SharePref
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
@@ -43,7 +46,8 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
     lateinit var sharePref: SharePref
     private var homeList: ArrayList<HomeRecyclerViewItem> = ArrayList()
     private var newsFeedList: ArrayList<HomeRecyclerViewItem.SharePostData> = ArrayList()
-//    private var postsList: ArrayList<HomeRecyclerViewItem.SharePostData> = ArrayList()
+
+    //    private var postsList: ArrayList<HomeRecyclerViewItem.SharePostData> = ArrayList()
 //    private var googleAdsList: ArrayList<HomeRecyclerViewItem.GoogleAds> = ArrayList()
     private val friendsList: ArrayList<String> = ArrayList()
     private var suggestFriendsList: ArrayList<SuggestFriends> = ArrayList()
@@ -62,7 +66,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
             getFriends()
 //            delay(600)
 //            getHomeData()
-            delay(2000)
+            delay(3000)
             getSuggestedFriends()
             binding.progressBar.visibility = View.GONE
         }
@@ -99,7 +103,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
     }
 
     private fun clickEvents() {
-        binding.toolbar1.searchV.setOnClickListener {
+        binding.toolbar1.searchV1.setOnClickListener {
             binding.toolbar1.root.visibility = View.INVISIBLE
             binding.searchTool.root.visibility = View.VISIBLE
         }
@@ -173,19 +177,29 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
             postShareRef!!.child(friendId).addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (postSnap in snapshot.children) {
+                        val keyValue = postSnap.key.toString()
 //                        val totalReactions = postSnap.child(Constants.FRIENDS_REF).childrenCount
-                        val userReaction = postSnap.child(Constants.FRIENDS_REF)
-                            .child(FirebaseAuth.getInstance().currentUser!!.uid).value.toString()
+                        var userReaction = ""
+
                         reactionsList.clear()
-                        for (reactionItem in postSnap.child(Constants.FRIENDS_REF).children) {
-                            val reactions =
-                                postSnap.child(Constants.REACTION).getValue(Reactions::class.java)
+//                        val reactions = Reactions()
+                        for (reactionItem in postSnap.child(Constants.REACTION).children) {
+                            if (reactionItem
+                                    .child("user_id")
+                                    .equals(FirebaseAuth.getInstance().currentUser!!.uid)
+                            ) //current user reaction
+                                userReaction = postSnap.child(Constants.REACTION)
+                                    .child(Constants.REACTION_TYPE).value.toString()
+                            val reactions = reactionItem.getValue(Reactions::class.java)
+//                            reactions.reaction_type = reactionsType
+//                            reactions!!.user_id = reactionItem.key.toString()
                             reactionsList.add(reactions!!)
                         }
 //                        val reactionDetail = ReactionDetail(totalReactions, reacted)
                         val post = postSnap.getValue(PostItem::class.java)
+                        post!!.post_id = keyValue
                         val postItem = HomeRecyclerViewItem.SharePostData(
-                            post!!.post_id,
+                            keyValue,
                             post.firebase_id,
                             post.image_url,
                             post.description,
@@ -194,6 +208,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                             post.full_name,
                             post.tagsList, reactionsList, userReaction
                         )
+                        Log.d(TAG, "onDataChange: ${userReaction}\n")
                         newsFeedList.add(postItem)
                     }
                 }

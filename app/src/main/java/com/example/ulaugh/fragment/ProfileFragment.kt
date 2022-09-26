@@ -18,6 +18,7 @@ import com.example.ulaugh.interfaces.PostClickListener
 import com.example.ulaugh.model.PostItem
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.SharePref
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
 import com.google.firebase.ktx.Firebase
@@ -29,11 +30,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ProfileFragment() : Fragment(), PostClickListener {
+class ProfileFragment : Fragment(), PostClickListener {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
-    private val postItemsList: MutableList<PostItem> = mutableListOf()
+    private val postItemsList: MutableList<PostItem> = ArrayList()
 
 //    private val authViewModel by activityViewModels<AuthViewModel>()
 
@@ -55,7 +56,9 @@ class ProfileFragment() : Fragment(), PostClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initViews()
+        databaseReference =
+            FirebaseDatabase.getInstance().reference.child(Constants.POST_SHARE_REF)
+        setAdapter()
         clickListener()
         CoroutineScope(Dispatchers.Main).launch {
             binding.progressBar.visibility = View.VISIBLE
@@ -76,8 +79,6 @@ class ProfileFragment() : Fragment(), PostClickListener {
     }
 
     private fun initViews() {
-        databaseReference =
-            FirebaseDatabase.getInstance().reference.child(Constants.POST_SHARE_REF)
 
         val url = sharePref.readString(Constants.PROFILE_PIC, null)
         userName = sharePref.readString(Constants.USER_NAME, "").toString()
@@ -114,6 +115,9 @@ class ProfileFragment() : Fragment(), PostClickListener {
             binding.textView21.visibility = View.GONE
             binding.rv.visibility = View.VISIBLE
         }
+    }
+
+    private fun setAdapter() {
         binding.rv.layoutManager =
             StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         postsAdapter = PostsAdapter(requireActivity(), postItemsList, this)
@@ -121,7 +125,7 @@ class ProfileFragment() : Fragment(), PostClickListener {
     }
 
     private fun getProfileData() {
-        databaseReference.child(Firebase.auth.currentUser!!.uid)
+        databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     postItemsList.clear()
@@ -160,6 +164,8 @@ class ProfileFragment() : Fragment(), PostClickListener {
 
     override fun onResume() {
         super.onResume()
+        initViews()
+
     }
 
     override fun onDestroy() {

@@ -111,7 +111,7 @@ class HomeAdapter(
                 val date = Helper.convertToLocal(post.date_time)
                 binding.timeTv.text = Helper.covertTimeToText(date)
                 binding.reactCount.text = Helper.prettyCount(post.reaction!!.size)
-                if (post.user_react != "null") {
+                if (post.reaction_type!!.isNotEmpty()) {
                     Glide.with(context)
                         .load(post.image_url)
                         .centerCrop()
@@ -119,8 +119,11 @@ class HomeAdapter(
                         .thumbnail()
                         .placeholder(R.drawable.seokangjoon)
                         .into(binding.coverPhoto)
-                    binding.reactedTxt.text = "Reacted"
-                    binding.reactedEmoji.text = post.user_react
+                    binding.emojiTxt.visibility = View.GONE
+                    binding.emoji.visibility = View.GONE
+                    binding.reactedTxt.visibility = View.VISIBLE
+                    binding.reactedEmoji.visibility = View.VISIBLE
+                    binding.reactedEmoji.text = post.reaction_type
                 }else{
                     Glide.with(context)
                         .load(post.image_url)
@@ -130,6 +133,10 @@ class HomeAdapter(
                         .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 4)))
                         .placeholder(R.drawable.seokangjoon)
                         .into(binding.coverPhoto)
+                    binding.emojiTxt.visibility = View.VISIBLE
+                    binding.emoji.visibility = View.VISIBLE
+                    binding.reactedTxt.visibility = View.GONE
+                    binding.reactedEmoji.visibility = View.GONE
                 }
                 binding.coverPhoto.setOnClickListener {
                     onClickListener.onClick(post, Constants.POST)

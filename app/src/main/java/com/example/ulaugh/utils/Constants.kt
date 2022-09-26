@@ -13,6 +13,7 @@ object Constants {
     const val PROFILE_PIC = "profile_pic"
     const val POST_SHARE_REF = "postShare"
     const val REACTION = "reaction"
+    const val REACTION_TYPE = "reaction_type"
     const val EMAIL = "email"
     const val IMAGE = "image"
     const val OTP = "otp"
