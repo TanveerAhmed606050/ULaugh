@@ -20,7 +20,6 @@ import com.example.ulaugh.interfaces.PostClickListener
 import com.example.ulaugh.model.*
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Constants.TAG
-import com.example.ulaugh.utils.Constants.USER_NAME
 import com.example.ulaugh.utils.SharePref
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
@@ -139,7 +138,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                 .load(imageUrl)
                 .centerCrop()
                 .fitCenter()
-                .thumbnail(0.3f)
+//                .thumbnail(0.3f)
                 .placeholder(R.drawable.seokangjoon)
                 .into(binding.toolbar1.profileIv)
     }
@@ -171,8 +170,8 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
     }
 
     private fun getHomeData() {
-        val reactionsList: ArrayList<Reactions> = ArrayList()
-        reactionsList.clear()
+        val reactionsList: MutableList<Reactions> = ArrayList()
+//        reactionsList.clear()
         for (friendId in friendsList) {
             postShareRef!!.child(friendId).addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -181,19 +180,21 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                        val totalReactions = postSnap.child(Constants.FRIENDS_REF).childrenCount
                         var userReaction = ""
 
+//                        if (postShareRef!!.child(friendId).child(Constants.REACTION)
+//                                .child("user_id")
+//                                .equals(FirebaseAuth.getInstance().currentUser!!.uid)
+//                        ) //current user reaction
+//                            userReaction = postSnap.child(Constants.REACTION)
+//                                .child(Constants.REACTION_TYPE).value.toString()
                         reactionsList.clear()
-//                        val reactions = Reactions()
                         for (reactionItem in postSnap.child(Constants.REACTION).children) {
-                            if (reactionItem
-                                    .child("user_id")
-                                    .equals(FirebaseAuth.getInstance().currentUser!!.uid)
-                            ) //current user reaction
-                                userReaction = postSnap.child(Constants.REACTION)
-                                    .child(Constants.REACTION_TYPE).value.toString()
-                            val reactions = reactionItem.getValue(Reactions::class.java)
+                            val reactions = reactionItem.getValue(Reactions::class.java)!!
+                            if (reactions.user_id == FirebaseAuth.getInstance().currentUser!!.uid)
+                                userReaction = reactions.reaction_type!!
 //                            reactions.reaction_type = reactionsType
 //                            reactions!!.user_id = reactionItem.key.toString()
-                            reactionsList.add(reactions!!)
+                            else
+                                reactionsList.add(reactions)
                         }
 //                        val reactionDetail = ReactionDetail(totalReactions, reacted)
                         val post = postSnap.getValue(PostItem::class.java)
@@ -501,9 +502,13 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                 requireContext().startActivity(intent)
             }
             Constants.REACTION -> {
-                val intent = Intent(requireContext(), CameraActivity::class.java)
-                intent.putExtra(Constants.POST, Gson().toJson(post))
-                requireContext().startActivity(intent)
+                val postData = post as HomeRecyclerViewItem.SharePostData
+                if (postData.reaction_type!!.isEmpty()) {
+                    val intent = Intent(requireContext(), CameraActivity::class.java)
+                    intent.putExtra(Constants.POST, Gson().toJson(post))
+                    requireContext().startActivity(intent)
+                } else
+                    Toast.makeText(requireContext(), "Already reacted", Toast.LENGTH_SHORT).show()
             }
             Constants.PROFILE -> {
                 val postData = post as HomeRecyclerViewItem.SharePostData

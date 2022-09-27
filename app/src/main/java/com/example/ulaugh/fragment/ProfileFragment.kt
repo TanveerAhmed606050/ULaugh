@@ -57,7 +57,7 @@ class ProfileFragment : Fragment(), PostClickListener {
         super.onViewCreated(view, savedInstanceState)
 
         databaseReference =
-            FirebaseDatabase.getInstance().reference.child(Constants.POST_SHARE_REF)
+            FirebaseDatabase.getInstance().getReference(Constants.POST_SHARE_REF)
         setAdapter()
         clickListener()
         CoroutineScope(Dispatchers.Main).launch {

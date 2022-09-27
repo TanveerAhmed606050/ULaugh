@@ -123,7 +123,10 @@ class HomeAdapter(
                     binding.emoji.visibility = View.GONE
                     binding.reactedTxt.visibility = View.VISIBLE
                     binding.reactedEmoji.visibility = View.VISIBLE
-                    binding.reactedEmoji.text = post.reaction_type
+//                    val str = "0x1F60A"
+//                    val inter = java.lang.Long.parseLong("0x1F60A", 16)
+//                    binding.reactedEmoji.text = String(Character.toChars(0x1F389))
+                    binding.reactedEmoji.text = getEmojiByUnicode(post.reaction_type!!)
                 }else{
                     Glide.with(context)
                         .load(post.image_url)
@@ -150,6 +153,20 @@ class HomeAdapter(
 //                binding.coverPhoto.setImageResource(R.drawable.seokangjoon)
 //                binding.emoji.text = String(Character.toChars(0x1F60A))
             }
+        }
+
+        open fun getEmojiByUnicode(emoji: String): String? {
+            var unicode = 0
+            when(emoji){
+                "angry"->{unicode = 0x1F621}
+                "disgust"->{unicode = 0x1F621}
+                "fear"->{unicode = 0x1F922}
+                "happy"->{unicode = 0x1F602}
+                "neutral"->{unicode = 0x1F611}
+                "sad"->{unicode = 0x1F62A}
+                "surprise"->{unicode = 0x1F631}
+            }
+            return String(Character.toChars(unicode))
         }
 
         class AdsViewHolder(private val binding: ItemGoogleAdBinding) :

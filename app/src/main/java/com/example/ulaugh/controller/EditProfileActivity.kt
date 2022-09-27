@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,11 +15,9 @@ import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.databinding.ActivityEditProfileBinding
 import com.example.ulaugh.utils.Constants.EMAIL
-import com.example.ulaugh.utils.Constants.FIREBASE_ID
 import com.example.ulaugh.utils.Constants.USERS_REF
 import com.example.ulaugh.utils.Constants.FULL_NAME
 import com.example.ulaugh.utils.Constants.PROFILE_PIC
-import com.example.ulaugh.utils.Constants.TAG
 import com.example.ulaugh.utils.Constants.USER_NAME
 import com.example.ulaugh.utils.DecodeImage
 import com.example.ulaugh.utils.Helper
@@ -35,7 +32,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -51,11 +47,11 @@ class EditProfileActivity : AppCompatActivity() {
     private var imageUri: Uri? = null
 
     //    private var imagePath: ByteArray? = null
-    private lateinit var databaseReference: DatabaseReference
+    private lateinit var userProfileRef: DatabaseReference
 //    private var compressedImageFile: File? = null
 
     //    private lateinit var firebaseStorage: FirebaseStorage
-    private lateinit var storageProfilePicReference: StorageReference
+//    private lateinit var storageProfilePicReference: StorageReference
     private lateinit var fileRef: StorageReference
     val authFirebase = Firebase.auth
 
@@ -69,8 +65,8 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        databaseReference =
-            FirebaseDatabase.getInstance().reference.child(USERS_REF)
+        userProfileRef =
+            FirebaseDatabase.getInstance().getReference(USERS_REF).child(FirebaseAuth.getInstance().currentUser!!.uid)
         binding.included.backBtn.setOnClickListener {
             finish()
         }
@@ -119,8 +115,7 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun updateProfilePic() {
-        storageProfilePicReference = FirebaseStorage.getInstance().reference.child(PROFILE_PIC)
-        fileRef = storageProfilePicReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+        fileRef = FirebaseStorage.getInstance().getReference(PROFILE_PIC).child(FirebaseAuth.getInstance().currentUser!!.uid)
             .child("pic" + ".png")
         fileRef.putFile(imageUri!!).addOnSuccessListener { task ->
             if (task.metadata != null) {
@@ -153,10 +148,10 @@ class EditProfileActivity : AppCompatActivity() {
 //                    if (fullName.isNotEmpty())
 //                        userMap[FULL_NAME] = fullName
 //                    userMap[FIREBASE_ID] = authFirebase.currentUser!!.uid
-                    databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                    userProfileRef
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
-                                databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                userProfileRef
                                     .child(
                                         PROFILE_PIC
                                     ).setValue(taskUrl.result.toString())
@@ -165,7 +160,7 @@ class EditProfileActivity : AppCompatActivity() {
                                     snapshot.child(PROFILE_PIC).value.toString()
                                 )
                                 if (userName.isNotEmpty()) {
-                                    databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                    userProfileRef
                                         .child(
                                             USER_NAME
                                         ).setValue(userName)
@@ -175,7 +170,7 @@ class EditProfileActivity : AppCompatActivity() {
                                     )
                                 }
                                 if (fullName.isNotEmpty()) {
-                                    databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                    userProfileRef
                                         .child(
                                             FULL_NAME
                                         ).setValue(fullName)
@@ -185,7 +180,7 @@ class EditProfileActivity : AppCompatActivity() {
                                     )
                                 }
                                 if (email.isNotEmpty()) {
-                                    databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                    userProfileRef
                                         .child(
                                             EMAIL
                                         ).setValue(email)
@@ -222,12 +217,12 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun updateRealData() {
-        databaseReference.child(authFirebase.currentUser!!.uid)
+        userProfileRef
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
 
                     if (userName.isNotEmpty()) {
-                        databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                        userProfileRef
                             .child(
                                 USER_NAME
                             ).setValue(userName)
@@ -237,7 +232,7 @@ class EditProfileActivity : AppCompatActivity() {
                         )
                     }
                     if (fullName.isNotEmpty()) {
-                        databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                        userProfileRef
                             .child(
                                 FULL_NAME
                             ).setValue(fullName)
@@ -247,7 +242,7 @@ class EditProfileActivity : AppCompatActivity() {
                         )
                     }
                     if (email.isNotEmpty()) {
-                        databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                        userProfileRef
                             .child(
                                 EMAIL
                             ).setValue(email)
