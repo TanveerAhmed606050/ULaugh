@@ -9,5 +9,6 @@ data class PostItem(
     val user_name: String = "",
     val full_name: String = "",
     val tagsList: String = "",
+    val profile_image:String = ""
 )
 

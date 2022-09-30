@@ -133,22 +133,22 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                         databaseError: DatabaseError?, b: Boolean,
                         dataSnapshot: DataSnapshot?
                     ) {
-                        Toast.makeText(
-                            this@CameraActivity,
-                            "Success",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        finish()
+//                        Toast.makeText(
+//                            this@CameraActivity,
+//                            "Success",
+//                            Toast.LENGTH_SHORT
+//                        ).show()
+//                        finish()
                     }
                 })
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(
-                    this@CameraActivity,
-                    "onDataChange: ${error.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+//                Toast.makeText(
+//                    this@CameraActivity,
+//                    "onDataChange: ${error.message}",
+//                    Toast.LENGTH_SHORT
+//                ).show()
             }
         })
 
@@ -325,25 +325,25 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                             }
 
                         })
-                    Toast.makeText(
-                        this@CameraActivity,
-                        mClassificationResult!!["Face 1"]?.get(0)!!.first,
-                        Toast.LENGTH_LONG
-                    ).show()
+//                    Toast.makeText(
+//                        this@CameraActivity,
+//                        mClassificationResult!!["Face 1"]?.get(0)!!.first,
+//                        Toast.LENGTH_LONG
+//                    ).show()
                     setUserReaction(mClassificationResult!!["Face 1"]?.get(0)!!.first)
-                    finish()
+//                    finish()
 //                    if (faces.size == 1) {
 //                        mClassificationExpandableListView!!.expandGroup(0)
 //                    }
                     // If no faces are found
                 } else {
-                    setUserReaction("U+1F636")
-                    Toast.makeText(
-                        this@CameraActivity,
-                        getString(R.string.faceless),
-                        Toast.LENGTH_LONG
-                    ).show()
-                    finish()
+                    setUserReaction("neutral")
+//                    Toast.makeText(
+//                        this@CameraActivity,
+//                        getString(R.string.faceless),
+//                        Toast.LENGTH_LONG
+//                    ).show()
+//                    finish()
                 }
                 setCalculationStatusUI(false)
             }
@@ -373,7 +373,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
     //Change the interface depending on the status of calculations
     private fun setCalculationStatusUI(isCalculationRunning: Boolean) {
         if (isCalculationRunning) {
-            binding.classificationProgressBar.visibility = ProgressBar.VISIBLE
+//            binding.classificationProgressBar.visibility = ProgressBar.VISIBLE
         } else {
             binding.classificationProgressBar.visibility = ProgressBar.INVISIBLE
         }

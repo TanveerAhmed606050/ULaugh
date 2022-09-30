@@ -15,7 +15,9 @@ import com.example.ulaugh.databinding.ItemGoogleAdBinding
 import com.example.ulaugh.databinding.ItemMainBinding
 import com.example.ulaugh.interfaces.OnClickListener
 import com.example.ulaugh.interfaces.PostClickListener
+import com.example.ulaugh.model.Emoji
 import com.example.ulaugh.model.HomeRecyclerViewItem
+import com.example.ulaugh.model.Reactions
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Constants.TAG
 import com.example.ulaugh.utils.Helper
@@ -96,6 +98,8 @@ class HomeAdapter(
 
     sealed class HomeRecyclerViewHolder(binding: ViewBinding) :
         RecyclerView.ViewHolder(binding.root) {
+        private val emoji = Emoji("", 0)
+        private val emojiCount = ArrayList<Emoji>()
 
         class NewsViewHolder(private val binding: ItemMainBinding) :
             HomeRecyclerViewHolder(binding) {
@@ -111,6 +115,8 @@ class HomeAdapter(
                 val date = Helper.convertToLocal(post.date_time)
                 binding.timeTv.text = Helper.covertTimeToText(date)
                 binding.reactCount.text = Helper.prettyCount(post.reaction!!.size)
+                val emotionsList = countReactions(post.reaction!!)
+//                setEmotions(emotionsList)
                 if (post.reaction_type!!.isNotEmpty()) {
                     Glide.with(context)
                         .load(post.image_url)
@@ -127,7 +133,7 @@ class HomeAdapter(
 //                    val inter = java.lang.Long.parseLong("0x1F60A", 16)
 //                    binding.reactedEmoji.text = String(Character.toChars(0x1F389))
                     binding.reactedEmoji.text = getEmojiByUnicode(post.reaction_type!!)
-                }else{
+                } else {
                     Glide.with(context)
                         .load(post.image_url)
                         .centerCrop()
@@ -141,6 +147,13 @@ class HomeAdapter(
                     binding.reactedTxt.visibility = View.GONE
                     binding.reactedEmoji.visibility = View.GONE
                 }
+                Glide.with(context)
+                    .load(post.profile_image)
+                    .centerCrop()
+                    .fitCenter()
+                    .thumbnail()
+                    .placeholder(R.drawable.seokangjoon)
+                    .into(binding.userPhoto)
                 binding.coverPhoto.setOnClickListener {
                     onClickListener.onClick(post, Constants.POST)
                 }
@@ -150,21 +163,86 @@ class HomeAdapter(
                 binding.userPhoto.setOnClickListener {
                     onClickListener.onClick(post, Constants.PROFILE)
                 }
-//                binding.coverPhoto.setImageResource(R.drawable.seokangjoon)
-//                binding.emoji.text = String(Character.toChars(0x1F60A))
             }
+
+            private fun setEmotions(emotionsList: MutableList<Emoji>) {
+                for (emoji in emotionsList){
+                    when(emoji.name){
+
+                    }
+                }
+            }
+        }
+
+        fun countReactions(reactionList: MutableList<Reactions>): MutableList<Emoji> {
+            for (emotion in reactionList) {
+                run {
+                    if (emojiCount.any { it.name == "neutral" } && emotion.reaction_type == "neutral") {
+                        emojiCount.find { it.name == "neutral" }!!.count++
+//                        )
+                    } else if (emotion.reaction_type == "neutral") {
+                        val emoji = Emoji("neutral", 1)
+                        emojiCount.add(emoji)
+                    } else if (emojiCount.any { it.name == "happy" } && emotion.reaction_type == "happy") {
+                        emojiCount.find { it.name == "happy" }!!.count++
+                    } else if (emotion.reaction_type == "happy") {
+                        val emoji = Emoji("happy", 1)
+                        emojiCount.add(emoji)
+                    } else if (emojiCount.any { it.name == "sad" } && emotion.reaction_type == "sad") {
+                        emojiCount.find { it.name == "sad" }!!.count++
+                    } else if (emotion.reaction_type == "sad") {
+                        val emoji = Emoji("sad", 1)
+                        emojiCount.add(emoji)
+                    } else if (emojiCount.any { it.name == "surprise" } && emotion.reaction_type == "surprise") {
+                        emojiCount.find { it.name == "surprise" }!!.count++
+                    } else if (emotion.reaction_type == "surprise") {
+                        val emoji = Emoji("surprise", 1)
+                        emojiCount.add(emoji)
+                    } else if (emojiCount.any { it.name == "angry" } && emotion.reaction_type == "angry") {
+                        emojiCount.find { it.name == "angry" }!!.count++
+                    } else if (emotion.reaction_type == "angry") {
+                        val emoji = Emoji("angry", 1)
+                        emojiCount.add(emoji)
+                    } else if (emojiCount.any { it.name == "fear" } && emotion.reaction_type == "fear") {
+                        emojiCount.find { it.name == "fear" }!!.count++
+                    } else if (emotion.reaction_type == "fear") {
+                        val emoji = Emoji("fear", 1)
+                        emojiCount.add(emoji)
+                    } else if (emojiCount.any { it.name == "disgust" } && emotion.reaction_type == "disgust") {
+                        emojiCount.find { it.name == "disgust" }!!.count++
+                    } else {
+                        val emoji = Emoji("disgust", 1)
+                        emojiCount.add(emoji)
+                    }
+                }
+            }
+            return emojiCount
         }
 
         open fun getEmojiByUnicode(emoji: String): String? {
             var unicode = 0
-            when(emoji){
-                "angry"->{unicode = 0x1F621}
-                "disgust"->{unicode = 0x1F621}
-                "fear"->{unicode = 0x1F922}
-                "happy"->{unicode = 0x1F602}
-                "neutral"->{unicode = 0x1F611}
-                "sad"->{unicode = 0x1F62A}
-                "surprise"->{unicode = 0x1F631}
+            when (emoji) {
+                "angry" -> {
+                    unicode = 0x1F621
+                }
+                "disgust" -> {
+                    unicode = 0x1F621
+                }
+                "fear" -> {
+                    unicode = 0x1F922
+                }
+                "happy" -> {
+                    unicode = 0x1F602
+                }
+                "neutral" -> {
+                    unicode = 0x1F611
+                }
+                "sad" -> {
+                    unicode = 0x1F62A
+                }
+                "surprise" -> {
+                    unicode = 0x1F631
+                }
             }
             return String(Character.toChars(unicode))
         }

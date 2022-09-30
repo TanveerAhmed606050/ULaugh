@@ -11,6 +11,7 @@ sealed class HomeRecyclerViewItem {
         val user_name: String = "",
         val full_name: String = "",
         val tagsList: String = "",
+        val profile_image:String,
         var reaction: MutableList<Reactions>? = null,
         var reaction_type: String? = null,
     ) : HomeRecyclerViewItem()

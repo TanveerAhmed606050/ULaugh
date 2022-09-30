@@ -66,7 +66,8 @@ class EditProfileActivity : AppCompatActivity() {
 
     private fun initViews() {
         userProfileRef =
-            FirebaseDatabase.getInstance().getReference(USERS_REF).child(FirebaseAuth.getInstance().currentUser!!.uid)
+            FirebaseDatabase.getInstance().getReference(USERS_REF)
+                .child(FirebaseAuth.getInstance().currentUser!!.uid)
         binding.included.backBtn.setOnClickListener {
             finish()
         }
@@ -115,11 +116,14 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun updateProfilePic() {
-        fileRef = FirebaseStorage.getInstance().getReference(PROFILE_PIC).child(FirebaseAuth.getInstance().currentUser!!.uid)
+        fileRef = FirebaseStorage.getInstance().getReference(PROFILE_PIC)
+            .child(FirebaseAuth.getInstance().currentUser!!.uid)
             .child("pic" + ".png")
         fileRef.putFile(imageUri!!).addOnSuccessListener { task ->
             if (task.metadata != null) {
-                val taskUrl = fileRef.downloadUrl
+                val taskUrl = task.metadata!!
+                    .reference!!.downloadUrl
+//                val taskUrl = fileRef.downloadUrl
 //                val userMap = HashMap<String, Any>()
 //                userMap[PROFILE_PIC] = taskUrl
 //                if (email.isNotEmpty())
@@ -136,11 +140,37 @@ class EditProfileActivity : AppCompatActivity() {
 //                    else if (it.isCanceled)
 //                        Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
 //                }
-                taskUrl.addOnSuccessListener { it ->
+                taskUrl.addOnSuccessListener { uri ->
 //                    val downloadUri = it.toString()
-//                    val userMap = HashMap<String, Any>()
+                    val userMap = HashMap<String, Any>()
+                    if (userName.isNotEmpty()) {
+                        userMap[USER_NAME] = userName
+                        sharePref.writeString(
+                            USER_NAME,
+                            userName
+                        )
+                    }
+                    if (fullName.isNotEmpty()) {
+                        userMap[FULL_NAME] = fullName
+                        sharePref.writeString(
+                            FULL_NAME,
+                            fullName
+                        )
+                    }
+                    if (email.isNotEmpty()) {
+                        userMap[EMAIL] = email
+                        sharePref.writeString(
+                            EMAIL,
+                            email
+                        )
+                    }
 //                    Log.d(TAG, "updateProfile: ${taskUrl.result}")
-//                    userMap[PROFILE_PIC] = taskUrl.result.toString()
+                    userMap[PROFILE_PIC] = uri.toString()
+                    userProfileRef.updateChildren(userMap)
+                    sharePref.writeString(
+                        PROFILE_PIC,
+                        uri.toString()
+                    )
 //                    if (email.isNotEmpty())
 //                        userMap[EMAIL] = email
 //                    if (userName.isNotEmpty())
@@ -148,7 +178,7 @@ class EditProfileActivity : AppCompatActivity() {
 //                    if (fullName.isNotEmpty())
 //                        userMap[FULL_NAME] = fullName
 //                    userMap[FIREBASE_ID] = authFirebase.currentUser!!.uid
-                    userProfileRef
+/*                    userProfileRef
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 userProfileRef
@@ -206,7 +236,7 @@ class EditProfileActivity : AppCompatActivity() {
                                 TODO("Not yet implemented")
                             }
 
-                        })
+                        })*/
                 }
             } else
                 Toast.makeText(this, "Not updated successfully ${task.error}", Toast.LENGTH_SHORT)

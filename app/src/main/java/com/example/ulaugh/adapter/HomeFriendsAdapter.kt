@@ -35,7 +35,7 @@ class HomeFriendsAdapter(
             .load(suggestFriends.profile_pic)
             .centerCrop()
             .fitCenter()
-            .thumbnail(0.3f)
+            .thumbnail()
             .placeholder(R.drawable.seokangjoon)
             .into(binding.photoIv)
 

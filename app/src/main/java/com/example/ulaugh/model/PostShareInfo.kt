@@ -9,7 +9,8 @@ data class PostShareInfo(
     val full_name:String,
     val tagsList: String,
     val reaction:String,
-    val media_type:String
+    val media_type:String,
+    val profile_image:String
 )
 
 data class TagsInfo(val tags: String)

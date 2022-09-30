@@ -6,19 +6,20 @@
     android:layout_marginTop="8dp"
     android:background="@color/app_bg">
 
-    <com.makeramen.roundedimageview.RoundedImageView
+    <com.example.ulaugh.utils.ProportionalImageView
         android:id="@+id/cover_photo"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
-        app:riv_corner_radius="12dp"
-        android:src="@drawable/yooseungho"
+        android:adjustViewBounds="true"
         android:scaleType="fitXY"
+        android:src="@drawable/yooseungho"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:riv_corner_radius="12dp" />
 
     <TextView
         android:id="@+id/react_count"
@@ -34,14 +35,88 @@
         app:layout_constraintStart_toStartOf="@+id/cover_photo" />
 
     <ImageView
-        android:id="@+id/react_iv"
-        android:layout_width="90dp"
+        android:id="@+id/react_iv7"
+        android:layout_width="30dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="24dp"
+        android:src="@drawable/neutral_ic"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/react_count"
+        app:layout_constraintStart_toStartOf="@+id/react_iv6"
+        app:layout_constraintEnd_toEndOf="@id/react_iv6"
+        app:layout_constraintTop_toTopOf="@+id/react_count" />
+
+    <ImageView
+        android:id="@+id/react_iv6"
+        android:layout_width="30dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="24dp"
+        android:src="@drawable/fear_ic"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/react_count"
+        app:layout_constraintStart_toStartOf="@+id/react_iv5"
+        app:layout_constraintEnd_toEndOf="@id/react_iv5"
+        app:layout_constraintTop_toTopOf="@+id/react_count" />
+
+    <ImageView
+        android:id="@+id/react_iv5"
+        android:layout_width="30dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="24dp"
+        android:src="@drawable/sad_ic"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/react_count"
+        app:layout_constraintStart_toStartOf="@+id/react_iv4"
+        app:layout_constraintEnd_toEndOf="@id/react_iv4"
+        app:layout_constraintTop_toTopOf="@+id/react_count" />
+
+    <ImageView
+        android:id="@+id/react_iv4"
+        android:layout_width="30dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="24dp"
+        android:src="@drawable/neutral_ic"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/react_count"
+        app:layout_constraintStart_toStartOf="@+id/react_iv3"
+        app:layout_constraintEnd_toEndOf="@id/react_iv3"
+        app:layout_constraintTop_toTopOf="@+id/react_count" />
+
+    <ImageView
+        android:id="@+id/react_iv3"
+        android:layout_width="30dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="24dp"
+        android:src="@drawable/fear_ic"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/react_count"
+        app:layout_constraintStart_toStartOf="@+id/react_iv2"
+        app:layout_constraintEnd_toEndOf="@id/react_iv2"
+        app:layout_constraintTop_toTopOf="@+id/react_count" />
+
+    <ImageView
+        android:id="@+id/react_iv2"
+        android:layout_width="30dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="24dp"
+        android:src="@drawable/sad_ic"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/react_count"
+        app:layout_constraintStart_toStartOf="@+id/react_iv1"
+        app:layout_constraintEnd_toEndOf="@id/react_iv1"
+        app:layout_constraintTop_toTopOf="@+id/react_count" />
+
+    <ImageView
+        android:id="@+id/react_iv1"
+        android:layout_width="40dp"
         android:layout_height="36dp"
         android:layout_marginStart="4dp"
-        android:src="@drawable/react_group"
+        android:src="@drawable/haha_ic"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/react_count"
         app:layout_constraintStart_toEndOf="@+id/react_count"
         app:layout_constraintTop_toTopOf="@+id/react_count" />
+
 
     <View
         android:id="@+id/react_view"
@@ -96,9 +171,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/poppins_medium"
+        android:text="Reacted"
         android:textColor="@color/white"
         android:textSize="10sp"
-        android:text="Reacted"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/react_view"
         app:layout_constraintEnd_toEndOf="@id/react_view"

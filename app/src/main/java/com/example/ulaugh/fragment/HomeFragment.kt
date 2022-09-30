@@ -170,7 +170,6 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
     }
 
     private fun getHomeData() {
-        val reactionsList: MutableList<Reactions> = ArrayList()
 //        reactionsList.clear()
         for (friendId in friendsList) {
             postShareRef!!.child(friendId).addValueEventListener(object : ValueEventListener {
@@ -179,6 +178,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                         val keyValue = postSnap.key.toString()
 //                        val totalReactions = postSnap.child(Constants.FRIENDS_REF).childrenCount
                         var userReaction = ""
+                        val reactionsList: MutableList<Reactions> = ArrayList()
 
 //                        if (postShareRef!!.child(friendId).child(Constants.REACTION)
 //                                .child("user_id")
@@ -186,7 +186,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                        ) //current user reaction
 //                            userReaction = postSnap.child(Constants.REACTION)
 //                                .child(Constants.REACTION_TYPE).value.toString()
-                        reactionsList.clear()
+//                        reactionsList.clear()
                         for (reactionItem in postSnap.child(Constants.REACTION).children) {
                             val reactions = reactionItem.getValue(Reactions::class.java)!!
                             if (reactions.user_id == FirebaseAuth.getInstance().currentUser!!.uid)
@@ -207,7 +207,9 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                             post.date_time,
                             post.user_name,
                             post.full_name,
-                            post.tagsList, reactionsList, userReaction
+                            post.tagsList,
+                            post.profile_image,
+                            reactionsList, userReaction
                         )
                         Log.d(TAG, "onDataChange: ${userReaction}\n")
                         newsFeedList.add(postItem)

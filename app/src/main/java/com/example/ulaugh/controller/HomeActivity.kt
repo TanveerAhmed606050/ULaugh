@@ -120,11 +120,14 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
 //            storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
 //                .child("${System.currentTimeMillis()}.mp4")
         val systemTime = System.currentTimeMillis().toString()
-        storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid).child("${systemTime}.png").putFile(imageUri!!).addOnSuccessListener { taskSnapshot ->
+        storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid).child("${systemTime}.png")
+            .putFile(imageUri!!).addOnSuccessListener { taskSnapshot ->
             if (taskSnapshot.metadata != null) {
-                val taskUrl = storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid).child("${systemTime}.png").downloadUrl
+                val taskUrl = taskSnapshot!!.metadata!!.reference!!.downloadUrl
+//                val taskUrl = storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid).child("${systemTime}.png").downloadUrl
                 taskUrl.addOnSuccessListener {
-                    val imageUrl = taskUrl.result.toString()
+                    val imageUrl = it.toString()
+//                    val imageUrl = taskUrl.result.toString()
                     val shareInfo = PostShareInfo(
                         FirebaseAuth.getInstance().currentUser!!.uid,
                         imageUrl,
@@ -134,17 +137,19 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
                         fullName,
                         tagsList,
                         Constants.REACTION,
-                        mediaTypeRaw
+                        mediaTypeRaw,
+                        sharePref.readString(Constants.PROFILE_PIC, "")!!
                     )
                     val imageUploadId = databaseReference.push().key
 
                     databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
                         .child(imageUploadId!!).setValue(shareInfo)
-                        .addOnCompleteListener {
-                            if (it.isSuccessful) {
+                        .addOnCompleteListener {task->
+                            if (task.isSuccessful) {
                                 Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show()
-                                databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                                    .child(imageUploadId).child(Constants.POST_ID).setValue(imageUploadId)
+//                                databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                                    .child(imageUploadId)
+//                                    .setValue(shareInfo)
 //                                    .child(Constants.REACTION)
 //                                    .child(FirebaseAuth.getInstance().currentUser!!.uid)
 //                                    .setValue("")

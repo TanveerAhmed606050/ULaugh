@@ -13,7 +13,7 @@ import java.io.File
 
 object DecodeImage {
 
-    fun getRealPathFromURI(contentURI: Uri, context: Context): String? {
+    private fun getRealPathFromURI(contentURI: Uri, context: Context): String? {
 //        val contentUri = Uri.parse(contentURI)
         val cursor: Cursor? = context.contentResolver.query(contentURI, null, null, null, null)
         return if (cursor == null) {
@@ -27,7 +27,7 @@ object DecodeImage {
 
     suspend fun compressImage(imageUri:Uri, context: Context):Uri{
         val imageUrl = getRealPathFromURI(imageUri, context)
-        var compressedImageFile:File? = null
+        val compressedImageFile:File?
         val file = File(imageUrl!!)
         compressedImageFile = if (file.length() > 550000) {
             Compressor.compress(context, file) {
