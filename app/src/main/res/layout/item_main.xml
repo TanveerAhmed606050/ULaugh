@@ -117,7 +117,6 @@
         app:layout_constraintStart_toEndOf="@+id/react_count"
         app:layout_constraintTop_toTopOf="@+id/react_count" />
 
-
     <View
         android:id="@+id/react_view"
         android:layout_width="80dp"
@@ -153,15 +152,13 @@
         app:layout_constraintStart_toEndOf="@+id/emoji"
         app:layout_constraintTop_toTopOf="@+id/emoji" />
 
-    <TextView
+    <ImageView
         android:id="@+id/reacted_emoji"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_marginTop="2dp"
-        android:text=""
-        android:textColor="@color/white"
-        android:textSize="12sp"
-        android:visibility="visible"
+        android:src="@drawable/fear_ic"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@+id/react_view"
         app:layout_constraintStart_toStartOf="@+id/react_view"
         app:layout_constraintTop_toTopOf="@+id/react_view" />

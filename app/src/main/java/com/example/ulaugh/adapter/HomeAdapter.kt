@@ -1,10 +1,13 @@
 package com.example.ulaugh.adapter
 
 import android.content.Context
+import android.media.Image
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.bumptech.glide.Glide
@@ -116,7 +119,7 @@ class HomeAdapter(
                 binding.timeTv.text = Helper.covertTimeToText(date)
                 binding.reactCount.text = Helper.prettyCount(post.reaction!!.size)
                 val emotionsList = countReactions(post.reaction!!)
-//                setEmotions(emotionsList)
+                setEmotions(emotionsList, context)
                 if (post.reaction_type!!.isNotEmpty()) {
                     Glide.with(context)
                         .load(post.image_url)
@@ -132,7 +135,7 @@ class HomeAdapter(
 //                    val str = "0x1F60A"
 //                    val inter = java.lang.Long.parseLong("0x1F60A", 16)
 //                    binding.reactedEmoji.text = String(Character.toChars(0x1F389))
-                    binding.reactedEmoji.text = getEmojiByUnicode(post.reaction_type!!)
+                    setSelfReactEmoji(binding.reactedEmoji, post.reaction_type!!, context)
                 } else {
                     Glide.with(context)
                         .load(post.image_url)
@@ -155,7 +158,7 @@ class HomeAdapter(
                     .placeholder(R.drawable.seokangjoon)
                     .into(binding.userPhoto)
                 binding.coverPhoto.setOnClickListener {
-                    onClickListener.onClick(post, Constants.POST)
+                    onClickListener.onClick(post, Constants.POST, emotionsList)
                 }
                 binding.reactView.setOnClickListener {
                     onClickListener.onClick(post, Constants.REACTION)
@@ -163,18 +166,247 @@ class HomeAdapter(
                 binding.userPhoto.setOnClickListener {
                     onClickListener.onClick(post, Constants.PROFILE)
                 }
+                binding.followView.setOnClickListener {
+                    onClickListener.onClick(post, Constants.FOLLOW)
+                }
+
             }
 
-            private fun setEmotions(emotionsList: MutableList<Emoji>) {
-                for (emoji in emotionsList){
-                    when(emoji.name){
-
+            private fun setEmotions(emotionsList: List<Emoji>, context: Context) {
+                var position = 1 //set half emotions
+                for (emotion in emotionsList) {
+                    when (position) {
+                        1 -> {
+                            when (emotion.name) {
+                                "happy" -> {
+                                    binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                                    binding.reactIv1.visibility = View.VISIBLE
+                                }
+                                "sad" -> {
+                                    binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv1.visibility = View.VISIBLE
+                                }
+                                "fear" -> {
+                                    binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv1.visibility = View.VISIBLE
+                                }
+                                "neutral" -> {
+                                    binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                                    binding.reactIv1.visibility = View.VISIBLE
+                                }
+                                "angry" -> {
+                                    binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                                    binding.reactIv1.visibility = View.VISIBLE
+                                }
+                                "surprise" -> {
+                                    binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv1.visibility = View.VISIBLE
+                                }
+                                "disgust" -> {
+                                    binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv1.visibility = View.VISIBLE
+                                }
+                            }
+                        }
+                        2 -> {
+                            when (emotion.name) {
+                                "happy" -> {
+                                    binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                                    binding.reactIv2.visibility = View.VISIBLE
+                                }
+                                "sad" -> {
+                                    binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv2.visibility = View.VISIBLE
+                                }
+                                "fear" -> {
+                                    binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv2.visibility = View.VISIBLE
+                                }
+                                "neutral" -> {
+                                    binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                                    binding.reactIv2.visibility = View.VISIBLE
+                                }
+                                "angry" -> {
+                                    binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                                    binding.reactIv2.visibility = View.VISIBLE
+                                }
+                                "surprise" -> {
+                                    binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv2.visibility = View.VISIBLE
+                                }
+                                "disgust" -> {
+                                    binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv2.visibility = View.VISIBLE
+                                }
+                            }
+                        }
+                        3 -> {
+                            when (emotion.name) {
+                                "happy" -> {
+                                    binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                                    binding.reactIv3.visibility = View.VISIBLE
+                                }
+                                "sad" -> {
+                                    binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv3.visibility = View.VISIBLE
+                                }
+                                "fear" -> {
+                                    binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv3.visibility = View.VISIBLE
+                                }
+                                "neutral" -> {
+                                    binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                                    binding.reactIv3.visibility = View.VISIBLE
+                                }
+                                "angry" -> {
+                                    binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                                    binding.reactIv3.visibility = View.VISIBLE
+                                }
+                                "surprise" -> {
+                                    binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv3.visibility = View.VISIBLE
+                                }
+                                "disgust" -> {
+                                    binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv3.visibility = View.VISIBLE
+                                }
+                            }
+                        }
+                        4 -> {
+                            when (emotion.name) {
+                                "happy" -> {
+                                    binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                                    binding.reactIv4.visibility = View.VISIBLE
+                                }
+                                "sad" -> {
+                                    binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv4.visibility = View.VISIBLE
+                                }
+                                "fear" -> {
+                                    binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv4.visibility = View.VISIBLE
+                                }
+                                "neutral" -> {
+                                    binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                                    binding.reactIv4.visibility = View.VISIBLE
+                                }
+                                "angry" -> {
+                                    binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                                    binding.reactIv4.visibility = View.VISIBLE
+                                }
+                                "surprise" -> {
+                                    binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv4.visibility = View.VISIBLE
+                                }
+                                "disgust" -> {
+                                    binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv4.visibility = View.VISIBLE
+                                }
+                            }
+                        }
+                        5 -> {
+                            when (emotion.name) {
+                                "happy" -> {
+                                    binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                                    binding.reactIv5.visibility = View.VISIBLE
+                                }
+                                "sad" -> {
+                                    binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv5.visibility = View.VISIBLE
+                                }
+                                "fear" -> {
+                                    binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv5.visibility = View.VISIBLE
+                                }
+                                "neutral" -> {
+                                    binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                                    binding.reactIv5.visibility = View.VISIBLE
+                                }
+                                "angry" -> {
+                                    binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                                    binding.reactIv5.visibility = View.VISIBLE
+                                }
+                                "surprise" -> {
+                                    binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv5.visibility = View.VISIBLE
+                                }
+                                "disgust" -> {
+                                    binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv5.visibility = View.VISIBLE
+                                }
+                            }
+                        }
+                        6 -> {
+                            when (emotion.name) {
+                                "happy" -> {
+                                    binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                                    binding.reactIv6.visibility = View.VISIBLE
+                                }
+                                "sad" -> {
+                                    binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv6.visibility = View.VISIBLE
+                                }
+                                "fear" -> {
+                                    binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv6.visibility = View.VISIBLE
+                                }
+                                "neutral" -> {
+                                    binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                                    binding.reactIv6.visibility = View.VISIBLE
+                                }
+                                "angry" -> {
+                                    binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                                    binding.reactIv6.visibility = View.VISIBLE
+                                }
+                                "surprise" -> {
+                                    binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv6.visibility = View.VISIBLE
+                                }
+                                "disgust" -> {
+                                    binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv6.visibility = View.VISIBLE
+                                }
+                            }
+                        }
+                        7 -> {
+                            when (emotion.name) {
+                                "happy" -> {
+                                    binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                                    binding.reactIv7.visibility = View.VISIBLE
+                                }
+                                "sad" -> {
+                                    binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv7.visibility = View.VISIBLE
+                                }
+                                "fear" -> {
+                                    binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv7.visibility = View.VISIBLE
+                                }
+                                "neutral" -> {
+                                    binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                                    binding.reactIv7.visibility = View.VISIBLE
+                                }
+                                "angry" -> {
+                                    binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                                    binding.reactIv7.visibility = View.VISIBLE
+                                }
+                                "surprise" -> {
+                                    binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                                    binding.reactIv7.visibility = View.VISIBLE
+                                }
+                                "disgust" -> {
+                                    binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                                    binding.reactIv7.visibility = View.VISIBLE
+                                }
+                            }
+                        }
                     }
+                    position++
                 }
             }
         }
 
-        fun countReactions(reactionList: MutableList<Reactions>): MutableList<Emoji> {
+        fun countReactions(reactionList: MutableList<Reactions>): List<Emoji> {
             for (emotion in reactionList) {
                 run {
                     if (emojiCount.any { it.name == "neutral" } && emotion.reaction_type == "neutral") {
@@ -216,35 +448,43 @@ class HomeAdapter(
                     }
                 }
             }
-            return emojiCount
+
+            return emojiCount.sortedByDescending { it.count }
         }
 
-        open fun getEmojiByUnicode(emoji: String): String? {
-            var unicode = 0
+        open fun setSelfReactEmoji(reactView: ImageView, emoji: String, context: Context) {
+//            var unicode = 0
             when (emoji) {
                 "angry" -> {
-                    unicode = 0x1F621
+                    reactView.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+//                    unicode = 0x1F621
                 }
                 "disgust" -> {
-                    unicode = 0x1F621
+//                    unicode = 0x1F621
+                    reactView.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
                 }
                 "fear" -> {
-                    unicode = 0x1F922
+//                    unicode = 0x1F922
+                    reactView.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
                 }
                 "happy" -> {
-                    unicode = 0x1F602
+//                    unicode = 0x1F602
+                    reactView.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
                 }
                 "neutral" -> {
-                    unicode = 0x1F611
+//                    unicode = 0x1F611
+                    reactView.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
                 }
                 "sad" -> {
-                    unicode = 0x1F62A
+//                    unicode = 0x1F62A
+                    reactView.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
                 }
                 "surprise" -> {
-                    unicode = 0x1F631
+//                    unicode = 0x1F631
+                    reactView.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
                 }
             }
-            return String(Character.toChars(unicode))
+//            return String(Character.toChars(unicode))
         }
 
         class AdsViewHolder(private val binding: ItemGoogleAdBinding) :

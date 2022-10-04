@@ -81,6 +81,7 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
         supportActionBar?.hide()
         init()
         setTabLayout()
+        sharePref.writeBoolean(Constants.EMOTION_UPDATE, true)//stop api calling
     }
 
     private fun init() {

@@ -1,8 +1,10 @@
 package com.example.ulaugh.controller
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
@@ -11,6 +13,7 @@ import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.ReactAdapter
 import com.example.ulaugh.databinding.ActivityReactDetailBinding
+import com.example.ulaugh.model.Emoji
 import com.example.ulaugh.model.HomeRecyclerViewItem
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Helper
@@ -30,6 +33,7 @@ class ReactDetailActivity : AppCompatActivity() {
     private val binding get() = _binding!!
     private var state: CollapsingToolbarLayoutState? = null
     private var postDetail: HomeRecyclerViewItem.SharePostData? = null
+    private var emotionsList: List<Emoji>? = null
 
     private enum class CollapsingToolbarLayoutState {
         EXPANDED, COLLAPSED, INTERNEDIATE
@@ -52,36 +56,41 @@ class ReactDetailActivity : AppCompatActivity() {
             )
         }
         initViews()
-        setToolbarFun()
+//        setToolbarFun()
         setGraph()
         setAdapter()
-        setAppBar()
+        setEmotions(emotionsList!!, this)
+//        setAppBar()
     }
 
     private fun initViews() {
-        if (intent != null)
+        if (intent != null) {
             postDetail =
                 Gson().fromJson(
                     intent.getStringExtra(Constants.POST),
                     object : TypeToken<HomeRecyclerViewItem.SharePostData>() {}.type
                 )
-        if (postDetail != null){
+            emotionsList = Gson().fromJson(intent.getStringExtra(Constants.EMOTIONS_DATA),
+                object : TypeToken<List<Emoji>>() {}.type
+            )
+        }
+        if (postDetail != null) {
             Glide.with(this)
                 .load(postDetail!!.image_url)
                 .centerCrop()
                 .fitCenter()
-                .thumbnail(0.3f)
+                .thumbnail()
                 .placeholder(R.drawable.seokangjoon)
-                .into(binding.profileIv)
+                .into(binding.coverIv)
             binding.included.postDetail.text = postDetail!!.description
             binding.included.trendingTv.text = postDetail!!.tagsList
-            binding.countReact.text = Helper.prettyCount(postDetail!!.reaction!!.size)
+            binding.reactCount.text = Helper.prettyCount(postDetail!!.reaction!!.size)
         }
-        binding.emoji.text = "U+1F970 U+1F602 U+1F92A"
+//        binding.emoji.text = "U+1F970 U+1F602 U+1F92A"
     }
 
     private fun setAdapter() {
-        val adapter = ReactAdapter(this)
+        val adapter = ReactAdapter(emotionsList!! , postDetail!!.reaction!!.size, this)
         object : LinearLayoutManager(this) {
             override fun canScrollVertically(): Boolean {
                 return false
@@ -92,12 +101,12 @@ class ReactDetailActivity : AppCompatActivity() {
 
     private fun setGraph() {
 
-        val arrayList1 = arrayListOf<Double>()
-        arrayList1.add(0.0)
-        arrayList1.add(30.0)
-        arrayList1.add(40.0)
-        arrayList1.add(20.0)
-        arrayList1.add(90.0)
+//        val arrayList1 = arrayListOf<Double>()
+//        arrayList1.add(0.0)
+//        arrayList1.add(30.0)
+//        arrayList1.add(40.0)
+//        arrayList1.add(20.0)
+//        arrayList1.add(90.0)
 //        if (notes.bbm.isEmpty())
 //            noBpmTv.visibility = View.VISIBLE
 //        for (i in 0 until notes.bbm.size) {
@@ -135,7 +144,7 @@ class ReactDetailActivity : AppCompatActivity() {
                                 )
                         )
                         .data(
-                            Array(arrayList1.size) { i -> (arrayList1[i]) }
+                            Array(emotionsList!!.size) { i -> (emotionsList!![i].count) }
                         )
                 )
             )
@@ -144,50 +153,283 @@ class ReactDetailActivity : AppCompatActivity() {
         aaChartView.aa_drawChartWithChartModel(aaChartModel)
     }
 
-    private fun setAppBar() {
-        binding.appBar.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
-            if (verticalOffset == 0) {
-                if (state != CollapsingToolbarLayoutState.EXPANDED) {
-                    state =
-                        CollapsingToolbarLayoutState.EXPANDED
-//                    binding.collapsingToolbar.title = "EXPANDED"
-                    //                        danmakuView.resume()
-                }
-            } else if (Math.abs(verticalOffset) >= appBarLayout.totalScrollRange) {
-                if (state != CollapsingToolbarLayoutState.COLLAPSED) {
-//                    binding.toolTxt.setText("google")
-//                    binding.hideShowAppbar.visibility = View.VISIBLE
-//                    binding.toolbarImage.setImageResource(R.drawable.ic_lock_lock)
-                    binding.toolbar.title = "google"
-                    Glide.with(this)
-                        .load(postDetail!!.image_url)
-                        .centerCrop()
-                        .fitCenter()
-                        .thumbnail(0.3f)
-                        .placeholder(R.drawable.seokangjoon)
-                        .into(binding.profileIv)
-                    state =
-                        CollapsingToolbarLayoutState.COLLAPSED
-                    //                        danmakuView.pause()
-                }
-            } else {
-                if (state != CollapsingToolbarLayoutState.INTERNEDIATE) {
-                    if (state == CollapsingToolbarLayoutState.COLLAPSED) {
-//                        binding.hideShowAppbar.visibility = View.GONE
-                        binding.toolbar.title = "google"
+//    private fun setAppBar() {
+//        binding.appBar.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
+//            if (verticalOffset == 0) {
+//                if (state != CollapsingToolbarLayoutState.EXPANDED) {
+//                    state =
+//                        CollapsingToolbarLayoutState.EXPANDED
+////                    binding.collapsingToolbar.title = "EXPANDED"
+//                    //                        danmakuView.resume()
+//                }
+//            } else if (Math.abs(verticalOffset) >= appBarLayout.totalScrollRange) {
+//                if (state != CollapsingToolbarLayoutState.COLLAPSED) {
+////                    binding.toolTxt.setText("google")
+////                    binding.hideShowAppbar.visibility = View.VISIBLE
+////                    binding.toolbarImage.setImageResource(R.drawable.ic_lock_lock)
+//                    binding.toolbar.title = "google"
+//                    Glide.with(this)
+//                        .load(postDetail!!.image_url)
+//                        .centerCrop()
+//                        .fitCenter()
+//                        .thumbnail(0.3f)
+//                        .placeholder(R.drawable.seokangjoon)
+//                        .into(binding.profileIv)
+//                    state =
+//                        CollapsingToolbarLayoutState.COLLAPSED
+//                    //                        danmakuView.pause()
+//                }
+//            } else {
+//                if (state != CollapsingToolbarLayoutState.INTERNEDIATE) {
+//                    if (state == CollapsingToolbarLayoutState.COLLAPSED) {
+////                        binding.hideShowAppbar.visibility = View.GONE
+//                        binding.toolbar.title = "google"
+//                    }
+////                    binding.collapsingToolbar.setTitle("INTERNEDIATE")
+//                    state =
+//                        CollapsingToolbarLayoutState.INTERNEDIATE
+//                }
+//            }
+//        }
+//    }
+//
+//    private fun setToolbarFun() {
+//        setSupportActionBar(binding.toolbar)
+//        supportActionBar?.setDisplayShowTitleEnabled(false)
+//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+//    }
+
+    private fun setEmotions(emotionsList: List<Emoji>, context: Context) {
+        var position = 1 //set half emotions
+        for (emotion in emotionsList) {
+            when (position) {
+                1 -> {
+                    when (emotion.name) {
+                        "happy" -> {
+                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                            binding.reactIv1.visibility = View.VISIBLE
+                        }
+                        "sad" -> {
+                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv1.visibility = View.VISIBLE
+                        }
+                        "fear" -> {
+                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv1.visibility = View.VISIBLE
+                        }
+                        "neutral" -> {
+                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                            binding.reactIv1.visibility = View.VISIBLE
+                        }
+                        "angry" -> {
+                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                            binding.reactIv1.visibility = View.VISIBLE
+                        }
+                        "surprise" -> {
+                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv1.visibility = View.VISIBLE
+                        }
+                        "disgust" -> {
+                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv1.visibility = View.VISIBLE
+                        }
                     }
-//                    binding.collapsingToolbar.setTitle("INTERNEDIATE")
-                    state =
-                        CollapsingToolbarLayoutState.INTERNEDIATE
+                }
+                2 -> {
+                    when (emotion.name) {
+                        "happy" -> {
+                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                            binding.reactIv2.visibility = View.VISIBLE
+                        }
+                        "sad" -> {
+                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv2.visibility = View.VISIBLE
+                        }
+                        "fear" -> {
+                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv2.visibility = View.VISIBLE
+                        }
+                        "neutral" -> {
+                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                            binding.reactIv2.visibility = View.VISIBLE
+                        }
+                        "angry" -> {
+                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                            binding.reactIv2.visibility = View.VISIBLE
+                        }
+                        "surprise" -> {
+                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv2.visibility = View.VISIBLE
+                        }
+                        "disgust" -> {
+                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv2.visibility = View.VISIBLE
+                        }
+                    }
+                }
+                3 -> {
+                    when (emotion.name) {
+                        "happy" -> {
+                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                            binding.reactIv3.visibility = View.VISIBLE
+                        }
+                        "sad" -> {
+                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv3.visibility = View.VISIBLE
+                        }
+                        "fear" -> {
+                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv3.visibility = View.VISIBLE
+                        }
+                        "neutral" -> {
+                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                            binding.reactIv3.visibility = View.VISIBLE
+                        }
+                        "angry" -> {
+                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                            binding.reactIv3.visibility = View.VISIBLE
+                        }
+                        "surprise" -> {
+                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv3.visibility = View.VISIBLE
+                        }
+                        "disgust" -> {
+                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv3.visibility = View.VISIBLE
+                        }
+                    }
+                }
+                4 -> {
+                    when (emotion.name) {
+                        "happy" -> {
+                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                            binding.reactIv4.visibility = View.VISIBLE
+                        }
+                        "sad" -> {
+                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv4.visibility = View.VISIBLE
+                        }
+                        "fear" -> {
+                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv4.visibility = View.VISIBLE
+                        }
+                        "neutral" -> {
+                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                            binding.reactIv4.visibility = View.VISIBLE
+                        }
+                        "angry" -> {
+                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                            binding.reactIv4.visibility = View.VISIBLE
+                        }
+                        "surprise" -> {
+                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv4.visibility = View.VISIBLE
+                        }
+                        "disgust" -> {
+                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv4.visibility = View.VISIBLE
+                        }
+                    }
+                }
+                5 -> {
+                    when (emotion.name) {
+                        "happy" -> {
+                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                            binding.reactIv5.visibility = View.VISIBLE
+                        }
+                        "sad" -> {
+                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv5.visibility = View.VISIBLE
+                        }
+                        "fear" -> {
+                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv5.visibility = View.VISIBLE
+                        }
+                        "neutral" -> {
+                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                            binding.reactIv5.visibility = View.VISIBLE
+                        }
+                        "angry" -> {
+                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                            binding.reactIv5.visibility = View.VISIBLE
+                        }
+                        "surprise" -> {
+                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv5.visibility = View.VISIBLE
+                        }
+                        "disgust" -> {
+                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv5.visibility = View.VISIBLE
+                        }
+                    }
+                }
+                6 -> {
+                    when (emotion.name) {
+                        "happy" -> {
+                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                            binding.reactIv6.visibility = View.VISIBLE
+                        }
+                        "sad" -> {
+                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv6.visibility = View.VISIBLE
+                        }
+                        "fear" -> {
+                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv6.visibility = View.VISIBLE
+                        }
+                        "neutral" -> {
+                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                            binding.reactIv6.visibility = View.VISIBLE
+                        }
+                        "angry" -> {
+                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                            binding.reactIv6.visibility = View.VISIBLE
+                        }
+                        "surprise" -> {
+                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv6.visibility = View.VISIBLE
+                        }
+                        "disgust" -> {
+                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv6.visibility = View.VISIBLE
+                        }
+                    }
+                }
+                7 -> {
+                    when (emotion.name) {
+                        "happy" -> {
+                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                            binding.reactIv7.visibility = View.VISIBLE
+                        }
+                        "sad" -> {
+                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv7.visibility = View.VISIBLE
+                        }
+                        "fear" -> {
+                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv7.visibility = View.VISIBLE
+                        }
+                        "neutral" -> {
+                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                            binding.reactIv7.visibility = View.VISIBLE
+                        }
+                        "angry" -> {
+                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                            binding.reactIv7.visibility = View.VISIBLE
+                        }
+                        "surprise" -> {
+                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                            binding.reactIv7.visibility = View.VISIBLE
+                        }
+                        "disgust" -> {
+                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                            binding.reactIv7.visibility = View.VISIBLE
+                        }
+                    }
                 }
             }
+            position++
         }
-    }
-
-    private fun setToolbarFun() {
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

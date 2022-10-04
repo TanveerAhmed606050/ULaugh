@@ -11,6 +11,7 @@ import com.example.ulaugh.R
 import com.example.ulaugh.adapter.PostsAdapter
 import com.example.ulaugh.databinding.ActivityProfileDetailBinding
 import com.example.ulaugh.interfaces.PostClickListener
+import com.example.ulaugh.model.Emoji
 import com.example.ulaugh.model.PostItem
 import com.example.ulaugh.model.UserRequest
 import com.example.ulaugh.utils.Constants
@@ -162,7 +163,8 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
         _binding = null
     }
 
-    override fun onClick(post: Any, type: String) {
 
+    override fun onClick(post: Any, type: String, emotionList: List<Emoji>?) {
+        TODO("Not yet implemented")
     }
 }

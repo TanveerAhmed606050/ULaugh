@@ -31,6 +31,7 @@ import com.example.ulaugh.service.APictureCapturingService
 import com.example.ulaugh.service.PictureCapturingServiceImpl
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Constants.TAG
+import com.example.ulaugh.utils.SharePref
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.ml.vision.FirebaseVision
@@ -44,6 +45,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class CameraActivity : AppCompatActivity(), PictureCapturingListener,
@@ -56,6 +58,8 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
     private var mImageView: ImageView? = null
     private var mClassificationResult: HashMap<String, ArrayList<Pair<String, String>>>? = null
     private var postDetail: HomeRecyclerViewItem.SharePostData? = null
+    @Inject
+    lateinit var sharePref: SharePref
 
     private val requiredPermissions = arrayOf(
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -73,6 +77,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         setContentView(binding.root)
 
         initViews()
+        clickEvents()
 
         checkPermissions()
         // getting instance of the Service from PictureCapturingServiceImpl
@@ -88,7 +93,14 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         mImageView = findViewById(R.id.image_view)
     }
 
+    private fun clickEvents() {
+        binding.crossBtn.setOnClickListener {
+            finish()
+        }
+    }
+
     private fun initViews() {
+        sharePref.writeBoolean(Constants.EMOTION_UPDATE, true)//api home call
         if (intent != null)
             postDetail =
                 Gson().fromJson(
@@ -106,6 +118,8 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
             postRef = FirebaseDatabase.getInstance().getReference(Constants.POST_SHARE_REF)
                 .child(postDetail!!.firebase_id).child(postDetail!!.post_id)
                 .child(Constants.REACTION)
+            binding.postDetail.text = postDetail!!.description
+            binding.tagsTv.text = postDetail!!.tagsList
         }
 
 //        Log.d("lsdagj", "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}")
@@ -116,6 +130,8 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
             override fun onDataChange(snapshot: DataSnapshot) {
                 postRef!!.runTransaction(object : Transaction.Handler {
                     override fun doTransaction(mutableData: MutableData): Transaction.Result {
+//                        val inte = reaction.toInt()
+//                        Log.d(TAG, "Emoji: $inte")
                         val reaction =
                             Reactions(reaction, FirebaseAuth.getInstance().currentUser!!.uid)
                         var lastKey = "-1"
@@ -144,11 +160,11 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
             }
 
             override fun onCancelled(error: DatabaseError) {
-//                Toast.makeText(
-//                    this@CameraActivity,
-//                    "onDataChange: ${error.message}",
-//                    Toast.LENGTH_SHORT
-//                ).show()
+                Toast.makeText(
+                    this@CameraActivity,
+                    "onDataChange: ${error.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         })
 
@@ -321,7 +337,6 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                             }
 
                             override fun onCancelled(error: DatabaseError) {
-                                TODO("Not yet implemented")
                             }
 
                         })
@@ -331,6 +346,8 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
 //                        Toast.LENGTH_LONG
 //                    ).show()
                     setUserReaction(mClassificationResult!!["Face 1"]?.get(0)!!.first)
+                    setEmotions(mClassificationResult!!["Face 1"]?.get(0)!!.first)
+                    binding.containerLayout.invalidate()
 //                    finish()
 //                    if (faces.size == 1) {
 //                        mClassificationExpandableListView!!.expandGroup(0)
@@ -338,6 +355,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                     // If no faces are found
                 } else {
                     setUserReaction("neutral")
+//                    setEmotions("neutral")
 //                    Toast.makeText(
 //                        this@CameraActivity,
 //                        getString(R.string.faceless),
@@ -370,6 +388,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         mClassificationResult!!.put(groupName, faceGroup)
     }
 
+
     //Change the interface depending on the status of calculations
     private fun setCalculationStatusUI(isCalculationRunning: Boolean) {
         if (isCalculationRunning) {
@@ -383,24 +402,66 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         when (emotion) {
             "angry" -> {
                 binding.reactDetail.text = "You're feeling angry"
+                binding.reactIv.setImageDrawable(getDrawable(R.drawable.anger_emotion))
+                binding.reactDetail.visibility = View.VISIBLE
+                binding.reactIv.visibility = View.VISIBLE
+                binding.imageView.visibility = View.GONE
+                binding.postDetail.visibility = View.GONE
+                binding.tagsTv.visibility = View.GONE
             }
             "sad" -> {
                 binding.reactDetail.text = "You're so sad"
+                binding.reactIv.setImageDrawable(getDrawable(R.drawable.sad_ic))
+                binding.reactDetail.visibility = View.VISIBLE
+                binding.reactIv.visibility = View.VISIBLE
+                binding.imageView.visibility = View.GONE
+                binding.postDetail.visibility = View.GONE
+                binding.tagsTv.visibility = View.GONE
             }
             "happy" -> {
                 binding.reactDetail.text = "HAHA You're Happy"
+                binding.reactIv.setImageDrawable(getDrawable(R.drawable.haha_ic))
+                binding.reactDetail.visibility = View.VISIBLE
+                binding.reactIv.visibility = View.VISIBLE
+                binding.imageView.visibility = View.GONE
+                binding.postDetail.visibility = View.GONE
+                binding.tagsTv.visibility = View.GONE
             }
             "fear" -> {
                 binding.reactDetail.text = "You're in fear"
+                binding.reactIv.setImageDrawable(getDrawable(R.drawable.fear_ic))
+                binding.reactDetail.visibility = View.VISIBLE
+                binding.reactIv.visibility = View.VISIBLE
+                binding.imageView.visibility = View.GONE
+                binding.postDetail.visibility = View.GONE
+                binding.tagsTv.visibility = View.GONE
             }
             "surprise" -> {
                 binding.reactDetail.text = "You're surprising"
+                binding.reactIv.setImageDrawable(getDrawable(R.drawable.fear_ic))
+                binding.reactDetail.visibility = View.VISIBLE
+                binding.reactIv.visibility = View.VISIBLE
+                binding.imageView.visibility = View.GONE
+                binding.postDetail.visibility = View.GONE
+                binding.tagsTv.visibility = View.GONE
             }
             "neutral" -> {
                 binding.reactDetail.text = "Your expressions are emotionless"
+                binding.reactIv.setImageDrawable(getDrawable(R.drawable.neutral_ic))
+                binding.reactDetail.visibility = View.VISIBLE
+                binding.reactIv.visibility = View.VISIBLE
+                binding.imageView.visibility = View.GONE
+                binding.postDetail.visibility = View.GONE
+                binding.tagsTv.visibility = View.GONE
             }
             "disgust" -> {
                 binding.reactDetail.text = "You're feeling disgusting"
+                binding.reactIv.setImageDrawable(getDrawable(R.drawable.sad_ic))
+                binding.reactDetail.visibility = View.VISIBLE
+                binding.reactIv.visibility = View.VISIBLE
+                binding.imageView.visibility = View.GONE
+                binding.postDetail.visibility = View.GONE
+                binding.tagsTv.visibility = View.GONE
             }
         }
     }

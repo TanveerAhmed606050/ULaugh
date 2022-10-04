@@ -6,8 +6,14 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ulaugh.R
 import com.example.ulaugh.databinding.AdapterReactLayoutBinding
+import com.example.ulaugh.model.Emoji
+import kotlin.math.roundToInt
 
-class ReactAdapter(var context: Context) :
+class ReactAdapter(
+    private val reactionList: List<Emoji>,
+    val totalReaction: Int,
+    var context: Context
+) :
     RecyclerView.Adapter<ReactAdapter.ViewHolder>() {
     private var _binding: AdapterReactLayoutBinding? = null
     private val binding get() = _binding!!
@@ -22,34 +28,179 @@ class ReactAdapter(var context: Context) :
         RecyclerView.ViewHolder(binding.root)
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        when (position) {
-            0 -> {
-                binding.mostEmoji.text = getEmojiByUnicode(0x1F928)
-                binding.reactName.text = context.getText(R .string.express)
-            }
-            1 -> {
-                binding.mostEmoji.text = getEmojiByUnicode(0x1F60A)
-                binding.reactName.text = context.getText(R .string.sus_rea)
-            }
-            2 -> {
-                binding.mostEmoji.text = getEmojiByUnicode(0x1F602)
-                binding.reactName.text = context.getText(R .string.haha)
-            }
-            3 -> {
-                binding.mostEmoji.text = getEmojiByUnicode(0x1F970)
-                binding.reactName.text = context.getText(R .string.love_rea)
-            }
-            4 -> {
-                binding.mostEmoji.text = getEmojiByUnicode(0x1F631)
-//                binding.reactName.text = context.getText(R .string.sus_rea)
-            }
-        }
+        val reactionDetail = reactionList[position]
+        setEmotions(reactionDetail)
+//        when (position) {
+//            0 -> {
+//                binding.reactName.text = "${reactionDetail.name} Reacts"
+//                when (reactionDetail.name) {
+//                    "happy" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+//                    }
+//                    "angry" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+//                    }
+//                    "disgust" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+//                    }
+//                    "neutral" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+//                    }
+//                    "fear" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+//                    }
+//                    "surprise" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+//                    }
+//                    "sad" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+//                    }
+//                }
+//            }
+//            1 -> {
+//                when (reactionDetail.name) {
+//                    "happy" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+//                    }
+//                    "angry" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+//                    }
+//                    "disgust" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+//                    }
+//                    "neutral" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+//                    }
+//                    "fear" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+//                    }
+//                    "surprise" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+//                    }
+//                    "sad" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+//                    }
+//                }
+//            }
+//            2 -> {
+//                when (reactionDetail.name) {
+//                    "happy" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+//                    }
+//                    "angry" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+//                    }
+//                    "disgust" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+//                    }
+//                    "neutral" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+//                    }
+//                    "fear" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+//                    }
+//                    "surprise" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+//                    }
+//                    "sad" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+//                    }
+//                }
+//            }
+//            3 -> {
+//                when (reactionDetail.name) {
+//                    "happy" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+//                    }
+//                    "angry" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+//                    }
+//                    "disgust" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+//                    }
+//                    "neutral" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+//                    }
+//                    "fear" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+//                    }
+//                    "surprise" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+//                    }
+//                    "sad" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+//                    }
+//                }
+//            }
+//            4 -> {
+//                when (reactionDetail.name) {
+//                    "happy" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+//                    }
+//                    "angry" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+//                    }
+//                    "disgust" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+//                    }
+//                    "neutral" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+//                    }
+//                    "fear" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+//                    }
+//                    "surprise" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+//                    }
+//                    "sad" -> {
+//                        binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+//                    }
+//                }
+//            }
+//            5 -> {
+//
+//            }
+//            6 -> {
+//
+//            }
 //        val inbox = reactList[position]
     }
-    fun getEmojiByUnicode(unicode: Int): String {
-        return String(Character.toChars(unicode))
+
+
+    private fun setEmotions(reactionDetail: Emoji) {
+        val percent = (reactionDetail.count / totalReaction)
+        binding.reactPer.text = "$percent%"
+        binding.reactName.text = reactionDetail.name
+        when (reactionDetail.name) {
+            "happy" -> {
+                binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+            }
+            "angry" -> {
+                binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+            }
+            "disgust" -> {
+                binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+            }
+            "neutral" -> {
+                binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+            }
+            "fear" -> {
+                binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+            }
+            "surprise" -> {
+                binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+            }
+            "sad" -> {
+                binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+            }
+        }
     }
+
+
+    //    private fun getEmojiByUnicode(unicode: Int): String {
+//        return String(Character.toChars(unicode))
+//    }
     override fun getItemCount(): Int {
-        return 5
+        return reactionList.size
     }
 }

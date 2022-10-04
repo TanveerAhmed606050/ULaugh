@@ -60,15 +60,6 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 
         MobileAds.initialize(activity!!) {}
         setAdapter()
-        CoroutineScope(Dispatchers.Main).launch {
-            binding.progressBar.visibility = View.VISIBLE
-            getFriends()
-//            delay(600)
-//            getHomeData()
-            delay(3000)
-            getSuggestedFriends()
-            binding.progressBar.visibility = View.GONE
-        }
         clickEvents()
         searchFriend()
         initViews()
@@ -496,11 +487,93 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
             })
     }
 
-    override fun onClick(post: Any, type: String) {
+//    private fun callFollowFirebaseApi(postData: HomeRecyclerViewItem.SharePostData) {
+//        binding.progressBar.visibility = View.VISIBLE
+//        allUsersRef!!
+//            .addListenerForSingleValueEvent(object : ValueEventListener {
+//                override fun onDataChange(snapshot: DataSnapshot) {
+//                    if (snapshot.exists()) {
+//                        allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                            .child(Constants.FOLLOW)
+//                            .runTransaction(object : Transaction.Handler {
+//                                override fun doTransaction(mutableData: MutableData): Transaction.Result {
+//                                    var lastKey = "-1"
+//                                    for (child in mutableData.children) {
+//                                        lastKey = child.key!!
+//                                    }
+//                                    val nextKey = lastKey.toInt() + 1
+//                                    mutableData.child("" + nextKey).value =
+//                                        postData.firebase_id
+//
+//                                    // Set value and report transaction success
+//                                    return Transaction.success(mutableData)
+//                                }
+//
+//                                override fun onComplete(
+//                                    databaseError: DatabaseError?, b: Boolean,
+//                                    dataSnapshot: DataSnapshot?
+//                                ) {
+//                                    binding.progressBar.visibility = View.GONE
+//                                    Toast.makeText(
+//                                        requireContext(),
+//                                        "Added Friend successfully",
+//                                        Toast.LENGTH_SHORT
+//                                    )
+//                                        .show()
+////                                    suggestFriendsList.remove(suggestFriends)
+////                                    val suggestList =
+////                                        HomeRecyclerViewItem.SuggestList(suggestFriendsList)
+////                                    homeList[homeList.size-1] = suggestList
+////                                    binding.recyclerView.adapter!!.notifyDataSetChanged()
+//                                }
+//                            })
+//                    } else {
+//                        allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                            .child(Constants.FOLLOW)
+//                            .runTransaction(object : Transaction.Handler {
+//                                override fun doTransaction(mutableData: MutableData): Transaction.Result {
+//                                    var lastKey = "-1"
+//                                    for (child in mutableData.children) {
+//                                        lastKey = child.key!!
+//                                    }
+//                                    val nextKey = lastKey.toInt() + 1
+//                                    mutableData.child("" + nextKey).value =
+//                                        postData.firebase_id
+//                                    // Set value and report transaction success
+//                                    return Transaction.success(mutableData)
+//                                }
+//
+//                                override fun onComplete(
+//                                    databaseError: DatabaseError?, b: Boolean,
+//                                    dataSnapshot: DataSnapshot?
+//                                ) {
+//                                    binding.progressBar.visibility = View.GONE
+//                                    Toast.makeText(
+//                                        requireContext(),
+//                                        "Add friends Successfully",
+//                                        Toast.LENGTH_SHORT
+//                                    ).show()
+////                                    suggestFriendsList.remove(suggestFriends)
+////                                    val suggestList =
+////                                        HomeRecyclerViewItem.SuggestList(suggestFriendsList)
+////                                    homeList[homeList.size-1] = suggestList
+////                                    homeList.add(suggestList)
+////                                    binding.recyclerView.adapter!!.notifyDataSetChanged()
+//                                }
+//                            })
+//                    }
+//                }
+//
+//                override fun onCancelled(error: DatabaseError) {}
+//            })
+//    }
+
+    override fun onClick(post: Any, type: String, emotionList: List<Emoji>?) {
         when (type) {
             Constants.POST -> {
                 val intent = Intent(requireContext(), ReactDetailActivity::class.java)
                 intent.putExtra(Constants.POST, Gson().toJson(post))
+                intent.putExtra(Constants.EMOTIONS_DATA, Gson().toJson(emotionList))
                 requireContext().startActivity(intent)
             }
             Constants.REACTION -> {
@@ -522,10 +595,31 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                transaction.replace(R.id.parent, ProfileFragment(sharePostData.firebase_id))
 //                transaction.disallowAddToBackStack()
 //                transaction.commit()
-
+            }
+            Constants.FOLLOW -> {
+                val postData = post as HomeRecyclerViewItem.SharePostData
+//                callFollowFirebaseApi(postData)
             }
         }
     }
 
-
+    override fun onResume() {
+        super.onResume()
+        if (sharePref.readBoolean(Constants.EMOTION_UPDATE, true)) { //stop unnecessary api calling
+            homeList.clear()
+            friendsList.clear()
+            suggestFriendsList.clear()
+            newsFeedList.clear()
+            CoroutineScope(Dispatchers.Main).launch {
+                binding.progressBar.visibility = View.VISIBLE
+                getFriends()
+//            delay(600)
+//            getHomeData()
+                delay(3000)
+                getSuggestedFriends()
+                binding.progressBar.visibility = View.GONE
+            }
+            sharePref.writeBoolean(Constants.EMOTION_UPDATE, false)
+        }
+    }
 }

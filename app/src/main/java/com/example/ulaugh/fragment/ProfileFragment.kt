@@ -15,6 +15,7 @@ import com.example.ulaugh.adapter.PostsAdapter
 import com.example.ulaugh.controller.SettingActivity
 import com.example.ulaugh.databinding.FragmentProfileBinding
 import com.example.ulaugh.interfaces.PostClickListener
+import com.example.ulaugh.model.Emoji
 import com.example.ulaugh.model.PostItem
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.SharePref
@@ -173,7 +174,8 @@ class ProfileFragment : Fragment(), PostClickListener {
         _binding = null
     }
 
-    override fun onClick(post: Any, type: String) {
 
+    override fun onClick(post: Any, type: String, emotionList: List<Emoji>?) {
+        TODO("Not yet implemented")
     }
 }
