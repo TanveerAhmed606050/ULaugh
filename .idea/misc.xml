@@ -15,7 +15,9 @@
         <entry key="app/src/main/res/drawable/ic_baseline_add_24.xml" value="0.2025" />
         <entry key="app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.202" />
         <entry key="app/src/main/res/drawable/purple_rc.xml" value="0.217" />
+        <entry key="app/src/main/res/drawable/recieve_message_backgournd.xml" value="0.1625" />
         <entry key="app/src/main/res/drawable/rotate_view.xml" value="0.235" />
+        <entry key="app/src/main/res/drawable/sent_message_background.xml" value="0.1625" />
         <entry key="app/src/main/res/drawable/shadow_border.xml" value="0.235" />
         <entry key="app/src/main/res/drawable/tab_icon.xml" value="0.235" />
         <entry key="app/src/main/res/font/font.xml" value="0.36256410256410254" />
@@ -41,7 +43,7 @@
         <entry key="app/src/main/res/layout/adapter_react_layout.xml" value="0.3390625" />
         <entry key="app/src/main/res/layout/adapter_reward.xml" value="0.325" />
         <entry key="app/src/main/res/layout/collapse_toolbar.xml" value="0.325" />
-        <entry key="app/src/main/res/layout/container_react.xml" value="0.5729166666666666" />
+        <entry key="app/src/main/res/layout/container_react.xml" value="0.5" />
         <entry key="app/src/main/res/layout/continue_btn.xml" value="0.3390625" />
         <entry key="app/src/main/res/layout/custom_dialog.xml" value="0.45" />
         <entry key="app/src/main/res/layout/fragment_chat.xml" value="0.3390625" />
@@ -55,7 +57,9 @@
         <entry key="app/src/main/res/layout/fragment_reset_pass.xml" value="0.67" />
         <entry key="app/src/main/res/layout/fragment_setting.xml" value="0.3390625" />
         <entry key="app/src/main/res/layout/fragment_update_contact.xml" value="0.36796875" />
+        <entry key="app/src/main/res/layout/item_container_receive_message.xml" value="0.1" />
         <entry key="app/src/main/res/layout/item_container_recent_conversion.xml" value="0.3390625" />
+        <entry key="app/src/main/res/layout/item_container_sent_message.xml" value="0.50859375" />
         <entry key="app/src/main/res/layout/item_friendslist.xml" value="0.5" />
         <entry key="app/src/main/res/layout/item_google_ad.xml" value="0.1" />
         <entry key="app/src/main/res/layout/item_main.xml" value="0.5" />

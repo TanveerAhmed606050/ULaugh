@@ -7,5 +7,5 @@ data class UserRequest(
     val user_name: String? = null,
     var firebase_id: String? = null,
     val profile_pic: String? = null,
-    val is_private: Boolean = false
+    val is_private: Boolean? = false
 )

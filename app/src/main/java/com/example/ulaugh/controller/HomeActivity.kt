@@ -184,14 +184,6 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
         }
     }
 
-    private fun localToGMT(): String {
-        val date = Date()
-        val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
-        sdf.timeZone = TimeZone.getTimeZone("UTC")
-//        Log.d("kdhgakds", "localToGMT: ${sdf.format(date)}")
-        return sdf.format(date)
-    }
-
     private fun setTabLayout() {
         binding.tabLayout.addTab(
             binding.tabLayout.newTab().setText("Home").setIcon(R.drawable.home)
@@ -284,7 +276,7 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
                 Toast.makeText(this, "Required Fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val time = localToGMT()
+            val time = Helper().localToGMT()
             CoroutineScope(Dispatchers.IO).launch {
 //                reaction = ReactionDetails(FirebaseAuth.getInstance().currentUser!!.uid, "")
                 sharePost(tagList, time)

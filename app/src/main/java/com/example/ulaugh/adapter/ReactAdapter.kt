@@ -8,6 +8,7 @@ import com.example.ulaugh.R
 import com.example.ulaugh.databinding.AdapterReactLayoutBinding
 import com.example.ulaugh.model.Emoji
 import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 class ReactAdapter(
     private val reactionList: List<Emoji>,
@@ -168,7 +169,7 @@ class ReactAdapter(
 
 
     private fun setEmotions(reactionDetail: Emoji) {
-        val percent = (reactionDetail.count / totalReaction)
+        val percent = ((reactionDetail.count.toDouble() * 100) / totalReaction.toDouble()).roundToInt()
         binding.reactPer.text = "$percent%"
         binding.reactName.text = reactionDetail.name
         when (reactionDetail.name) {

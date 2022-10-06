@@ -35,8 +35,8 @@ import kotlin.collections.ArrayList
 
 @AndroidEntryPoint
 class HomeFragment : Fragment(), OnClickListener, PostClickListener {
-    private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
+//    private var _binding: FragmentHomeBinding? = null
+    private var binding:FragmentHomeBinding? = null
     private var postShareRef: DatabaseReference? = null
     private var allUsersRef: DatabaseReference? = null
     private var friendsRef: DatabaseReference? = null
@@ -48,7 +48,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 
     //    private var postsList: ArrayList<HomeRecyclerViewItem.SharePostData> = ArrayList()
 //    private var googleAdsList: ArrayList<HomeRecyclerViewItem.GoogleAds> = ArrayList()
-    private val friendsList: ArrayList<String> = ArrayList()
+    private val friendsList: ArrayList<Friend> = ArrayList()
     private var suggestFriendsList: ArrayList<SuggestFriends> = ArrayList()
     private var adapter: HomeAdapter? = null
 
@@ -66,7 +66,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
     }
 
     private fun searchFriend() {
-        binding.searchTool.searchV.setOnQueryTextListener(object :
+        binding!!.searchTool.searchV.setOnQueryTextListener(object :
             androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 // on below line we are checking
@@ -93,13 +93,13 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
     }
 
     private fun clickEvents() {
-        binding.toolbar1.searchV1.setOnClickListener {
-            binding.toolbar1.root.visibility = View.INVISIBLE
-            binding.searchTool.root.visibility = View.VISIBLE
+        binding!!.toolbar1.searchV1.setOnClickListener {
+            binding!!.toolbar1.root.visibility = View.INVISIBLE
+            binding!!.searchTool.root.visibility = View.VISIBLE
         }
-        binding.searchTool.crossIv.setOnClickListener {
-            binding.toolbar1.root.visibility = View.VISIBLE
-            binding.searchTool.root.visibility = View.INVISIBLE
+        binding!!.searchTool.crossIv.setOnClickListener {
+            binding!!.toolbar1.root.visibility = View.VISIBLE
+            binding!!.searchTool.root.visibility = View.INVISIBLE
         }
     }
 
@@ -108,21 +108,21 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
     private fun setAdapter() {
 //        binding.recyclerView.apply {
-        binding.recyclerView.setHasFixedSize(true)
-        adapter = HomeAdapter(requireActivity(), homeList, this, this)
-        binding.recyclerView.adapter = adapter
+//        binding.recyclerView.setHasFixedSize(true)
+        adapter = HomeAdapter(requireContext(), homeList, this, this)
+        binding!!.recyclerView.adapter = adapter
 //        }
     }
 
     private fun initViews() {
-        binding.toolbar1.nameTv.text = sharePref.readString(Constants.FULL_NAME, "")
-        binding.toolbar1.statusTv.text = "@${sharePref.readString(Constants.USER_NAME, "")}"
+        binding!!.toolbar1.nameTv.text = sharePref.readString(Constants.FULL_NAME, "")
+        binding!!.toolbar1.statusTv.text = "@${sharePref.readString(Constants.USER_NAME, "")}"
         val imageUrl = sharePref.readString(Constants.PROFILE_PIC, null)
         if (imageUrl != null)
             Glide.with(requireContext())
@@ -131,7 +131,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                 .fitCenter()
 //                .thumbnail(0.3f)
                 .placeholder(R.drawable.seokangjoon)
-                .into(binding.toolbar1.profileIv)
+                .into(binding!!.toolbar1.profileIv)
     }
 
     private fun getFriends() {
@@ -145,7 +145,8 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                    ).show()
                     if (snapshot.hasChildren()) {
                         for (friendsSnap in snapshot.children) {
-                            friendsList.add(friendsSnap.value.toString())
+                            friendsList.add(friendsSnap.getValue(Friend::class.java)!!)
+//                            Log.d(TAG, "FriendList: ${friendsList}")
                         }
                         getHomeData()
                     } else {
@@ -162,14 +163,15 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 
     private fun getHomeData() {
 //        reactionsList.clear()
-        for (friendId in friendsList) {
-            postShareRef!!.child(friendId).addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    for (postSnap in snapshot.children) {
-                        val keyValue = postSnap.key.toString()
+        for (friendDetail in friendsList) {
+            postShareRef!!.child(friendDetail.firebase_id!!)
+                .addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        for (postSnap in snapshot.children) {
+                            val keyValue = postSnap.key.toString()
 //                        val totalReactions = postSnap.child(Constants.FRIENDS_REF).childrenCount
-                        var userReaction = ""
-                        val reactionsList: MutableList<Reactions> = ArrayList()
+                            var userReaction = ""
+                            val reactionsList: MutableList<Reactions> = ArrayList()
 
 //                        if (postShareRef!!.child(friendId).child(Constants.REACTION)
 //                                .child("user_id")
@@ -178,40 +180,44 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                            userReaction = postSnap.child(Constants.REACTION)
 //                                .child(Constants.REACTION_TYPE).value.toString()
 //                        reactionsList.clear()
-                        for (reactionItem in postSnap.child(Constants.REACTION).children) {
-                            val reactions = reactionItem.getValue(Reactions::class.java)!!
-                            if (reactions.user_id == FirebaseAuth.getInstance().currentUser!!.uid)
-                                userReaction = reactions.reaction_type!!
+                            for (reactionItem in postSnap.child(Constants.REACTION).children) {
+                                val reactions = reactionItem.getValue(Reactions::class.java)!!
+                                if (reactions.user_id == FirebaseAuth.getInstance().currentUser!!.uid)
+                                    userReaction = reactions.reaction_type!!
 //                            reactions.reaction_type = reactionsType
 //                            reactions!!.user_id = reactionItem.key.toString()
-                            else
-                                reactionsList.add(reactions)
-                        }
+                                else
+                                    reactionsList.add(reactions)
+                            }
 //                        val reactionDetail = ReactionDetail(totalReactions, reacted)
-                        val post = postSnap.getValue(PostItem::class.java)
-                        post!!.post_id = keyValue
-                        val postItem = HomeRecyclerViewItem.SharePostData(
-                            keyValue,
-                            post.firebase_id,
-                            post.image_url,
-                            post.description,
-                            post.date_time,
-                            post.user_name,
-                            post.full_name,
-                            post.tagsList,
-                            post.profile_image,
-                            reactionsList, userReaction
-                        )
-                        Log.d(TAG, "onDataChange: ${userReaction}\n")
-                        newsFeedList.add(postItem)
+                            val post = postSnap.getValue(PostItem::class.java)
+                            post!!.post_id = keyValue
+                            val postItem = HomeRecyclerViewItem.SharePostData(
+                                keyValue,
+                                post.firebase_id,
+                                post.image_url,
+                                post.description,
+                                post.date_time,
+                                post.user_name,
+                                post.full_name,
+                                post.tagsList,
+                                post.profile_image,
+                                reactionsList, userReaction, friendDetail._follow!!
+                            )
+                            Log.d(TAG, "onDataChange: ${userReaction}\n")
+                            newsFeedList.add(postItem)
+                        }
                     }
-                }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(requireContext(), "Error:${error.message}", Toast.LENGTH_SHORT)
-                        .show()
-                }
-            })
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Error:${error.message}",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                })
         }
     }
 
@@ -235,15 +241,15 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                                 override fun onDataChange(snapshot: DataSnapshot) {
                                     var isFound = false
                                     for (userItemSnap in snapshot.children) {
-                                        val friendId = userItemSnap.value.toString()
-                                        if (userData!!.firebase_id == friendId) {
+                                        val friendId = userItemSnap.getValue(Friend::class.java)
+                                        if (userData!!.firebase_id == friendId!!.firebase_id) {
                                             isFound = true
                                             break
                                         }
                                     }
                                     if (!isFound) {
                                         suggestFriendsList.add(userData!!)
-                                        binding.recyclerView.adapter!!.notifyDataSetChanged()
+                                        binding!!.recyclerView.adapter!!.notifyDataSetChanged()
                                     }
                                 }
 
@@ -403,98 +409,21 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+//        _binding = null
     }
 
     override fun onClick(suggestFriends: SuggestFriends) {
-        binding.progressBar.visibility = View.VISIBLE
+        binding!!.progressBar.visibility = View.VISIBLE
         allUsersRef!!
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
+//                    val hashMap = HashMap<String, Any>()
+//                    hashMap[Constants.IS_FOLLOW] = false
                     if (snapshot.exists()) {
+                        val friend = Friend(suggestFriends.firebase_id!!, false)
                         allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                            .child(Constants.FRIENDS_REF)
-                            .runTransaction(object : Transaction.Handler {
-                                override fun doTransaction(mutableData: MutableData): Transaction.Result {
-                                    var lastKey = "-1"
-                                    for (child in mutableData.children) {
-                                        lastKey = child.key!!
-                                    }
-                                    val nextKey = lastKey.toInt() + 1
-                                    mutableData.child("" + nextKey).value =
-                                        suggestFriends.firebase_id
-
-                                    // Set value and report transaction success
-                                    return Transaction.success(mutableData)
-                                }
-
-                                override fun onComplete(
-                                    databaseError: DatabaseError?, b: Boolean,
-                                    dataSnapshot: DataSnapshot?
-                                ) {
-                                    binding.progressBar.visibility = View.GONE
-                                    Toast.makeText(
-                                        requireContext(),
-                                        "Added Friend successfully",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-//                                    suggestFriendsList.remove(suggestFriends)
-//                                    val suggestList =
-//                                        HomeRecyclerViewItem.SuggestList(suggestFriendsList)
-//                                    homeList[homeList.size-1] = suggestList
-//                                    binding.recyclerView.adapter!!.notifyDataSetChanged()
-                                }
-                            })
-                    } else {
-                        allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                            .child(Constants.FRIENDS_REF)
-                            .runTransaction(object : Transaction.Handler {
-                                override fun doTransaction(mutableData: MutableData): Transaction.Result {
-                                    var lastKey = "-1"
-                                    for (child in mutableData.children) {
-                                        lastKey = child.key!!
-                                    }
-                                    val nextKey = lastKey.toInt() + 1
-                                    mutableData.child("" + nextKey).value =
-                                        suggestFriends.firebase_id
-                                    // Set value and report transaction success
-                                    return Transaction.success(mutableData)
-                                }
-
-                                override fun onComplete(
-                                    databaseError: DatabaseError?, b: Boolean,
-                                    dataSnapshot: DataSnapshot?
-                                ) {
-                                    binding.progressBar.visibility = View.GONE
-                                    Toast.makeText(
-                                        requireContext(),
-                                        "Add friends Successfully",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-//                                    suggestFriendsList.remove(suggestFriends)
-//                                    val suggestList =
-//                                        HomeRecyclerViewItem.SuggestList(suggestFriendsList)
-//                                    homeList[homeList.size-1] = suggestList
-//                                    homeList.add(suggestList)
-//                                    binding.recyclerView.adapter!!.notifyDataSetChanged()
-                                }
-                            })
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {}
-            })
-    }
-
-//    private fun callFollowFirebaseApi(postData: HomeRecyclerViewItem.SharePostData) {
-//        binding.progressBar.visibility = View.VISIBLE
-//        allUsersRef!!
-//            .addListenerForSingleValueEvent(object : ValueEventListener {
-//                override fun onDataChange(snapshot: DataSnapshot) {
-//                    if (snapshot.exists()) {
-//                        allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
-//                            .child(Constants.FOLLOW)
+                            .child(Constants.FRIENDS_REF).child(suggestFriends.firebase_id!!)
+                            .setValue(friend)
 //                            .runTransaction(object : Transaction.Handler {
 //                                override fun doTransaction(mutableData: MutableData): Transaction.Result {
 //                                    var lastKey = "-1"
@@ -503,7 +432,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                                    }
 //                                    val nextKey = lastKey.toInt() + 1
 //                                    mutableData.child("" + nextKey).value =
-//                                        postData.firebase_id
+//                                        suggestFriends.firebase_id
 //
 //                                    // Set value and report transaction success
 //                                    return Transaction.success(mutableData)
@@ -513,7 +442,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                                    databaseError: DatabaseError?, b: Boolean,
 //                                    dataSnapshot: DataSnapshot?
 //                                ) {
-//                                    binding.progressBar.visibility = View.GONE
+                        binding!!.progressBar.visibility = View.GONE
 //                                    Toast.makeText(
 //                                        requireContext(),
 //                                        "Added Friend successfully",
@@ -527,9 +456,11 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 ////                                    binding.recyclerView.adapter!!.notifyDataSetChanged()
 //                                }
 //                            })
-//                    } else {
-//                        allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
-//                            .child(Constants.FOLLOW)
+                    } else {
+                        val friend = Friend(suggestFriends.firebase_id!!, true)
+                        allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                            .child(Constants.FRIENDS_REF).child(suggestFriends.firebase_id!!)
+                            .setValue(friend)
 //                            .runTransaction(object : Transaction.Handler {
 //                                override fun doTransaction(mutableData: MutableData): Transaction.Result {
 //                                    var lastKey = "-1"
@@ -538,7 +469,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                                    }
 //                                    val nextKey = lastKey.toInt() + 1
 //                                    mutableData.child("" + nextKey).value =
-//                                        postData.firebase_id
+//                                        suggestFriends.firebase_id
 //                                    // Set value and report transaction success
 //                                    return Transaction.success(mutableData)
 //                                }
@@ -547,7 +478,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                                    databaseError: DatabaseError?, b: Boolean,
 //                                    dataSnapshot: DataSnapshot?
 //                                ) {
-//                                    binding.progressBar.visibility = View.GONE
+                        binding!!.progressBar.visibility = View.GONE
 //                                    Toast.makeText(
 //                                        requireContext(),
 //                                        "Add friends Successfully",
@@ -561,12 +492,47 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 ////                                    binding.recyclerView.adapter!!.notifyDataSetChanged()
 //                                }
 //                            })
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+    }
+
+    private fun callFollowFirebaseApi(postData: HomeRecyclerViewItem.SharePostData) {
+//        binding!!.progressBar.visibility = View.VISIBLE
+        allUsersRef!!
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (i in 0 until friendsList.size){
+                        if (friendsList[i].firebase_id == postData.firebase_id){
+                            friendsList[i]._follow = true
+                        }
+                    }
+                    val hashMap = HashMap<String, Any>()
+//                    val friend = Friend(postData.firebase_id, true)
+//                    if (snapshot.exists()) {
+                    hashMap[Constants.IS_FOLLOW] = true
+                    hashMap[Constants.FIREBASE_ID] = postData.firebase_id
+                    allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                        .child(Constants.FRIENDS_REF).child(postData.firebase_id)
+                        .setValue(hashMap)
+                    binding!!.recyclerView.adapter!!.notifyDataSetChanged()
+//                    binding!!.progressBar.visibility = View.GONE
+//                    getFriends()
 //                    }
-//                }
-//
-//                override fun onCancelled(error: DatabaseError) {}
-//            })
-//    }
+//                    else {
+//                        hashMap[Constants.IS_FOLLOW] = true
+//                        allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                            .child(Constants.FRIENDS_REF)
+//                            .child(postData.firebase_id)
+//                            .child(Constants.FOLLOW).setValue(hashMap)
+//                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+    }
 
     override fun onClick(post: Any, type: String, emotionList: List<Emoji>?) {
         when (type) {
@@ -589,6 +555,8 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                 val postData = post as HomeRecyclerViewItem.SharePostData
                 val intent = Intent(requireContext(), ProfileDetailActivity::class.java)
                 intent.putExtra(Constants.FIREBASE_ID, postData.firebase_id)
+                intent.putExtra(Constants.IS_PRIVATE, postData.reaction_type)
+                intent.putExtra(Constants.IS_FOLLOW, postData.is_follow)
                 requireContext().startActivity(intent)
 //                val sharePostData = post as HomeRecyclerViewItem.SharePostData
 //                val transaction = parentFragmentManager.beginTransaction()
@@ -598,7 +566,9 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
             }
             Constants.FOLLOW -> {
                 val postData = post as HomeRecyclerViewItem.SharePostData
-//                callFollowFirebaseApi(postData)
+                CoroutineScope(Dispatchers.IO).launch {
+                    callFollowFirebaseApi(postData)
+                }
             }
         }
     }
@@ -611,13 +581,13 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
             suggestFriendsList.clear()
             newsFeedList.clear()
             CoroutineScope(Dispatchers.Main).launch {
-                binding.progressBar.visibility = View.VISIBLE
+                binding!!.progressBar.visibility = View.VISIBLE
                 getFriends()
 //            delay(600)
 //            getHomeData()
                 delay(3000)
                 getSuggestedFriends()
-                binding.progressBar.visibility = View.GONE
+                binding!!.progressBar.visibility = View.GONE
             }
             sharePref.writeBoolean(Constants.EMOTION_UPDATE, false)
         }

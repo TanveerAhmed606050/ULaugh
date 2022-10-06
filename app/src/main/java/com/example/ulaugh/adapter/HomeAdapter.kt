@@ -115,6 +115,10 @@ class HomeAdapter(
                 binding.postDetail.text = post.description
                 binding.tagsTv.text = post.tagsList
 
+                if (post.is_follow!!){
+                    binding.plusIv.visibility = View.GONE
+                    binding.followTv.visibility = View.GONE
+                }
                 val date = Helper.convertToLocal(post.date_time)
                 binding.timeTv.text = Helper.covertTimeToText(date)
                 binding.reactCount.text = Helper.prettyCount(post.reaction!!.size)

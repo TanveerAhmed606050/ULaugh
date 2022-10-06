@@ -20,6 +20,7 @@ object Constants {
     const val USERS_REF = "users"
     const val FRIENDS_REF = "friends"
     const val IS_PRIVATE = "is_private"
+    const val IS_FOLLOW = "_follow"
     const val POST = "post"
     const val EMOTION_UPDATE = "emotion_update"
     const val POST_ID = "post_id"

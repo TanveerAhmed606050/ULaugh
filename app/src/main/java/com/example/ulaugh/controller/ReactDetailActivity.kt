@@ -85,6 +85,7 @@ class ReactDetailActivity : AppCompatActivity() {
             binding.included.postDetail.text = postDetail!!.description
             binding.included.trendingTv.text = postDetail!!.tagsList
             binding.reactCount.text = Helper.prettyCount(postDetail!!.reaction!!.size)
+            binding.included.totalReact.text = "${postDetail!!.reaction!!.size}"
         }
 //        binding.emoji.text = "U+1F970 U+1F602 U+1F92A"
     }
