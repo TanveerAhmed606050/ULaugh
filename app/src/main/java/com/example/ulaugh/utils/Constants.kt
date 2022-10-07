@@ -25,6 +25,7 @@ object Constants {
     const val EMOTION_UPDATE = "emotion_update"
     const val POST_ID = "post_id"
     const val PROFILE = "profile"
+    const val IS_CHECKED = "is_checked"
     const val EMOTIONS_DATA = "emotion"
     const val FOLLOW = "follow"
     const val FIREBASE_ID = "firebase_id"

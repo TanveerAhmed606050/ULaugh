@@ -76,7 +76,7 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
 
     private fun initViews() {
         firebaseId = intent.getStringExtra(Constants.FIREBASE_ID)!!
-        isFollow = intent.getStringExtra(Constants.IS_FOLLOW)!!.toBoolean()
+        isFollow = intent.getBooleanExtra(Constants.IS_FOLLOW, false)
         allPostRef = FirebaseDatabase.getInstance().reference.child(Constants.POST_SHARE_REF)
         profileRef = FirebaseDatabase.getInstance().reference.child(Constants.USERS_REF)
         if (isFollow)
@@ -129,7 +129,12 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
         binding.followBtn.setOnClickListener{
             if (isFollow){
                 val intent = Intent(this, ChatActivity::class.java)
-                intent.putExtra(Constants.PROFILE, Gson().toJson(profileData))
+                intent.putExtra(Constants.FIREBASE_ID, profileData!!.firebase_id)
+                intent.putExtra("IsChecked", true)
+                intent.putExtra("receiverName",profileData!!.full_name)
+                intent.putExtra(Constants.PROFILE_PIC,profileData!!.profile_pic)
+//                intent.putExtra(Constants.PROFILE, Gson().toJson(profileData))
+                intent.putExtra(Constants.IS_CHECKED, true)
                 startActivity(intent)
             }
         }

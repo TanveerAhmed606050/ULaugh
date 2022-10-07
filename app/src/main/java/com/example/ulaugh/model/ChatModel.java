@@ -1,23 +1,18 @@
 package com.example.ulaugh.model;
 
 public class ChatModel {
-
-
-    String message_id, type, content_message, date, sender_firebase_id, sender_user_name, sender_personal_id, receiver_firebase_id, receiver_personal_id, receiver_user_name;
+    String message_id, type, content_message, date, sender_firebase_id, sender_user_name, receiver_firebase_id, receiver_user_name;
     boolean seen_message;
 
-    public ChatModel(String message_id, String type, String content_message, String date, String sender_firebase_id, String sender_user_name, String sender_personal_id, String receiver_firebase_id, String receiver_personal_id, String receiver_user_name, boolean seen_message) {
+    public ChatModel(String message_id, String type, String content_message, String date, String sender_firebase_id, String sender_user_name, String receiver_firebase_id, String receiver_user_name) {
         this.message_id = message_id;
         this.type = type;
         this.content_message = content_message;
         this.date = date;
         this.sender_firebase_id = sender_firebase_id;
         this.sender_user_name = sender_user_name;
-        this.sender_personal_id = sender_personal_id;
         this.receiver_firebase_id = receiver_firebase_id;
-        this.receiver_personal_id = receiver_personal_id;
         this.receiver_user_name = receiver_user_name;
-        this.seen_message = seen_message;
     }
 
     public ChatModel() {
@@ -71,13 +66,6 @@ public class ChatModel {
         this.sender_user_name = sender_user_name;
     }
 
-    public String getSender_personal_id() {
-        return sender_personal_id;
-    }
-
-    public void setSender_personal_id(String sender_personal_id) {
-        this.sender_personal_id = sender_personal_id;
-    }
 
     public String getReceiver_firebase_id() {
         return receiver_firebase_id;
@@ -85,14 +73,6 @@ public class ChatModel {
 
     public void setReceiver_firebase_id(String receiver_firebase_id) {
         this.receiver_firebase_id = receiver_firebase_id;
-    }
-
-    public String getReceiver_personal_id() {
-        return receiver_personal_id;
-    }
-
-    public void setReceiver_personal_id(String receiver_personal_id) {
-        this.receiver_personal_id = receiver_personal_id;
     }
 
     public String getReceiver_user_name() {
