@@ -49,8 +49,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
-    implementation 'com.google.android.gms:play-services-auth:20.2.0'
-    implementation 'com.google.android.gms:play-services-ads-lite:21.1.0'
+    implementation 'com.google.android.gms:play-services-auth:20.3.0'
+    implementation 'com.google.android.gms:play-services-ads-lite:20.1.7'
     implementation 'androidx.camera:camera-view:1.1.0'
     implementation 'androidx.camera:camera-lifecycle:1.1.0'
 //    implementation 'com.google.firebase:firebase-messaging:23.0.8'
@@ -60,6 +60,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-ml-vision:24.0.3'
     implementation 'org.tensorflow:tensorflow-lite:2.3.0'
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+    implementation 'com.google.firebase:firebase-messaging:23.0.8'
 
     def hilt_version="2.42"
     implementation "com.google.dagger:hilt-android:$hilt_version"
@@ -100,7 +101,7 @@ dependencies {
 
     //firebase
     implementation 'com.google.firebase:firebase-auth:21.0.8'
-    implementation platform('com.google.firebase:firebase-bom:29.1.0')
+//    implementation platform('com.google.firebase:firebase-bom:29.1.0')
     implementation 'com.google.firebase:firebase-database-ktx'
     implementation 'com.google.firebase:firebase-database:20.0.6'
     implementation 'com.google.firebase:firebase-auth-ktx'

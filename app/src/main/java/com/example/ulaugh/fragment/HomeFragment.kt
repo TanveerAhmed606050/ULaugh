@@ -130,7 +130,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                 .centerCrop()
                 .fitCenter()
 //                .thumbnail(0.3f)
-                .placeholder(R.drawable.seokangjoon)
+                .placeholder(R.drawable.user_logo)
                 .into(binding!!.toolbar1.profileIv)
     }
 

@@ -2,7 +2,6 @@ package com.example.ulaugh.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -11,6 +10,7 @@ import com.example.ulaugh.databinding.ItemFriendslistBinding
 import com.example.ulaugh.interfaces.OnClickListener
 import com.example.ulaugh.model.HomeRecyclerViewItem
 
+
 class HomeFriendsAdapter(
     val context: Context,
     private val userList: HomeRecyclerViewItem.SuggestList,
@@ -18,12 +18,15 @@ class HomeFriendsAdapter(
 ) : RecyclerView.Adapter<HomeFriendsAdapter.ViewHolder>() {
     private var _binding: ItemFriendslistBinding? = null
     private val binding get() = _binding!!
+    var row_index = -1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         _binding =
             ItemFriendslistBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+
         return ViewHolder(binding)
     }
+
 
     inner class ViewHolder(binding: ItemFriendslistBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -31,12 +34,16 @@ class HomeFriendsAdapter(
         val suggestFriends = userList.friends[position]
         binding.nameTv.text = suggestFriends.full_name
         binding.statusTv.text = suggestFriends.user_name
+        binding.linearRowLayout.setOnClickListener {
+            it.setBackgroundResource(R.drawable.grey_rc)
+        }
+
         Glide.with(context)
             .load(suggestFriends.profile_pic)
             .centerCrop()
             .fitCenter()
             .thumbnail()
-            .placeholder(R.drawable.seokangjoon)
+            .placeholder(com.example.ulaugh.R.drawable.user_logo)
             .into(binding.photoIv)
 
         binding.addFriend.setOnClickListener {

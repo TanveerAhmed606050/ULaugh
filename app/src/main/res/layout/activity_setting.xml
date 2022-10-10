@@ -106,6 +106,7 @@
 
             <RelativeLayout
                 android:id="@+id/change_ph_rl"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="50dp">
 
@@ -226,7 +227,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="20dp"
-                    android:checked="true"
+                    android:checked="false"
                     android:thumb="@drawable/custom_thumb"
                     app:track="@drawable/custom_track" />
             </RelativeLayout>

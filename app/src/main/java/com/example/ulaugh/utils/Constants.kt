@@ -24,6 +24,7 @@ object Constants {
     const val POST = "post"
     const val EMOTION_UPDATE = "emotion_update"
     const val POST_ID = "post_id"
+    const val MESSAGE_TOKEN = "message_token"
     const val PROFILE = "profile"
     const val IS_CHECKED = "is_checked"
     const val EMOTIONS_DATA = "emotion"
@@ -37,4 +38,8 @@ object Constants {
     const val DESCRIPTION = "description"
     const val IMAGE_URL = "image_url"
     const val TAGS_LIST = "tagsList"
+    const val FIREBASE_BASE_URL = "https://fcm.googleapis.com"
+    const val SERVER_KEY =
+        "AAAAPdrY6ck:APA91bFCcbD-sWQti4SrmJ9GYK68WJ2_6WSHxZ7UFrHXhr9Sgg8DXnZUPJDMsQlRuRb33TObifRHGDwqCThSzjciQjDY2QRh9TmLsTnjxb8Ib9wRLX6L4K1P0Fc4R3YhvqOcUYx4ZG2A"
+    const val CONTENT_TYPE = "application/json"
 }

@@ -1,6 +1,7 @@
 package com.example.ulaugh.controller
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -9,6 +10,8 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -26,7 +29,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.*
 import javax.inject.Inject
+import android.Manifest
+import com.example.ulaugh.api.RetrofitInstance
+import com.example.ulaugh.utils.Constants.TAG
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 
+const val TOPIC = "/topics/myTopic2"
 @AndroidEntryPoint
 class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
     private var _binding: ActivityProfileDetailBinding? = null
@@ -48,6 +58,8 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
         super.onCreate(savedInstanceState)
         _binding = ActivityProfileDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        FirebaseMessaging.getInstance().subscribeToTopic(TOPIC)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             val window: Window = window
             window.setFlags(
@@ -110,7 +122,7 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
             .centerCrop()
             .fitCenter()
             .thumbnail()
-            .placeholder(R.drawable.seokangjoon)
+            .placeholder(R.drawable.user_logo)
             .into(binding.profileIv)
         Glide.with(this)
             .load(profileData!!.profile_pic)
@@ -126,16 +138,18 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
         binding.backBtn.setOnClickListener {
             finish()
         }
-        binding.followBtn.setOnClickListener{
-            if (isFollow){
+        binding.followBtn.setOnClickListener {
+            if (isFollow) {
                 val intent = Intent(this, ChatActivity::class.java)
                 intent.putExtra(Constants.FIREBASE_ID, profileData!!.firebase_id)
                 intent.putExtra("IsChecked", true)
-                intent.putExtra("receiverName",profileData!!.full_name)
-                intent.putExtra(Constants.PROFILE_PIC,profileData!!.profile_pic)
+                intent.putExtra("receiverName", profileData!!.full_name)
+                intent.putExtra(Constants.PROFILE_PIC, profileData!!.profile_pic)
 //                intent.putExtra(Constants.PROFILE, Gson().toJson(profileData))
                 intent.putExtra(Constants.IS_CHECKED, true)
                 startActivity(intent)
+            } else {
+                askNotificationPermission()
             }
         }
     }
@@ -218,6 +232,84 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
             .into(binding.coverIv)
     }
 
+    private fun askNotificationPermission() {
+        // This is only necessary for API level >= 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.DONUT) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_NOTIFICATION_POLICY
+                ) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                // FCM SDK (and your app) can post notifications.
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_NOTIFICATION_POLICY)) {
+
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_NOTIFICATION_POLICY)
+            }
+        }
+    }
+
+    // [START ask_post_notifications]
+    // Declare the launcher at the top of your Activity/Fragment:
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // FCM SDK (and your app) can post notifications.
+        } else {
+            Toast.makeText(this, "Please enable notifications", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun createNotification() {
+        val title = "Request"
+        val message = "Friend request received from"
+        val recipientToken = "etToken.text.toString()"
+        if(title.isNotEmpty() && message.isNotEmpty() && recipientToken.isNotEmpty()) {
+            PushNotification(
+                NotificationData(title, message),
+                recipientToken
+            ).also {
+                sendNotification(it)
+            }
+        }
+        // [END fcm_send_upstream]
+    }
+
+    private fun sendNotification(notification: PushNotification) = CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = RetrofitInstance.api.postNotification(notification)
+            if(response.isSuccessful) {
+                Log.d(TAG, "Response: ${Gson().toJson(response)}")
+            } else {
+                Log.e(TAG, response.errorBody().toString())
+            }
+        } catch(e: Exception) {
+            Log.e(TAG, e.toString())
+        }
+    }
+
+//    fun fetchToken() {
+//        // [START fcm_runtime_enable_auto_init]
+//        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+//            if (!task.isSuccessful) {
+//                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+//                return@OnCompleteListener
+//            }
+//
+//            // Get new FCM registration token
+//            val token = task.result
+//
+//            // Log and toast
+//            val msg = getString(R.string.msg_token_fmt, token)
+//            Log.d(TAG, msg)
+//            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+//        })
+//        // [END fcm_runtime_enable_auto_init]
+//    }
+
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
@@ -225,6 +317,5 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
 
 
     override fun onClick(post: Any, type: String, emotionList: List<Emoji>?) {
-        TODO("Not yet implemented")
     }
 }
