@@ -37,6 +37,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 
 const val TOPIC = "/topics/myTopic2"
+
 @AndroidEntryPoint
 class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
     private var _binding: ActivityProfileDetailBinding? = null
@@ -51,6 +52,8 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
     lateinit var sharePref: SharePref
     private lateinit var allPostRef: DatabaseReference
     private lateinit var profileRef: DatabaseReference
+    private var isPrivate: Boolean = false
+    private var messageToken = ""
 
     lateinit var postsAdapter: PostsAdapter
 
@@ -72,6 +75,7 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
         createBlurImage()
         CoroutineScope(Dispatchers.IO).launch {
 //            binding.progressBar.visibility = View.VISIBLE
+//            fetchToken()
             getProfileData()
 //            delay(1000)
 
@@ -139,7 +143,9 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
             finish()
         }
         binding.followBtn.setOnClickListener {
-            if (isFollow) {
+            if (isPrivate) {
+                askNotificationPermission()
+            } else if (isFollow) {
                 val intent = Intent(this, ChatActivity::class.java)
                 intent.putExtra(Constants.FIREBASE_ID, profileData!!.firebase_id)
                 intent.putExtra("IsChecked", true)
@@ -149,7 +155,6 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
                 intent.putExtra(Constants.IS_CHECKED, true)
                 startActivity(intent)
             } else {
-                askNotificationPermission()
             }
         }
     }
@@ -159,7 +164,8 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
 //                    Log.d(TAG, "isPrivate: ${snapshot.child("is_private").value}")
-                    val isPrivate = snapshot.child("is_private").value as Boolean
+                    isPrivate = snapshot.child(Constants.IS_PRIVATE).value as Boolean
+                    messageToken = snapshot.child(Constants.MESSAGE_TOKEN).value.toString()
                     profileData = snapshot.getValue(UserRequest::class.java)
                     setProfileData(isPrivate)
                     if (isPrivate)
@@ -241,6 +247,7 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
                 ) ==
                 PackageManager.PERMISSION_GRANTED
             ) {
+                createNotification()
                 // FCM SDK (and your app) can post notifications.
             } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_NOTIFICATION_POLICY)) {
 
@@ -257,17 +264,18 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
+            createNotification()
             // FCM SDK (and your app) can post notifications.
         } else {
             Toast.makeText(this, "Please enable notifications", Toast.LENGTH_SHORT).show()
         }
     }
 
-    fun createNotification() {
+    private fun createNotification() {
         val title = "Request"
         val message = "Friend request received from"
-        val recipientToken = "etToken.text.toString()"
-        if(title.isNotEmpty() && message.isNotEmpty() && recipientToken.isNotEmpty()) {
+        val recipientToken = "cfNtuWZzTVGBYI7CFXuKq6:APA91bFYbHB64p9vkfyj6U3_Ii8YLDFnqUTja4q9uyNtk6GrwIqWi7L-RmU-AJI_nrH__gZsFkOVEw4uflzaOzifIpuA_1XDgHGGgeqDjJztbZpEd1k6QTgZ4rAp_j9CRradIqQ9MTsB"
+        if (title.isNotEmpty() && message.isNotEmpty() && recipientToken.isNotEmpty()) {
             PushNotification(
                 NotificationData(title, message),
                 recipientToken
@@ -278,20 +286,21 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
         // [END fcm_send_upstream]
     }
 
-    private fun sendNotification(notification: PushNotification) = CoroutineScope(Dispatchers.IO).launch {
-        try {
-            val response = RetrofitInstance.api.postNotification(notification)
-            if(response.isSuccessful) {
-                Log.d(TAG, "Response: ${Gson().toJson(response)}")
-            } else {
-                Log.e(TAG, response.errorBody().toString())
+    private fun sendNotification(notification: PushNotification) =
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = RetrofitInstance.api.postNotification(notification)
+                if (response.isSuccessful) {
+                    Log.d(TAG, "Response: ${response.toString()}")
+                } else {
+                    Log.e(TAG, response.errorBody().toString())
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, e.toString())
             }
-        } catch(e: Exception) {
-            Log.e(TAG, e.toString())
         }
-    }
 
-//    fun fetchToken() {
+//    private fun fetchToken() {
 //        // [START fcm_runtime_enable_auto_init]
 //        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
 //            if (!task.isSuccessful) {
@@ -300,12 +309,12 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
 //            }
 //
 //            // Get new FCM registration token
-//            val token = task.result
+//            token = task.result
 //
 //            // Log and toast
 //            val msg = getString(R.string.msg_token_fmt, token)
 //            Log.d(TAG, msg)
-//            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+////            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
 //        })
 //        // [END fcm_runtime_enable_auto_init]
 //    }

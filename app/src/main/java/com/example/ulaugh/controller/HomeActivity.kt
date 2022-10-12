@@ -7,6 +7,7 @@ import android.graphics.PorterDuff
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.*
@@ -24,6 +25,7 @@ import com.example.ulaugh.utils.DecodeImage
 import com.example.ulaugh.utils.Helper
 import com.example.ulaugh.utils.SharePref
 import com.github.ybq.android.spinkit.SpinKitView
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.tabs.TabLayout
@@ -31,14 +33,13 @@ import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -61,8 +62,8 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
     private var mediaTypeRaw = ""
 
     //    private val storagePath = "All_Image_Uploads/"
-    var storageRef: StorageReference? = null
-    private lateinit var databaseReference: DatabaseReference
+    var postShareStorageRef: StorageReference? = null
+    private lateinit var postShareDbRef: DatabaseReference
     var description: String? = null
 
     //    val authFirebase = Firebase.auth
@@ -80,28 +81,17 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
         setContentView(binding.root)
         supportActionBar?.hide()
         init()
+        CoroutineScope(Dispatchers.IO).launch {
+            fetchToken()
+        }
         setTabLayout()
         sharePref.writeBoolean(Constants.EMOTION_UPDATE, true)//stop api calling
     }
 
     private fun init() {
-//        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-//            if (!task.isSuccessful) {
-//                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
-//                return@OnCompleteListener
-//            }
-//
-//            // Get new FCM registration token
-//            val token = task.result
-//
-//            // Log and toast
-//            val msg = getString(R.string.msg_token_fmt, token)
-//            Log.d(TAG, msg)
-////            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-//        })
         // Assign FirebaseDatabase instance with root database name.
-        databaseReference = FirebaseDatabase.getInstance().reference.child(Constants.POST_SHARE_REF)
-        storageRef =
+        postShareDbRef = FirebaseDatabase.getInstance().reference.child(Constants.POST_SHARE_REF)
+        postShareStorageRef =
             FirebaseStorage.getInstance().reference.child(Constants.POST_SHARE_REF)
         clickEvents()
 //        userId = FirebaseAuth.getInstance().currentUser!!.uid
@@ -121,67 +111,68 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
 //            storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
 //                .child("${System.currentTimeMillis()}.mp4")
         val systemTime = System.currentTimeMillis().toString()
-        storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid).child("${systemTime}.png")
+        postShareStorageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+            .child("${systemTime}.png")
             .putFile(imageUri!!).addOnSuccessListener { taskSnapshot ->
-            if (taskSnapshot.metadata != null) {
-                val taskUrl = taskSnapshot!!.metadata!!.reference!!.downloadUrl
+                if (taskSnapshot.metadata != null) {
+                    val taskUrl = taskSnapshot!!.metadata!!.reference!!.downloadUrl
 //                val taskUrl = storageRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid).child("${systemTime}.png").downloadUrl
-                taskUrl.addOnSuccessListener {
-                    val imageUrl = it.toString()
+                    taskUrl.addOnSuccessListener {
+                        val imageUrl = it.toString()
 //                    val imageUrl = taskUrl.result.toString()
-                    val shareInfo = PostShareInfo(
-                        FirebaseAuth.getInstance().currentUser!!.uid,
-                        imageUrl,
-                        description!!,
-                        time,
-                        userName,
-                        fullName,
-                        tagsList,
-                        Constants.REACTION,
-                        mediaTypeRaw,
-                        sharePref.readString(Constants.PROFILE_PIC, "")!!
-                    )
-                    val imageUploadId = databaseReference.push().key
+                        val shareInfo = PostShareInfo(
+                            FirebaseAuth.getInstance().currentUser!!.uid,
+                            imageUrl,
+                            description!!,
+                            time,
+                            userName,
+                            fullName,
+                            tagsList,
+                            Constants.REACTION,
+                            mediaTypeRaw,
+                            sharePref.readString(Constants.PROFILE_PIC, "")!!
+                        )
+                        val imageUploadId = postShareDbRef.push().key
 
-                    databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                        .child(imageUploadId!!).setValue(shareInfo)
-                        .addOnCompleteListener {task->
-                            if (task.isSuccessful) {
-                                Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show()
+                        postShareDbRef.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                            .child(imageUploadId!!).setValue(shareInfo)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show()
 //                                databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
 //                                    .child(imageUploadId)
 //                                    .setValue(shareInfo)
 //                                    .child(Constants.REACTION)
 //                                    .child(FirebaseAuth.getInstance().currentUser!!.uid)
 //                                    .setValue("")
-                            } else
-                                Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
-                            dialog!!.dismiss()
-                        }.addOnFailureListener {
-                            Toast.makeText(this, "${it.message}", Toast.LENGTH_SHORT).show()
-                            progressBar?.visibility = View.GONE
-                        }
-                }.addOnFailureListener {
-                    Toast.makeText(this, "Failed: ${it.message.toString()}", Toast.LENGTH_SHORT)
-                        .show()
-                    progressBar?.visibility = View.GONE
-                }.addOnCanceledListener {
-                    Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
-                    progressBar?.visibility = View.GONE
-                }
-            } else
-                Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show()
-        }.addOnCanceledListener {
-            dialog!!.dismiss()
-            Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
-            progressBar?.visibility = View.GONE
-        }.addOnFailureListener {
-            Toast.makeText(this, "Failure: ${it.message.toString()}", Toast.LENGTH_SHORT).show()
-            dialog!!.dismiss()
-            progressBar?.visibility = View.GONE
-        }.addOnProgressListener {
-            progressBar?.visibility = View.VISIBLE
-        }
+                                } else
+                                    Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
+                                dialog!!.dismiss()
+                            }.addOnFailureListener {
+                                Toast.makeText(this, "${it.message}", Toast.LENGTH_SHORT).show()
+                                progressBar?.visibility = View.GONE
+                            }
+                    }.addOnFailureListener {
+                        Toast.makeText(this, "Failed: ${it.message.toString()}", Toast.LENGTH_SHORT)
+                            .show()
+                        progressBar?.visibility = View.GONE
+                    }.addOnCanceledListener {
+                        Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
+                        progressBar?.visibility = View.GONE
+                    }
+                } else
+                    Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show()
+            }.addOnCanceledListener {
+                dialog!!.dismiss()
+                Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
+                progressBar?.visibility = View.GONE
+            }.addOnFailureListener {
+                Toast.makeText(this, "Failure: ${it.message.toString()}", Toast.LENGTH_SHORT).show()
+                dialog!!.dismiss()
+                progressBar?.visibility = View.GONE
+            }.addOnProgressListener {
+                progressBar?.visibility = View.VISIBLE
+            }
     }
 
     private fun setTabLayout() {
@@ -355,6 +346,27 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
                 }
             }
         }
+    }
+
+    private fun fetchToken() {
+        // [START fcm_runtime_enable_auto_init]
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(Constants.TAG, "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+//cfNtuWZzTVGBYI7CFXuKq6:APA91bFYbHB64p9vkfyj6U3_Ii8YLDFnqUTja4q9uyNtk6GrwIqWi7L-RmU-AJI_nrH__gZsFkOVEw4uflzaOzifIpuA_1XDgHGGgeqDjJztbZpEd1k6QTgZ4rAp_j9CRradIqQ9MTsB
+            // Get new FCM registration token
+            val token = task.result
+            FirebaseDatabase.getInstance().reference.child(Constants.USERS_REF)
+                .child(FirebaseAuth.getInstance().currentUser!!.uid).child(Constants.MESSAGE_TOKEN)
+                .setValue(token)
+            // Log and toast
+            val msg = getString(R.string.msg_token_fmt, token)
+            Log.d(Constants.TAG, msg)
+//            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+        })
+        // [END fcm_runtime_enable_auto_init]
     }
 
     private fun openGalleryForImage() {

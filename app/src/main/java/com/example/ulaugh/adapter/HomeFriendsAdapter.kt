@@ -34,16 +34,13 @@ class HomeFriendsAdapter(
         val suggestFriends = userList.friends[position]
         binding.nameTv.text = suggestFriends.full_name
         binding.statusTv.text = suggestFriends.user_name
-        binding.linearRowLayout.setOnClickListener {
-            it.setBackgroundResource(R.drawable.grey_rc)
-        }
 
         Glide.with(context)
             .load(suggestFriends.profile_pic)
             .centerCrop()
             .fitCenter()
             .thumbnail()
-            .placeholder(com.example.ulaugh.R.drawable.user_logo)
+            .placeholder(R.drawable.user_logo)
             .into(binding.photoIv)
 
         binding.addFriend.setOnClickListener {
