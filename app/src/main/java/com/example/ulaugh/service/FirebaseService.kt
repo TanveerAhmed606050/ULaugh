@@ -4,6 +4,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_HIGH
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_MUTABLE
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
@@ -11,6 +13,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.ulaugh.R
+import com.example.ulaugh.controller.HomeActivity
 import com.example.ulaugh.controller.ProfileDetailActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -45,54 +48,56 @@ class FirebaseService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
-//        val intent = Intent(this, ProfileDetailActivity::class.java)
-//        val notificationManager =
-//            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-//        val notificationID = Random.nextInt()
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            createNotificationChannel(notificationManager)
-//        }
-//
-//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-//        val pendingIntent = PendingIntent.getActivity(this, 0, intent, FLAG_MUTABLE)
-//        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-//            .setContentTitle(message.data["title"])
-//            .setContentText(message.data["message"])
-//            .setSmallIcon(com.example.ulaugh.R.drawable.ic_baseline_add_24)
-//            .setAutoCancel(true)
-//            .setContentIntent(pendingIntent)
-//            .build()
-//
-//        notificationManager.notify(notificationID, notification)
-        startNotification(message)
+        val intent = Intent(this, ProfileDetailActivity::class.java)
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationID = Random.nextInt()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel(notificationManager)
+        }
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, FLAG_MUTABLE)
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(message.data["title"])
+            .setContentText(message.data["message"])
+            .setSmallIcon(R.drawable.ic_baseline_add_24)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        notificationManager.notify(notificationID, notification)
+//        startNotification(message)
 
     }
 
     private fun startNotification(message: RemoteMessage) {
 
-        val notificationID = Random.nextInt()
+//        val notificationID = Random.nextInt()
         // adding action for activity
-        val activityActionIntent = Intent(application, ProfileDetailActivity::class.java).apply {
+        val activityActionIntent = Intent(application, HomeActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
-        val mainPendingIntent = PendingIntent.getActivity(application, 0, activityActionIntent, PendingIntent.FLAG_MUTABLE)
+        val mainPendingIntent = PendingIntent.getActivity(application, 0, activityActionIntent, PendingIntent.FLAG_IMMUTABLE)
         val accept: PendingIntent =
-            PendingIntent.getActivity(application, 1, activityActionIntent, PendingIntent.FLAG_MUTABLE)
+            PendingIntent.getActivity(application, 1, activityActionIntent, PendingIntent.FLAG_IMMUTABLE)
 
         // adding action for broadcast
-        val broadcastIntent = Intent(application, ProfileDetailActivity::class.java).apply {
+        val broadcastIntent = Intent(application, HomeActivity::class.java).apply {
             putExtra("action_msg", "some message for toast")
         }
         val reject: PendingIntent =
-            PendingIntent.getBroadcast(application, 2, broadcastIntent, PendingIntent.FLAG_MUTABLE)
+            PendingIntent.getBroadcast(application, 2, broadcastIntent, PendingIntent.FLAG_IMMUTABLE)
         val builder = NotificationCompat.Builder(application, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher_round)
-            .setContentTitle("${message.data}")
-            .setContentText("${message.from}")
+//            .setContentTitle("${message.senderId}")
+            .setContentTitle(message.data["title"])
+//            .setContentTitle("${message.messageId}")
+            .setContentText(message.data["message"])
             .setStyle(
                 NotificationCompat.BigTextStyle()
-                    .bigText("long notification content")
+                    .bigText("Friend request")
             )
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             // Set the intent that will fire when the user taps the notification
@@ -102,7 +107,7 @@ class FirebaseService : FirebaseMessagingService() {
             .addAction(R.drawable.user_logo, "Accept", accept)
             .addAction(R.drawable.bell, "Reject", reject)
         val notificationManager = NotificationManagerCompat.from(this)
-        notificationManager.notify(notificationID, builder.build())
+        notificationManager.notify(1, builder.build())
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

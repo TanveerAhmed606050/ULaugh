@@ -130,7 +130,7 @@ class HomeAdapter(
                         .centerCrop()
                         .fitCenter()
                         .thumbnail()
-                        .placeholder(R.drawable.seokangjoon)
+                        .placeholder(R.drawable.user_logo)
                         .into(binding.coverPhoto)
                     binding.emojiTxt.visibility = View.GONE
                     binding.emoji.visibility = View.GONE

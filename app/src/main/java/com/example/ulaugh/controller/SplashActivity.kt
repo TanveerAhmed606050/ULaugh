@@ -3,6 +3,7 @@ package com.example.ulaugh.controller
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.ulaugh.databinding.ActivitySplashBinding
 import com.example.ulaugh.utils.AuthFirebase
 import com.example.ulaugh.utils.SharePref
@@ -28,6 +29,7 @@ class SplashActivity : AppCompatActivity() {
         // Initialize Firebase Auth
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
+    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         CoroutineScope(Dispatchers.IO).launch {
             delayFun()

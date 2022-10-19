@@ -32,7 +32,7 @@
         <entry key="app/src/main/res/layout/activity_home.xml" value="0.5" />
         <entry key="app/src/main/res/layout/activity_login.xml" value="0.3390625" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.325" />
-        <entry key="app/src/main/res/layout/activity_profile_detail.xml" value="0.50859375" />
+        <entry key="app/src/main/res/layout/activity_profile_detail.xml" value="0.33" />
         <entry key="app/src/main/res/layout/activity_react_detail.xml" value="0.5" />
         <entry key="app/src/main/res/layout/activity_reaction_emotion.xml" value="0.36796875" />
         <entry key="app/src/main/res/layout/activity_reaction_emotional.xml" value="0.346875" />
@@ -60,6 +60,7 @@
         <entry key="app/src/main/res/layout/fragment_reset_pass.xml" value="0.67" />
         <entry key="app/src/main/res/layout/fragment_setting.xml" value="0.3390625" />
         <entry key="app/src/main/res/layout/fragment_update_contact.xml" value="0.36796875" />
+        <entry key="app/src/main/res/layout/home_fragment_nearby_list_layout.xml" value="0.50859375" />
         <entry key="app/src/main/res/layout/item_container_receive_message.xml" value="0.5" />
         <entry key="app/src/main/res/layout/item_container_recent_conversion.xml" value="0.3390625" />
         <entry key="app/src/main/res/layout/item_container_sent_message.xml" value="0.50859375" />

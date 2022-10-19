@@ -8,9 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.HomeAdapter
+import com.example.ulaugh.adapter.SearchFilterAdapter
 import com.example.ulaugh.controller.CameraActivity
 import com.example.ulaugh.controller.ProfileDetailActivity
 import com.example.ulaugh.controller.ReactDetailActivity
@@ -30,16 +32,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.random.Random
+import kotlin.random.Random.Default.nextInt
 
 @AndroidEntryPoint
 class HomeFragment : Fragment(), OnClickListener, PostClickListener {
-//    private var _binding: FragmentHomeBinding? = null
-    private var binding:FragmentHomeBinding? = null
+    //    private var _binding: FragmentHomeBinding? = null
+    private var binding: FragmentHomeBinding? = null
     private var postShareRef: DatabaseReference? = null
     private var allUsersRef: DatabaseReference? = null
-    private var friendsRef: DatabaseReference? = null
 
     @Inject
     lateinit var sharePref: SharePref
@@ -49,6 +54,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
     //    private var postsList: ArrayList<HomeRecyclerViewItem.SharePostData> = ArrayList()
 //    private var googleAdsList: ArrayList<HomeRecyclerViewItem.GoogleAds> = ArrayList()
     private val friendsList: ArrayList<Friend> = ArrayList()
+    private val searchList: ArrayList<Friend> = ArrayList()
     private var suggestFriendsList: ArrayList<SuggestFriends> = ArrayList()
     private var adapter: HomeAdapter? = null
 
@@ -56,40 +62,12 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
         super.onViewCreated(view, savedInstanceState)
         postShareRef = FirebaseDatabase.getInstance().getReference(Constants.POST_SHARE_REF)
         allUsersRef = FirebaseDatabase.getInstance().getReference(Constants.USERS_REF)
-        friendsRef = FirebaseDatabase.getInstance().getReference(Constants.FRIENDS_REF)
 
         MobileAds.initialize(activity!!) {}
         setAdapter()
         clickEvents()
         searchFriend()
         initViews()
-    }
-
-    private fun searchFriend() {
-        binding!!.searchTool.searchV.setOnQueryTextListener(object :
-            androidx.appcompat.widget.SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                // on below line we are checking
-                // if query exist or not.
-//                if (programmingLanguagesList.contains(query)) {
-//                    // if query exist within list we
-//                    // are filtering our list adapter.
-//                    listAdapter.filter.filter(query)
-//                } else {
-//                    // if query is not present we are displaying
-//                    // a toast message as no  data found..
-//                    Toast.makeText(activity!!, "No Language found..", Toast.LENGTH_LONG)
-//                        .show()
-//                }
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-
-//                listAdapter.filter.filter(newText)
-                return false
-            }
-        })
     }
 
     private fun clickEvents() {
@@ -186,8 +164,7 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                                     userReaction = reactions.reaction_type!!
 //                            reactions.reaction_type = reactionsType
 //                            reactions!!.user_id = reactionItem.key.toString()
-                                else
-                                    reactionsList.add(reactions)
+                                reactionsList.add(reactions)
                             }
 //                        val reactionDetail = ReactionDetail(totalReactions, reacted)
                             val post = postSnap.getValue(PostItem::class.java)
@@ -382,8 +359,9 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 
     private fun populateData() {
         if (newsFeedList.isNotEmpty()) {
-            for (newsItem in 0 until newsFeedList.size) {
-                homeList.add(newsFeedList[newsItem])
+            val newHomeList = getRandomItemFromList()
+            for (newsItem in 0 until newHomeList.size) {
+                homeList.add(newHomeList[newsItem])
 //                if (newsItem == 1)
 //                    homeList.add(
 //                        HomeRecyclerViewItem.GoogleAds(
@@ -400,11 +378,20 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                }
             }
         } else {
-
         }
         val suggestList = HomeRecyclerViewItem.SuggestList(suggestFriendsList)
         homeList.add(suggestList)
         setAdapter()
+    }
+
+    private fun getRandomItemFromList(): ArrayList<HomeRecyclerViewItem.SharePostData> {
+        val newHomeArray = ArrayList<HomeRecyclerViewItem.SharePostData>()
+        for (i in 0 until newsFeedList.size) {
+            val random = (0 until newsFeedList.size).random()
+            newHomeArray.add(newsFeedList[random])
+            newsFeedList.removeAt(random)
+        }
+        return newHomeArray
     }
 
     override fun onDestroyView() {
@@ -504,8 +491,8 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
         allUsersRef!!
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    for (i in 0 until friendsList.size){
-                        if (friendsList[i].firebase_id == postData.firebase_id){
+                    for (i in 0 until friendsList.size) {
+                        if (friendsList[i].firebase_id == postData.firebase_id) {
                             friendsList[i]._follow = true
                         }
                     }
@@ -571,6 +558,49 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                 }
             }
         }
+    }
+
+    private fun searchFriend() {
+        binding!!.searchTool.searchV.setOnQueryTextListener(object :
+            androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                // on below line we are checking
+                // if query exist or not.
+//                if (programmingLanguagesList.contains(query)) {
+//                    // if query exist within list we
+//                    // are filtering our list adapter.
+//                    listAdapter.filter.filter(query)
+//                } else {
+//                    // if query is not present we are displaying
+//                    // a toast message as no  data found..
+//                    Toast.makeText(activity!!, "No Language found..", Toast.LENGTH_LONG)
+//                        .show()
+//                }
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+
+                filterDataApiFun()
+                if (newText!!.isEmpty()) {
+                    searchList.clear()
+                    searchAdapterFun()
+
+                }
+                return false
+            }
+        })
+    }
+
+    private fun filterDataApiFun() {
+    }
+
+    private fun searchAdapterFun() {
+        val linearLayoutManager = LinearLayoutManager(requireContext())
+        binding!!.searchTool.searchRv.layoutManager = linearLayoutManager
+        val searchFilterAdapter = SearchFilterAdapter(requireContext(), friendsList)
+        binding!!.searchTool.searchRv.adapter = searchFilterAdapter
+
     }
 
     override fun onResume() {

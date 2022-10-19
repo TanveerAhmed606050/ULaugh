@@ -273,8 +273,10 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
 
     private fun createNotification() {
         val title = "Request"
-        val message = "Friend request received from"
-        val recipientToken = "cfNtuWZzTVGBYI7CFXuKq6:APA91bFYbHB64p9vkfyj6U3_Ii8YLDFnqUTja4q9uyNtk6GrwIqWi7L-RmU-AJI_nrH__gZsFkOVEw4uflzaOzifIpuA_1XDgHGGgeqDjJztbZpEd1k6QTgZ4rAp_j9CRradIqQ9MTsB"
+        val message =
+            "Friend request received from ${sharePref.readString(Constants.FULL_NAME, "")}"
+        val recipientToken = messageToken
+//        val recipientToken = "cfNtuWZzTVGBYI7CFXuKq6:APA91bFYbHB64p9vkfyj6U3_Ii8YLDFnqUTja4q9uyNtk6GrwIqWi7L-RmU-AJI_nrH__gZsFkOVEw4uflzaOzifIpuA_1XDgHGGgeqDjJztbZpEd1k6QTgZ4rAp_j9CRradIqQ9MTsB"
         if (title.isNotEmpty() && message.isNotEmpty() && recipientToken.isNotEmpty()) {
             PushNotification(
                 NotificationData(title, message),
@@ -286,19 +288,34 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
         // [END fcm_send_upstream]
     }
 
-    private fun sendNotification(notification: PushNotification) =
-        CoroutineScope(Dispatchers.IO).launch {
+    private fun sendNotification(notification: PushNotification) {
+        CoroutineScope(Dispatchers.Main).launch {
             try {
+                binding.progressBar.visibility = View.VISIBLE
                 val response = RetrofitInstance.api.postNotification(notification)
+                binding.progressBar.visibility = View.GONE
                 if (response.isSuccessful) {
-                    Log.d(TAG, "Response: ${response.toString()}")
+                    binding.followBtn.text = "Requested"
+                    binding.followBtn.isEnabled = false
+                    Toast.makeText(
+                        this@ProfileDetailActivity,
+                        "Request send successfully",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    Log.d(TAG, "Response: $response")
                 } else {
+                    Toast.makeText(
+                        this@ProfileDetailActivity,
+                        "Error:${response.errorBody()}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     Log.e(TAG, response.errorBody().toString())
                 }
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())
             }
         }
+    }
 
 //    private fun fetchToken() {
 //        // [START fcm_runtime_enable_auto_init]

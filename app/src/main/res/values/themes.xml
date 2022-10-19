@@ -4,6 +4,7 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
@@ -21,7 +22,7 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:navigationBarColor">@color/dark_purple</item>
-        <item name="android:forceDarkAllowed" tools:targetApi="q">true</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 
     <style name="NoNavigation" parent="Theme.AppCompat.DayNight.NoActionBar">
@@ -35,7 +36,7 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:navigationBarColor">@color/white</item>
-        <item name="android:forceDarkAllowed" tools:targetApi="q">true</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 
     <style name="NoStatus" parent="Theme.AppCompat.DayNight.NoActionBar">
@@ -49,7 +50,7 @@
         <item name="android:statusBarColor">@color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:navigationBarColor">@color/dark_purple</item>
-        <item name="android:forceDarkAllowed" tools:targetApi="q">true</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 
     <style name="ThemeOverlay.AppTheme.TextInputEditText.Outlined" parent="">

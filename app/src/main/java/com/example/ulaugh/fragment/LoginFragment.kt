@@ -20,6 +20,7 @@ import androidx.navigation.findNavController
 import com.example.ulaugh.R
 import com.example.ulaugh.controller.HomeActivity
 import com.example.ulaugh.databinding.FragmentLoginBinding
+import com.example.ulaugh.model.Friend
 import com.example.ulaugh.model.UserRequest
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Constants.TAG
@@ -270,8 +271,11 @@ class LoginFragment : Fragment() {
                             if (dataSnapshot.exists()) {
                                 Toast.makeText(requireContext(), "Success", Toast.LENGTH_SHORT)
                                     .show()
-//                                    if (!userRequest.email.isNullOrEmpty()) {
-//                                        reference.child(Constants.EMAIL).setValue(userRequest.email)
+                                val selfId = Friend(FirebaseAuth.getInstance().currentUser!!.uid, false)
+                                reference.child(Constants.FRIENDS_REF)
+                                    .child(FirebaseAuth.getInstance().currentUser!!.uid)
+                                    .setValue(selfId)
+                                reference.child(Constants.EMAIL).setValue(userRequest.email)
                                 sharePref.writeString(
                                     Constants.EMAIL,
                                     dataSnapshot.child(Constants.EMAIL).value.toString()
@@ -354,7 +358,11 @@ class LoginFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 // There are no request codes
-                disableViews(binding.signupBtn, binding.included2.continueBtn, binding.loginGoogle)
+                disableViews(
+                    binding.signupBtn,
+                    binding.included2.continueBtn,
+                    binding.loginGoogle
+                )
                 val task =
                     GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 handleSignInResult(task)
@@ -497,7 +505,12 @@ class LoginFragment : Fragment() {
 
     private fun inVisibleLoginView() {
 //        binding.progressBar.visibility = View.VISIBLE
-        binding.textView2.setTextColor(ContextCompat.getColor(requireContext(), R.color.dark_black))
+        binding.textView2.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                R.color.dark_black
+            )
+        )
         binding.textView2.text = "${getText(R.string.hint_otp)} ${binding.phoneNo.text}"
         binding.loginGoogle.visibility = View.GONE
         binding.signupBtn.visibility = View.GONE
