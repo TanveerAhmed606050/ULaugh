@@ -38,8 +38,9 @@
 
     <ImageView
         android:id="@+id/menu_iv"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:padding="6dp"
         android:src="@drawable/menu_white"
         app:layout_constraintEnd_toEndOf="@+id/view"
         app:layout_constraintTop_toTopOf="@+id/view" />

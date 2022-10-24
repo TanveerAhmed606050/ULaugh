@@ -108,17 +108,17 @@ class ProfileFragment : Fragment(), PostClickListener {
         }
         binding.nameTv.text = fullName
         binding.idTv.text = "@$userName"
-        if (sharePref.readBoolean(Constants.IS_PRIVATE, false)) {
-            binding.lockLogo.visibility = View.VISIBLE
-            binding.textView20.visibility = View.VISIBLE
-            binding.textView21.visibility = View.VISIBLE
-            binding.rv.visibility = View.GONE
-        } else {
-            binding.lockLogo.visibility = View.GONE
-            binding.textView20.visibility = View.GONE
-            binding.textView21.visibility = View.GONE
-            binding.rv.visibility = View.VISIBLE
-        }
+//        if (sharePref.readBoolean(Constants.IS_PRIVATE, false)) {
+//            binding.lockLogo.visibility = View.VISIBLE
+//            binding.textView20.visibility = View.VISIBLE
+//            binding.textView21.visibility = View.VISIBLE
+//            binding.rv.visibility = View.GONE
+//        } else {
+//            binding.lockLogo.visibility = View.GONE
+//            binding.textView20.visibility = View.GONE
+//            binding.textView21.visibility = View.GONE
+//            binding.rv.visibility = View.VISIBLE
+//        }
     }
 
     private fun setAdapter() {
@@ -141,10 +141,10 @@ class ProfileFragment : Fragment(), PostClickListener {
 
                         for (reactionItem in postSnap.child(Constants.REACTION).children) {
                             val reactions = reactionItem.getValue(Reactions::class.java)!!
-                            if (reactions.user_id == FirebaseAuth.getInstance().currentUser!!.uid)
-                                userReaction = reactions.reaction_type!!
-                                else
-                                reactionsList.add(reactions)
+//                            if (reactions.user_id == FirebaseAuth.getInstance().currentUser!!.uid)
+//                                userReaction = reactions.reaction_type!!
+//                                else
+                            reactionsList.add(reactions)
                         }
                         val post = postSnap.getValue(PostItem::class.java)
                         post!!.post_id = keyValue
@@ -162,7 +162,7 @@ class ProfileFragment : Fragment(), PostClickListener {
                         )
                         Log.d(Constants.TAG, "onDataChange: ${userReaction}\n")
                         postItemsList.add(postItem)
-                    //                        postItemsList.add(postSnap.getValue(HomeRecyclerViewItem.SharePostData::class.java)!!)
+                        //                        postItemsList.add(postSnap.getValue(HomeRecyclerViewItem.SharePostData::class.java)!!)
 //                        postItemsList.add(
 //                            PostItem(
 //                                dataSnapshot.key.toString(),
@@ -435,11 +435,11 @@ class ProfileFragment : Fragment(), PostClickListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        _binding = null
+//        _binding = null
     }
 
 
-    override fun onClick(post: Any, type: String, emotionList: List<Emoji>?) {
+    override fun onClick(post: Any, type: String, emotionList: List<Pair<String?, Int>>) {
         TODO("Not yet implemented")
     }
 }

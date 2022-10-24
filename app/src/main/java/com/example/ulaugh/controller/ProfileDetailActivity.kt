@@ -44,7 +44,7 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
     private val binding get() = _binding!!
     private var profileData: UserRequest? = null
     private val postItemsList: MutableList<HomeRecyclerViewItem.SharePostData> = mutableListOf()
-    private var firebaseId = ""
+    private var friendFirebaseId = ""
     private var isFollow = false
 //    private val authViewModel by activityViewModels<AuthViewModel>()
 
@@ -91,12 +91,10 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
     }
 
     private fun initViews() {
-        firebaseId = intent.getStringExtra(Constants.FIREBASE_ID)!!
-        isFollow = intent.getBooleanExtra(Constants.IS_FOLLOW, false)
+        friendFirebaseId = intent.getStringExtra(Constants.FIREBASE_ID)!!
+//        isFollow = intent.getBooleanExtra(Constants.IS_FOLLOW, false)
         allPostRef = FirebaseDatabase.getInstance().reference.child(Constants.POST_SHARE_REF)
         profileRef = FirebaseDatabase.getInstance().reference.child(Constants.USERS_REF)
-        if (isFollow)
-            binding.followBtn.text = "Message"
 
         binding.rv.layoutManager =
             StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
@@ -155,12 +153,19 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
                 intent.putExtra(Constants.IS_CHECKED, true)
                 startActivity(intent)
             } else {
+                profileRef.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                    .child(Constants.FRIENDS_REF).child(friendFirebaseId).child(Constants.IS_FOLLOW)
+                    .setValue(true).addOnSuccessListener {
+                        Toast.makeText(this, "Follow Successfully", Toast.LENGTH_SHORT).show()
+                        binding.followBtn.text = "Message"
+                        isFollow = true
+                    }
             }
         }
     }
 
     private fun getProfileData() {
-        profileRef.child(firebaseId)
+        profileRef.child(friendFirebaseId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
 //                    Log.d(TAG, "isPrivate: ${snapshot.child("is_private").value}")
@@ -168,7 +173,7 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
                     messageToken = snapshot.child(Constants.MESSAGE_TOKEN).value.toString()
                     profileData = snapshot.getValue(UserRequest::class.java)
                     setProfileData(isPrivate)
-                    if (isPrivate)
+                    if (!isPrivate)
                         getPostData()
                 }
 
@@ -180,11 +185,24 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
                     ).show()
                 }
             })
+        profileRef.child(FirebaseAuth.getInstance().currentUser!!.uid).child(Constants.FRIENDS_REF)
+            .child(friendFirebaseId).addListenerForSingleValueEvent(object :ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                   isFollow = snapshot.child(Constants.IS_FOLLOW).value.toString().toBoolean()
+                    if (isFollow)
+                        binding.followBtn.text = "Message"
+
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+
+            })
 //        return profileData
     }
 
     private fun getPostData() {
-        allPostRef.child(firebaseId)
+        allPostRef.child(friendFirebaseId)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (postSnap in snapshot.children) {
@@ -341,7 +359,7 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
         _binding = null
     }
 
-
-    override fun onClick(post: Any, type: String, emotionList: List<Emoji>?) {
+    override fun onClick(post: Any, type: String, emotionList: List<Pair<String?, Int>>) {
+        TODO("Not yet implemented")
     }
 }

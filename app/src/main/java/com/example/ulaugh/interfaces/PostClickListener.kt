@@ -5,6 +5,5 @@ import com.example.ulaugh.model.HomeRecyclerViewItem
 import com.example.ulaugh.model.SuggestFriends
 
 interface PostClickListener {
-    fun onClick(post: Any, type:String, emotionList:List<Emoji>? = null)
-
+    fun onClick(post: Any, type:String, emotionList:List<Pair<String?, Int>> = emptyList())
 }

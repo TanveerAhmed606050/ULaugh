@@ -13,7 +13,6 @@ import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.ReactAdapter
 import com.example.ulaugh.databinding.ActivityReactDetailBinding
-import com.example.ulaugh.model.Emoji
 import com.example.ulaugh.model.HomeRecyclerViewItem
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Helper
@@ -31,13 +30,13 @@ import javax.inject.Inject
 class ReactDetailActivity : AppCompatActivity() {
     private var _binding: ActivityReactDetailBinding? = null
     private val binding get() = _binding!!
-    private var state: CollapsingToolbarLayoutState? = null
+//    private var state: CollapsingToolbarLayoutState? = null
     private var postDetail: HomeRecyclerViewItem.SharePostData? = null
-    private var emotionsList: List<Emoji>? = null
+    private var emotionsList: List<Pair<String?, Int>> = emptyList()
 
-    private enum class CollapsingToolbarLayoutState {
-        EXPANDED, COLLAPSED, INTERNEDIATE
-    }
+//    private enum class CollapsingToolbarLayoutState {
+//        EXPANDED, COLLAPSED, INTERNEDIATE
+//    }
 
     //    private val authViewModel by activityViewModels<AuthViewModel>()
     @Inject
@@ -59,7 +58,7 @@ class ReactDetailActivity : AppCompatActivity() {
 //        setToolbarFun()
         setGraph()
         setAdapter()
-        setEmotions(emotionsList!!, this)
+        setEmotions(emotionsList, this)
 //        setAppBar()
     }
 
@@ -71,7 +70,7 @@ class ReactDetailActivity : AppCompatActivity() {
                     object : TypeToken<HomeRecyclerViewItem.SharePostData>() {}.type
                 )
             emotionsList = Gson().fromJson(intent.getStringExtra(Constants.EMOTIONS_DATA),
-                object : TypeToken<List<Emoji>>() {}.type
+                object : TypeToken<List<Pair<String?, Int>>>() {}.type
             )
         }
         if (postDetail != null) {
@@ -91,7 +90,7 @@ class ReactDetailActivity : AppCompatActivity() {
     }
 
     private fun setAdapter() {
-        val adapter = ReactAdapter(emotionsList!! , postDetail!!.reaction!!.size, this)
+        val adapter = ReactAdapter(emotionsList , postDetail!!.reaction!!.size, this)
         object : LinearLayoutManager(this) {
             override fun canScrollVertically(): Boolean {
                 return false
@@ -145,7 +144,7 @@ class ReactDetailActivity : AppCompatActivity() {
                                 )
                         )
                         .data(
-                            Array(emotionsList!!.size) { i -> (emotionsList!![i].count) }
+                            Array(emotionsList.size) { i -> (emotionsList[i].second) }
                         )
                 )
             )
@@ -200,7 +199,116 @@ class ReactDetailActivity : AppCompatActivity() {
 //        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 //    }
 
-    private fun setEmotions(emotionsList: List<Emoji>, context: Context) {
+    private fun setEmotions(emotionsList: List<Pair<String?, Int>>, context: Context) {
+        var position = 1 //set half emotions
+        for (emotion in emotionsList) {
+//                    Log.d(TAG, "setEmotions: ${position}")
+            when (position) {
+                1 -> {
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    this.binding.reactIv1.visibility = View.VISIBLE
+                }
+                2 -> {
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    this.binding.reactIv2.visibility = View.VISIBLE
+                }
+                3 -> {
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    this.binding.reactIv3.visibility = View.VISIBLE
+                }
+                4 -> {
+                    when (emotion.first) {
+                        "happy" -> this.binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> this.binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> this.binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> this.binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> this.binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> this.binding.reactIv4.setImageDrawable(
+                            context.getDrawable(
+                                R.drawable.fear_ic
+                            )
+                        )
+                        "disgust" -> this.binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    this.binding.reactIv4.visibility = View.VISIBLE
+                }
+                5 -> {
+                    when (emotion.first) {
+                        "happy" -> this.binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> this.binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> this.binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> this.binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> this.binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> this.binding.reactIv5.setImageDrawable(
+                            context.getDrawable(
+                                R.drawable.fear_ic
+                            )
+                        )
+                        "disgust" -> this.binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    this.binding.reactIv5.visibility = View.VISIBLE
+                }
+                6 -> {
+                    when (emotion.first) {
+                        "happy" -> this.binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> this.binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> this.binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> this.binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> this.binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> this.binding.reactIv6.setImageDrawable(
+                            context.getDrawable(
+                                R.drawable.fear_ic
+                            )
+                        )
+                        "disgust" -> this.binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    this.binding.reactIv6.visibility = View.VISIBLE
+                }
+                7 -> {
+                    when (emotion.first) {
+                        "happy" -> this.binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> this.binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> this.binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> this.binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> this.binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> this.binding.reactIv7.setImageDrawable(
+                            context.getDrawable(
+                                R.drawable.fear_ic
+                            )
+                        )
+                        "disgust" -> this.binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    this.binding.reactIv7.visibility = View.VISIBLE
+                }
+            }
+            position++
+        }
+    }
+/*    private fun setEmotions(emotionsList: List<Pair<String?, Int>>, context: Context) {
         var position = 1 //set half emotions
         for (emotion in emotionsList) {
             when (position) {
@@ -431,7 +539,7 @@ class ReactDetailActivity : AppCompatActivity() {
             }
             position++
         }
-    }
+    }*/
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         onBackPressed()

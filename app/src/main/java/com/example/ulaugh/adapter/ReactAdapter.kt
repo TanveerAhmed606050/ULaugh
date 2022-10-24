@@ -6,12 +6,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ulaugh.R
 import com.example.ulaugh.databinding.AdapterReactLayoutBinding
-import com.example.ulaugh.model.Emoji
 import kotlin.math.roundToInt
-import kotlin.math.roundToLong
 
 class ReactAdapter(
-    private val reactionList: List<Emoji>,
+    private val reactionList: List<Pair<String?, Int>>,
     val totalReaction: Int,
     var context: Context
 ) :
@@ -167,12 +165,11 @@ class ReactAdapter(
 //        val inbox = reactList[position]
     }
 
-
-    private fun setEmotions(reactionDetail: Emoji) {
-        val percent = ((reactionDetail.count.toDouble() * 100) / totalReaction.toDouble()).roundToInt()
+    private fun setEmotions(reactionDetail: Pair<String?, Int>) {
+        val percent = ((reactionDetail.second.toDouble() * 100) / totalReaction.toDouble()).roundToInt()
         binding.reactPer.text = "$percent%"
-        binding.reactName.text = reactionDetail.name
-        when (reactionDetail.name) {
+        binding.reactName.text = reactionDetail.first
+        when (reactionDetail.first) {
             "happy" -> {
                 binding.mostEmoji.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
             }

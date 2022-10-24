@@ -8,20 +8,15 @@ import android.content.pm.PackageManager
 import android.graphics.ImageFormat
 import android.hardware.camera2.*
 import android.media.ImageReader
-import android.os.Environment
 import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.NonNull
-import androidx.camera.core.impl.utils.ContextUtil.getApplicationContext
 import androidx.core.app.ActivityCompat
 import com.example.ulaugh.interfaces.PictureCapturingListener
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
-import java.text.SimpleDateFormat
 import java.util.*
-
 
 class PictureCapturingServiceImpl
 /***
@@ -30,7 +25,7 @@ class PictureCapturingServiceImpl
 private constructor(activity: Activity) : APictureCapturingService(activity) {
     private var cameraDevice: CameraDevice? = null
     private var imageReader: ImageReader? = null
-    var currentPhotoPath: String = ""
+//    var currentPhotoPath: String = ""
 
     /***
      * camera ids queue.
@@ -45,7 +40,7 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
      */
     private var picturesTaken: TreeMap<String, ByteArray>? = null
     private var capturingListener: PictureCapturingListener? = null
-    private var photoFile:File? = null
+//    private var photoFile:File? = null
 
     /**
      * Starts pictures capturing treatment.
@@ -74,12 +69,11 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
         Log.d(TAG, "opening camera " + "1")
         try {
             if (ActivityCompat.checkSelfPermission(context!!, Manifest.permission.CAMERA)
-                === PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(
+                == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                     context!!,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
                 )
-                === PackageManager.PERMISSION_GRANTED
+                == PackageManager.PERMISSION_GRANTED
             ) {
                 manager!!.openCamera("1", stateCallback, null)
             } else {
@@ -100,8 +94,8 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
                 super.onCaptureCompleted(session, request, result)
                 if (picturesTaken!!.lastEntry() != null) {
                     capturingListener!!.onCaptureDone(
-                        picturesTaken!!.lastEntry().key,
-                        picturesTaken!!.lastEntry().value
+                        picturesTaken!!.lastEntry()!!.key,
+                        picturesTaken!!.lastEntry()!!.value
                     )
                     Log.i(TAG, "done taking picture from camera " + cameraDevice!!.id)
                 }

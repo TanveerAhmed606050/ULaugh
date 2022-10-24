@@ -22,14 +22,11 @@ import com.example.ulaugh.controller.HomeActivity
 import com.example.ulaugh.databinding.FragmentLoginBinding
 import com.example.ulaugh.model.Friend
 import com.example.ulaugh.model.UserRequest
-import com.example.ulaugh.utils.Constants
+import com.example.ulaugh.utils.*
 import com.example.ulaugh.utils.Constants.TAG
 import com.example.ulaugh.utils.Constants.USER_DATA
 import com.example.ulaugh.utils.Constants.USER_TOKEN
-import com.example.ulaugh.utils.Helper
 import com.example.ulaugh.utils.Helper.Companion.hideKeyboard
-import com.example.ulaugh.utils.SharePref
-import com.example.ulaugh.utils.ValidateStatus
 import com.example.ulaugh.viewModel.UserFirebaseVM
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -39,6 +36,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthProvider.ForceResendingToken
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -72,7 +70,9 @@ class LoginFragment : Fragment() {
     private val validateStatus = ValidateStatus()
     private lateinit var mGoogleSignInClient: GoogleSignInClient
     lateinit var firebaseAuth: FirebaseAuth
-//    private var userId = ""
+
+    //    private var userId = ""
+    private val RC_SIGN_IN = 1234
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -91,7 +91,7 @@ class LoginFragment : Fragment() {
         getBundle()
         clickListener()
         prepareGoogle()
-//        bindObservers()
+        bindObservers()
     }
 
     private fun clickListener() {
@@ -271,7 +271,8 @@ class LoginFragment : Fragment() {
                             if (dataSnapshot.exists()) {
                                 Toast.makeText(requireContext(), "Success", Toast.LENGTH_SHORT)
                                     .show()
-                                val selfId = Friend(FirebaseAuth.getInstance().currentUser!!.uid, false)
+                                val selfId =
+                                    Friend(FirebaseAuth.getInstance().currentUser!!.uid, false)
                                 reference.child(Constants.FRIENDS_REF)
                                     .child(FirebaseAuth.getInstance().currentUser!!.uid)
                                     .setValue(selfId)
@@ -353,6 +354,7 @@ class LoginFragment : Fragment() {
             }
     }
 
+
     // [END sign_in_with_phone]
     private var resultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -363,47 +365,56 @@ class LoginFragment : Fragment() {
                     binding.included2.continueBtn,
                     binding.loginGoogle
                 )
-                val task =
-                    GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                handleSignInResult(task)
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                try {
+                    val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
+                    firebaseAuthWithGoogle(account)
+                } catch (e: ApiException) {
+                    Log.w(TAG, "Google sign in failed", e)
+                }
             } else
-                Log.d("TAG", "error:${result.data.toString()} ")
+                Log.d("sladjga", "error:${result.data.toString()} ")
         }
 
-    private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
-        try {
-            val account = completedTask.getResult(
-                ApiException::class.java
+    private fun firebaseAuthWithGoogle(account: GoogleSignInAccount) {
+        if (account.idToken!!.isEmpty()) {
+            val socialRequest = UserRequest(
+                account.id!!,
+                account.email!!,
+                "${account.givenName} ${account.familyName}",
+                account.displayName!!,
             )
-
-            if (account?.idToken!!.isEmpty()) {
-                val socialRequest = UserRequest(
-                    account.id!!,
-                    account.email!!,
-                    "${account.givenName} ${account.familyName}",
-                    account.displayName!!,
-                )
-                userViewModel.socialLogin(socialRequest)
-            } else {
-                val socialRequest = UserRequest(
-                    account.idToken!!,
-                    account.email!!,
-                    "${account.givenName} ${account.familyName}",
-                    account.displayName!!,
-                )
-                userViewModel.socialLogin(socialRequest)
-            }
-
-        } catch (e: ApiException) {
-            // Sign in was unsuccessful
+            userViewModel.socialLogin(socialRequest)
+        } else {
+            val socialRequest = UserRequest(
+                account.idToken!!,
+                account.email!!,
+                "${account.givenName} ${account.familyName}",
+                account.displayName!!,
+            )
+            userViewModel.socialLogin(socialRequest)
         }
+
+
     }
 
     private fun signIn() {
         val signInIntent = mGoogleSignInClient.signInIntent
-        resultLauncher.launch(signInIntent)
+//        resultLauncher.launch(signInIntent)
+        startActivityForResult(signInIntent, RC_SIGN_IN)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == RC_SIGN_IN) {
+            val task: Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data)
+            try {
+                val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
+                firebaseAuthWithGoogle(account)
+            } catch (e: ApiException) {
+                Log.d(TAG, "Google sign in failed " + e.message.toString())
+            }
+        }
+    }
 
     private fun prepareGoogle() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -451,31 +462,39 @@ class LoginFragment : Fragment() {
         picker.show(parentFragmentManager, "COUNTRY_PICKER")
     }
 
-//    private fun bindObservers() {
-//        userViewModel.userResponseLiveData.observe(viewLifecycleOwner) {
-//            binding.progressBar.isVisible = false
-//            binding.textView5.visibility = View.VISIBLE
-//            when (it) {
-//                is NetworkResult.Success -> {
-//                    tokenManager.saveFirebaseId(it.data!!.firebase_id)
-//                    activity?.finish()
-//                    startActivity(Intent(activity, HomeActivity::class.java))
-//                }
-//                is NetworkResult.Error -> {
-//                    enableViews(binding.signupBtn,binding.included2.continueBtn, binding.loginGoogle)
-//                    showValidationErrors(it.message.toString())
-//                }
-//                is NetworkResult.Loading -> {
-//                    binding.textView5.visibility = View.INVISIBLE
-//                    binding.progressBar.isVisible = true
-//                }
-//                else -> {
-//                    enableViews(binding.signupBtn,binding.included2.continueBtn, binding.loginGoogle)
-//                    showValidationErrors(it.message.toString())
-//                }
-//            }
-//        }
-//    }
+    private fun bindObservers() {
+        userViewModel.userResponseLiveData.observe(viewLifecycleOwner) {
+            binding.progressBar.isVisible = false
+            binding.textView5.visibility = View.VISIBLE
+            when (it) {
+                is NetworkResult.Success -> {
+                    sharePref.writeString(Constants.FIREBASE_ID, it.data!!.firebase_id)
+                    activity?.finish()
+                    startActivity(Intent(activity, HomeActivity::class.java))
+                }
+                is NetworkResult.Error -> {
+                    enableViews(
+                        binding.signupBtn,
+                        binding.included2.continueBtn,
+                        binding.loginGoogle
+                    )
+                    showValidationErrors(it.message.toString())
+                }
+                is NetworkResult.Loading -> {
+                    binding.textView5.visibility = View.INVISIBLE
+                    binding.progressBar.isVisible = true
+                }
+                else -> {
+                    enableViews(
+                        binding.signupBtn,
+                        binding.included2.continueBtn,
+                        binding.loginGoogle
+                    )
+                    showValidationErrors(it.message.toString())
+                }
+            }
+        }
+    }
 
     private fun enableViews(vararg views: View) {
         for (v in views) {

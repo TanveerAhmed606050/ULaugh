@@ -180,38 +180,37 @@ class RegisterFragment : Fragment() {
                                         .show()
                                     userRequest.firebase_id =
                                         FirebaseAuth.getInstance().currentUser!!.uid
-//                                    reference
-//                                        .setValue(userRequest)
-                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                                        .child(Constants.IS_PRIVATE).setValue(false)
+                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid).setValue(userRequest)
+//                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                                        .child(Constants.IS_PRIVATE).setValue(false)
                                     sharePref.writeBoolean(Constants.IS_PRIVATE, false)
 //                                    if (!userRequest.email.isNullOrEmpty()) {
-                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                                        .child(Constants.EMAIL).setValue(userRequest.email)
+//                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                                        .child(Constants.EMAIL).setValue(userRequest.email)
                                     sharePref.writeString(
                                         Constants.EMAIL,
                                         userRequest.email
                                     )
 //                                    }
 //                                    if (!userRequest.user_name.isNullOrEmpty()) {
-                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                                        .child(Constants.USER_NAME)
-                                        .setValue(userRequest.user_name)
+//                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                                        .child(Constants.USER_NAME)
+//                                        .setValue(userRequest.user_name)
                                     sharePref.writeString(
                                         Constants.USER_NAME,
                                         userRequest.user_name
                                     )
 //                                    }
 //                                    if (!userRequest.full_name.isNullOrEmpty()) {
-                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                                        .child(Constants.FULL_NAME)
-                                        .setValue(userRequest.full_name)
-                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                                        .child(Constants.FIREBASE_ID)
-                                        .setValue(userRequest.firebase_id)
-                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                                        .child(Constants.PHONE_NO)
-                                        .setValue(userRequest.phone_no)
+//                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                                        .child(Constants.FULL_NAME)
+//                                        .setValue(userRequest.full_name)
+//                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                                        .child(Constants.FIREBASE_ID)
+//                                        .setValue(userRequest.firebase_id)
+//                                    reference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                                        .child(Constants.PHONE_NO)
+//                                        .setValue(userRequest.phone_no)
 
                                     sharePref.writeString(
                                         Constants.FULL_NAME,
@@ -425,7 +424,8 @@ class RegisterFragment : Fragment() {
                 fullName.text.toString().trim(),
                 userName.text.toString().trim(),
                 "",
-                ""
+                "",
+                false
             )
         }
     }
