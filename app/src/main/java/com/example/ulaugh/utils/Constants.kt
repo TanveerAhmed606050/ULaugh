@@ -30,6 +30,7 @@ object Constants {
     const val EMOTIONS_DATA = "emotion"
     const val FOLLOW = "follow"
     const val REQUEST = "request"
+    const val REACTED = "reacted"
     const val NOTIFICATION = "notification"
     const val FIREBASE_ID = "firebase_id"
     const val PREFS_TOKEN_FILE = "prefs_token_file"

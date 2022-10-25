@@ -26,11 +26,13 @@ import com.example.ulaugh.ml.ImageUtils
 import com.example.ulaugh.ml.SortingHelper
 import com.example.ulaugh.ml.TFLiteImageClassifier
 import com.example.ulaugh.model.HomeRecyclerViewItem
+import com.example.ulaugh.model.Notification
 import com.example.ulaugh.model.Reactions
 import com.example.ulaugh.service.APictureCapturingService
 import com.example.ulaugh.service.PictureCapturingServiceImpl
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Constants.TAG
+import com.example.ulaugh.utils.Helper
 import com.example.ulaugh.utils.SharePref
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -70,6 +72,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
     //The capture service
     private var pictureService: APictureCapturingService? = null
     private var postRef: DatabaseReference? = null
+    private lateinit var notificationRef:DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -149,12 +152,6 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                         databaseError: DatabaseError?, b: Boolean,
                         dataSnapshot: DataSnapshot?
                     ) {
-//                        Toast.makeText(
-//                            this@CameraActivity,
-//                            "Success",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                        finish()
                     }
                 })
             }
@@ -187,6 +184,30 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
 //            }
 //
 //        })
+    }
+
+    private fun postNotification(receiverId:String) {
+        val time = Helper().localToGMT()
+        notificationRef.child(receiverId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val notification = Notification(
+                        FirebaseAuth.getInstance().currentUser!!.uid,
+                        receiverId,
+                        Constants.REACTED,
+                        "Reaction",
+                        "${sharePref.readString(Constants.FULL_NAME, "")} reacted your post", time,
+                        sharePref.readString(Constants.PROFILE_PIC, "")!!
+                    )
+                    notificationRef.child(receiverId).push().setValue(notification)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@CameraActivity, "Error ${error.message}", Toast.LENGTH_SHORT)
+                        .show()
+                }
+
+            })
     }
 
     private fun showToast(text: String) {
@@ -324,10 +345,10 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
 //                    mImageView!!.setImageBitmap(tmpBitmap)
 
                     // If single face, then immediately open the list
-                    Log.d(
-                        "lsdagj",
-                        "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}"
-                    )
+//                    Log.d(
+//                        "lsdagj",
+//                        "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}"
+//                    )
                     postRef!!.child(postDetail!!.firebase_id).child(postDetail!!.post_id)
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {

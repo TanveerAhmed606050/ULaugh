@@ -9,6 +9,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.ulaugh.R
 import com.example.ulaugh.databinding.AdapterNotificationBinding
 import com.example.ulaugh.model.Notification
+import com.example.ulaugh.utils.Helper
 import jp.wasabeef.glide.transformations.BlurTransformation
 
 class NotificationAdapter(val notificationList: ArrayList<Notification>, val context: Context) :
@@ -38,6 +39,7 @@ class NotificationAdapter(val notificationList: ArrayList<Notification>, val con
 
         binding.titleTv.text = notification.title
         binding.descriptionTv.text = notification.description
+        binding.timeTv.text = Helper.convertToLocal(notification.time)
     }
 
     override fun getItemCount(): Int {
