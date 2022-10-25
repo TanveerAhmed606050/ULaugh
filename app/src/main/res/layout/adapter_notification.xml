@@ -4,44 +4,86 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <com.mikhaellopez.circularimageview.CircularImageView
+        android:id="@+id/profile_iv"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/user_logo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
-        android:id="@+id/textView14"
+        android:id="@+id/title_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="20dp"
-        android:text="Discount Available"
-        android:textSize="18sp"
-        android:textColor="@color/dark_black"
         android:fontFamily="@font/poppins_medium"
+        android:text="Sikandir"
+        android:textColor="@color/dark_black"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/profile_iv"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textView15"
+        android:id="@+id/description_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:lineSpacingExtra="4sp"
-        android:textSize="14sp"
         android:fontFamily="@font/poppins_regular"
+        android:lineSpacingExtra="4sp"
         android:text="We recommend a 10% discount for UNIT #291in Vancouver House"
         android:textColor="@color/grey_3"
-        app:layout_constraintEnd_toEndOf="@+id/textView14"
-        app:layout_constraintStart_toStartOf="@+id/textView14"
-        app:layout_constraintTop_toBottomOf="@+id/textView14" />
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="@+id/title_tv"
+        app:layout_constraintStart_toStartOf="@+id/title_tv"
+        app:layout_constraintTop_toBottomOf="@+id/title_tv" />
+
+    <Button
+        android:id="@+id/follow_btn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/dark_purple"
+        android:padding="4dp"
+        android:text="@string/follow"
+        android:textColor="@color/white"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/half_v"
+        app:layout_constraintStart_toStartOf="@id/description_tv"
+        app:layout_constraintTop_toBottomOf="@id/description_tv" />
+
+    <View
+        android:id="@+id/half_v"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/description_tv"
+        app:layout_constraintTop_toBottomOf="@id/description_tv"/>
+
+    <Button
+        android:id="@+id/decline_btn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        android:text="@string/decline"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/title_tv"
+        app:layout_constraintStart_toEndOf="@id/half_v"
+        app:layout_constraintTop_toBottomOf="@id/description_tv" />
 
     <TextView
-        android:id="@+id/textView16"
+        android:id="@+id/time_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:fontFamily="@font/poppins_regular"
         android:text="14:32"
-        android:textSize="8sp"
         android:textColor="@color/grey_2"
-        app:layout_constraintEnd_toEndOf="@+id/textView15"
-        app:layout_constraintTop_toBottomOf="@+id/textView15" />
+        android:textSize="8sp"
+        app:layout_constraintEnd_toEndOf="@+id/description_tv"
+        app:layout_constraintTop_toBottomOf="@+id/follow_btn" />
 </androidx.constraintlayout.widget.ConstraintLayout>

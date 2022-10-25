@@ -18,28 +18,27 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.PostsAdapter
 import com.example.ulaugh.databinding.ActivityProfileDetailBinding
-import com.example.ulaugh.interfaces.PostClickListener
+import com.example.ulaugh.interfaces.addFriendListener
 import com.example.ulaugh.model.*
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.SharePref
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.*
 import javax.inject.Inject
 import android.Manifest
+import androidx.core.content.ContentProviderCompat.requireContext
 import com.example.ulaugh.api.RetrofitInstance
 import com.example.ulaugh.utils.Constants.TAG
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.ktx.Firebase
+import com.example.ulaugh.utils.Helper
 import com.google.firebase.messaging.FirebaseMessaging
 
 const val TOPIC = "/topics/myTopic2"
 
 @AndroidEntryPoint
-class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
+class ProfileDetailActivity : AppCompatActivity(), addFriendListener {
     private var _binding: ActivityProfileDetailBinding? = null
     private val binding get() = _binding!!
     private var profileData: UserRequest? = null
@@ -52,6 +51,7 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
     lateinit var sharePref: SharePref
     private lateinit var allPostRef: DatabaseReference
     private lateinit var profileRef: DatabaseReference
+    private lateinit var notificationRef:DatabaseReference
     private var isPrivate: Boolean = false
     private var messageToken = ""
 
@@ -95,6 +95,7 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
 //        isFollow = intent.getBooleanExtra(Constants.IS_FOLLOW, false)
         allPostRef = FirebaseDatabase.getInstance().reference.child(Constants.POST_SHARE_REF)
         profileRef = FirebaseDatabase.getInstance().reference.child(Constants.USERS_REF)
+        notificationRef = FirebaseDatabase.getInstance().getReference(Constants.NOTIFICATION)
 
         binding.rv.layoutManager =
             StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
@@ -143,6 +144,9 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
         binding.followBtn.setOnClickListener {
             if (isPrivate) {
                 askNotificationPermission()
+                CoroutineScope(Dispatchers.IO).launch {
+                    postNotification(profileData!!.firebase_id!!)
+                }
             } else if (isFollow) {
                 val intent = Intent(this, ChatActivity::class.java)
                 intent.putExtra(Constants.FIREBASE_ID, profileData!!.firebase_id)
@@ -186,9 +190,9 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
                 }
             })
         profileRef.child(FirebaseAuth.getInstance().currentUser!!.uid).child(Constants.FRIENDS_REF)
-            .child(friendFirebaseId).addListenerForSingleValueEvent(object :ValueEventListener{
+            .child(friendFirebaseId).addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                   isFollow = snapshot.child(Constants.IS_FOLLOW).value.toString().toBoolean()
+                    isFollow = snapshot.child(Constants.IS_FOLLOW).value.toString().toBoolean()
                     if (isFollow)
                         binding.followBtn.text = "Message"
 
@@ -304,6 +308,30 @@ class ProfileDetailActivity : AppCompatActivity(), PostClickListener {
             }
         }
         // [END fcm_send_upstream]
+    }
+
+    private fun postNotification(receiverId:String) {
+        val time = Helper().localToGMT()
+        notificationRef.child(receiverId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val notification = Notification(
+                        FirebaseAuth.getInstance().currentUser!!.uid,
+                        receiverId,
+                        Constants.REQUEST,
+                        "Request",
+                        "${sharePref.readString(Constants.FULL_NAME, "")} is sent you friend request", time,
+                        sharePref.readString(Constants.PROFILE_PIC, "")!!
+                    )
+                    notificationRef.child(receiverId).push().setValue(notification)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@ProfileDetailActivity, "Error ${error.message}", Toast.LENGTH_SHORT)
+                        .show()
+                }
+
+            })
     }
 
     private fun sendNotification(notification: PushNotification) {

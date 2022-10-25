@@ -1,7 +1,5 @@
 package com.example.ulaugh.interfaces
 
-import java.util.*
-
 interface PictureCapturingListener {
     /**
      * a callback called when we've done taking a picture from a single camera

@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.HomeAdapter
@@ -17,11 +16,13 @@ import com.example.ulaugh.controller.CameraActivity
 import com.example.ulaugh.controller.ProfileDetailActivity
 import com.example.ulaugh.controller.ReactDetailActivity
 import com.example.ulaugh.databinding.FragmentHomeBinding
+import com.example.ulaugh.interfaces.FollowFriendListener
 import com.example.ulaugh.interfaces.OnClickListener
-import com.example.ulaugh.interfaces.PostClickListener
+import com.example.ulaugh.interfaces.addFriendListener
 import com.example.ulaugh.model.*
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Constants.TAG
+import com.example.ulaugh.utils.Helper
 import com.example.ulaugh.utils.SharePref
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
@@ -32,15 +33,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 @AndroidEntryPoint
-class HomeFragment : Fragment(), OnClickListener, PostClickListener {
+class HomeFragment : Fragment(), OnClickListener, addFriendListener, FollowFriendListener {
     //    private var _binding: FragmentHomeBinding? = null
     private var binding: FragmentHomeBinding? = null
     private var postShareRef: DatabaseReference? = null
     private var allUsersRef: DatabaseReference? = null
+    private var notificationRef: DatabaseReference? = null
 
     @Inject
     lateinit var sharePref: SharePref
@@ -50,7 +55,8 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
     //    private var postsList: ArrayList<HomeRecyclerViewItem.SharePostData> = ArrayList()
 //    private var googleAdsList: ArrayList<HomeRecyclerViewItem.GoogleAds> = ArrayList()
     private val friendsList: ArrayList<Friend> = ArrayList()
-    private val searchList: ArrayList<Friend> = ArrayList()
+
+    //    private val searchList: ArrayList<Friend> = ArrayList()
     private var suggestFriendsList: ArrayList<SuggestFriends> = ArrayList()
     private var adapter: HomeAdapter? = null
     private var suggestList: HomeRecyclerViewItem.SuggestList? = null
@@ -59,8 +65,6 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        postShareRef = FirebaseDatabase.getInstance().getReference(Constants.POST_SHARE_REF)
-        allUsersRef = FirebaseDatabase.getInstance().getReference(Constants.USERS_REF)
 
         MobileAds.initialize(activity!!) {}
 //        setAdapter()
@@ -74,13 +78,12 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
             binding!!.toolbar1.root.visibility = View.INVISIBLE
             binding!!.searchTool.root.visibility = View.VISIBLE
             searchAdapterFun()
-            binding!!.searchRv.visibility = View.VISIBLE
+            binding!!.textView31.visibility = View.GONE
             binding!!.recyclerView.visibility = View.GONE
         }
         binding!!.searchTool.crossIv.setOnClickListener {
             binding!!.toolbar1.root.visibility = View.VISIBLE
             binding!!.searchTool.root.visibility = View.INVISIBLE
-            binding!!.searchRv.visibility = View.GONE
             binding!!.recyclerView.visibility = View.VISIBLE
         }
     }
@@ -97,12 +100,15 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
     private fun setAdapter() {
 //        binding.recyclerView.apply {
 //        binding.recyclerView.setHasFixedSize(true)
-        adapter = HomeAdapter(requireContext(), homeList, this, this)
+        adapter = HomeAdapter(requireContext(), homeList, this, this, this)
         binding!!.recyclerView.adapter = adapter
 //        }
     }
 
     private fun initViews() {
+        postShareRef = FirebaseDatabase.getInstance().getReference(Constants.POST_SHARE_REF)
+        allUsersRef = FirebaseDatabase.getInstance().getReference(Constants.USERS_REF)
+        notificationRef = FirebaseDatabase.getInstance().getReference(Constants.NOTIFICATION)
         binding!!.toolbar1.nameTv.text = sharePref.readString(Constants.FULL_NAME, "")
         binding!!.toolbar1.statusTv.text = "@${sharePref.readString(Constants.USER_NAME, "")}"
         val imageUrl = sharePref.readString(Constants.PROFILE_PIC, null)
@@ -397,6 +403,9 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                                     "lsadjg"
                                 )
                             )
+                            suggestList =
+                                HomeRecyclerViewItem.SuggestList(suggestFriendsList)
+                            homeList.add(suggestList!!)
                         }
                         2 -> {
                             suggestList =
@@ -453,11 +462,11 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
                             .setValue(friend)
                         binding!!.progressBar.visibility = View.GONE
                     }
-                    Toast.makeText(
-                        requireContext(),
-                        "Success",
-                        Toast.LENGTH_SHORT
-                    ).show()
+//                    Toast.makeText(
+//                        requireContext(),
+//                        "Success",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
 //                    CoroutineScope(Dispatchers.Main).launch {
 //                        binding!!.progressBar.visibility = View.VISIBLE
 //                        getFriends()
@@ -477,13 +486,13 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
             })
     }
 
-    private fun callFollowFirebaseApi(postData: HomeRecyclerViewItem.SharePostData) {
+    private fun callFollowFirebaseApi(firebaseId: String) {
 //        binding!!.progressBar.visibility = View.VISIBLE
         allUsersRef!!
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (i in 0 until friendsList.size) {
-                        if (friendsList[i].firebase_id == postData.firebase_id) {
+                        if (friendsList[i].firebase_id == firebaseId) {
                             friendsList[i]._follow = true
                         }
                     }
@@ -491,24 +500,36 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                    val friend = Friend(postData.firebase_id, true)
 //                    if (snapshot.exists()) {
                     hashMap[Constants.IS_FOLLOW] = true
-                    hashMap[Constants.FIREBASE_ID] = postData.firebase_id
+                    hashMap[Constants.FIREBASE_ID] = firebaseId
                     allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
-                        .child(Constants.FRIENDS_REF).child(postData.firebase_id)
-                        .setValue(hashMap)
+                        .child(Constants.FRIENDS_REF).child(firebaseId)
+                        .setValue(hashMap).addOnCompleteListener {
+                        }
                     binding!!.recyclerView.adapter!!.notifyDataSetChanged()
-//                    binding!!.progressBar.visibility = View.GONE
-//                    getFriends()
-//                    }
-//                    else {
-//                        hashMap[Constants.IS_FOLLOW] = true
-//                        allUsersRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
-//                            .child(Constants.FRIENDS_REF)
-//                            .child(postData.firebase_id)
-//                            .child(Constants.FOLLOW).setValue(hashMap)
-//                    }
                 }
 
                 override fun onCancelled(error: DatabaseError) {}
+            })
+        val time = Helper().localToGMT()
+        notificationRef!!.child(firebaseId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val notification = Notification(
+                        FirebaseAuth.getInstance().currentUser!!.uid,
+                        firebaseId,
+                        Constants.FOLLOW,
+                        "Follow",
+                        "${sharePref.readString(Constants.FULL_NAME, "")} is now follow you", time,
+                        sharePref.readString(Constants.PROFILE_PIC, "")!!
+                    )
+                    notificationRef!!.child(firebaseId).push().setValue(notification)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(requireContext(), "Error ${error.message}", Toast.LENGTH_SHORT)
+                        .show()
+                }
+
             })
     }
 
@@ -557,12 +578,12 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 //                transaction.disallowAddToBackStack()
 //                transaction.commit()
             }
-            Constants.FOLLOW -> {
-                val postData = post as HomeRecyclerViewItem.SharePostData
-                CoroutineScope(Dispatchers.IO).launch {
-                    callFollowFirebaseApi(postData)
-                }
-            }
+//            Constants.FOLLOW -> {
+//                val postData = post as HomeRecyclerViewItem.SharePostData
+//                CoroutineScope(Dispatchers.IO).launch {
+//                    callFollowFirebaseApi(postData)
+//                }
+//            }
         }
     }
 
@@ -587,9 +608,9 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 filter(newText!!)
-                if (newText.isEmpty()) {
+//                if (newText.isEmpty()) {
 //                    searchList.clear()
-                }
+//                }
                 return false
             }
         })
@@ -602,27 +623,29 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
         // running a for loop to compare elements.
         for (item in suggestFriendsList) {
             // checking if the entered string matched with any item of our recycler view.
-            if (item.user_name!!.toLowerCase().contains(text.toLowerCase())) {
+            if (item.full_name!!.lowercase(Locale.getDefault())
+                    .contains(text.lowercase(Locale.getDefault()))
+            ) {
                 // if the item is matched we are
                 // adding it to our filtered list.
                 filteredlist.add(item)
             }
         }
-        if (filteredlist.isEmpty()) {
-            // if no item is added in filtered list we are
-            // displaying a toast message as no data found.
-            Toast.makeText(requireContext(), "No Data Found..", Toast.LENGTH_SHORT).show()
-        } else {
-            // at last we are passing that filtered
-            // list to our adapter class.
-            searchFilterAdapter.filterList(filteredlist)
-        }
+//        if (filteredlist.isEmpty()) {
+//            // if no item is added in filtered list we are
+//            // displaying a toast message as no data found.
+//            Toast.makeText(requireContext(), "No Data Found..", Toast.LENGTH_SHORT).show()
+//        } else {
+        // at last we are passing that filtered
+        // list to our adapter class.
+        searchFilterAdapter.filterList(filteredlist)
+//        }
     }
 
     private fun searchAdapterFun() {
-        val linearLayoutManager = LinearLayoutManager(requireContext())
-        binding!!.searchTool.searchRv.layoutManager = linearLayoutManager
-        searchFilterAdapter = SearchFilterAdapter(requireContext(), suggestFriendsList)
+//        val linearLayoutManager = LinearLayoutManager(requireContext())
+//        binding!!.searchTool.searchRv.layoutManager = linearLayoutManager
+        searchFilterAdapter = SearchFilterAdapter(requireContext(), suggestFriendsList, this)
         binding!!.searchTool.searchRv.adapter = searchFilterAdapter
     }
 
@@ -645,5 +668,9 @@ class HomeFragment : Fragment(), OnClickListener, PostClickListener {
             }
             sharePref.writeBoolean(Constants.EMOTION_UPDATE, false)
         }
+    }
+
+    override fun onFollow(firebaseId: String) {
+        callFollowFirebaseApi(firebaseId)
     }
 }

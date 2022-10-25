@@ -14,8 +14,9 @@ import com.example.ulaugh.R
 import com.example.ulaugh.databinding.AdapterHomeFlistBinding
 import com.example.ulaugh.databinding.ItemGoogleAdBinding
 import com.example.ulaugh.databinding.ItemMainBinding
+import com.example.ulaugh.interfaces.FollowFriendListener
 import com.example.ulaugh.interfaces.OnClickListener
-import com.example.ulaugh.interfaces.PostClickListener
+import com.example.ulaugh.interfaces.addFriendListener
 import com.example.ulaugh.model.Emoji
 import com.example.ulaugh.model.HomeRecyclerViewItem
 import com.example.ulaugh.model.Reactions
@@ -30,7 +31,8 @@ class HomeAdapter(
     val context: Context,
     private val itemsList: ArrayList<HomeRecyclerViewItem>,
     private val onClickListener: OnClickListener,
-    private val onPostClickListener: PostClickListener
+    private val onPostClickListener: addFriendListener,
+    private val followFriendListener: FollowFriendListener
 ) :
     RecyclerView.Adapter<HomeAdapter.HomeRecyclerViewHolder>() {
 //    var items = listOf<HomeRecyclerViewItem>()
@@ -75,12 +77,13 @@ class HomeAdapter(
             is HomeRecyclerViewHolder.NewsViewHolder -> holder.bind(
                 onPostClickListener,
                 context,
-                itemsList[position] as HomeRecyclerViewItem.SharePostData
+                itemsList[position] as HomeRecyclerViewItem.SharePostData,
+                followFriendListener
             )
             is HomeRecyclerViewHolder.FriendsViewHolder -> holder.bind(
                 context,
                 itemsList[position] as HomeRecyclerViewItem.SuggestList,
-                onClickListener
+                onClickListener,
             )
         }
     }
@@ -106,15 +109,16 @@ class HomeAdapter(
         class NewsViewHolder(private val binding: ItemMainBinding) :
             HomeRecyclerViewHolder(binding) {
             fun bind(
-                onClickListener: PostClickListener,
+                onClickListener: addFriendListener,
                 context: Context,
-                post: HomeRecyclerViewItem.SharePostData
+                post: HomeRecyclerViewItem.SharePostData,
+                followFriendListener: FollowFriendListener
             ) {
                 binding.nameTv.text = post.full_name
                 binding.postDetail.text = post.description
                 binding.tagsTv.text = post.tagsList
 
-                if (post.is_follow!! || post.firebase_id != FirebaseAuth.getInstance().currentUser!!.uid){
+                if (post.is_follow!! || post.firebase_id != FirebaseAuth.getInstance().currentUser!!.uid) {
                     binding.plusIv.visibility = View.GONE
                     binding.followTv.visibility = View.GONE
                 }
@@ -170,9 +174,10 @@ class HomeAdapter(
                     onClickListener.onClick(post, Constants.PROFILE)
                 }
                 binding.followView.setOnClickListener {
-                    onClickListener.onClick(post, Constants.FOLLOW)
+                    if (post.firebase_id != FirebaseAuth.getInstance().currentUser!!.uid)
+                        followFriendListener.onFollow(post.firebase_id)
+//                    onClickListener.onClick(post, Constants.FOLLOW)
                 }
-
             }
 
             private fun setEmotions(

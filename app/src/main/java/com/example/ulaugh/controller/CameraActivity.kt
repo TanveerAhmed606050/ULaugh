@@ -112,7 +112,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                 .load(postDetail!!.image_url)
                 .centerCrop()
                 .fitCenter()
-                .thumbnail(0.3f)
+                .thumbnail()
                 .placeholder(R.drawable.seokangjoon)
                 .into(binding.imageView)
             postRef = FirebaseDatabase.getInstance().getReference(Constants.POST_SHARE_REF)

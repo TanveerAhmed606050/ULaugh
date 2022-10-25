@@ -10,6 +10,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.ulaugh.R
+import com.example.ulaugh.interfaces.FollowFriendListener
+import com.example.ulaugh.interfaces.addFriendListener
 import com.example.ulaugh.model.Friend
 import com.example.ulaugh.model.SuggestFriends
 import com.mikhaellopez.circularimageview.CircularImageView
@@ -18,7 +20,8 @@ import kotlin.collections.ArrayList
 
 class SearchFilterAdapter(
     private var context: Context,
-    private var userList: ArrayList<SuggestFriends>
+    private var userList: ArrayList<SuggestFriends>,
+    private val followFriendListener: FollowFriendListener
 ) : RecyclerView.Adapter<SearchFilterAdapter.MyViewHolder>() {
 
     override fun onCreateViewHolder(
@@ -41,6 +44,12 @@ class SearchFilterAdapter(
             .thumbnail()
             .placeholder(R.drawable.user_logo)
             .into(holder.photoView)
+
+        holder.followView.setOnClickListener {
+            followFriendListener.onFollow(user.firebase_id!!)
+            userList.remove(user)
+            notifyDataSetChanged()
+        }
     }
 
     override fun getItemCount(): Int {

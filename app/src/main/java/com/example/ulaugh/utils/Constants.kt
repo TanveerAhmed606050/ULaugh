@@ -29,6 +29,8 @@ object Constants {
     const val IS_CHECKED = "is_checked"
     const val EMOTIONS_DATA = "emotion"
     const val FOLLOW = "follow"
+    const val REQUEST = "request"
+    const val NOTIFICATION = "notification"
     const val FIREBASE_ID = "firebase_id"
     const val PREFS_TOKEN_FILE = "prefs_token_file"
     const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"

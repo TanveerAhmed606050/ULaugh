@@ -2,7 +2,6 @@ package com.example.ulaugh.fragment
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -15,7 +14,7 @@ import com.example.ulaugh.R
 import com.example.ulaugh.adapter.PostsAdapter
 import com.example.ulaugh.controller.SettingActivity
 import com.example.ulaugh.databinding.FragmentProfileBinding
-import com.example.ulaugh.interfaces.PostClickListener
+import com.example.ulaugh.interfaces.addFriendListener
 import com.example.ulaugh.model.Emoji
 import com.example.ulaugh.model.HomeRecyclerViewItem
 import com.example.ulaugh.model.PostItem
@@ -23,9 +22,7 @@ import com.example.ulaugh.model.Reactions
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.SharePref
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +31,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ProfileFragment : Fragment(), PostClickListener {
+class ProfileFragment : Fragment(), addFriendListener {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
