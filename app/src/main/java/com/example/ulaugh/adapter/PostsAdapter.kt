@@ -10,7 +10,7 @@ import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.controller.ReactDetailActivity
 import com.example.ulaugh.databinding.ItemMainBinding
-import com.example.ulaugh.interfaces.addFriendListener
+import com.example.ulaugh.interfaces.AddFriendListener
 import com.example.ulaugh.model.HomeRecyclerViewItem
 import com.example.ulaugh.model.Reactions
 import com.example.ulaugh.utils.Constants
@@ -20,7 +20,7 @@ import com.makeramen.roundedimageview.RoundedImageView
 class PostsAdapter internal constructor(
     private val mContext: Context,
     private val postItems: MutableList<HomeRecyclerViewItem.SharePostData>,
-    private val mClickListener: addFriendListener
+    private val mClickListener: AddFriendListener
 ) :
     RecyclerView.Adapter<PostsAdapter.ListViewHolder>() {
 

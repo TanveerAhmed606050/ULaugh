@@ -14,9 +14,12 @@ import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.databinding.ActivityEditProfileBinding
+import com.example.ulaugh.model.PostShareInfo
+import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Constants.EMAIL
 import com.example.ulaugh.utils.Constants.USERS_REF
 import com.example.ulaugh.utils.Constants.FULL_NAME
+import com.example.ulaugh.utils.Constants.POST_SHARE_REF
 import com.example.ulaugh.utils.Constants.PROFILE_PIC
 import com.example.ulaugh.utils.Constants.USER_NAME
 import com.example.ulaugh.utils.DecodeImage
@@ -48,6 +51,7 @@ class EditProfileActivity : AppCompatActivity() {
 
     //    private var imagePath: ByteArray? = null
     private lateinit var userProfileRef: DatabaseReference
+    private lateinit var postRef: DatabaseReference
 //    private var compressedImageFile: File? = null
 
     //    private lateinit var firebaseStorage: FirebaseStorage
@@ -67,6 +71,9 @@ class EditProfileActivity : AppCompatActivity() {
     private fun initViews() {
         userProfileRef =
             FirebaseDatabase.getInstance().getReference(USERS_REF)
+                .child(FirebaseAuth.getInstance().currentUser!!.uid)
+        postRef =
+            FirebaseDatabase.getInstance().getReference(POST_SHARE_REF)
                 .child(FirebaseAuth.getInstance().currentUser!!.uid)
         binding.included.backBtn.setOnClickListener {
             finish()
@@ -116,6 +123,7 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun updateProfilePic() {
+        val time = Helper().localToGMT()
         fileRef = FirebaseStorage.getInstance().getReference(PROFILE_PIC)
             .child(FirebaseAuth.getInstance().currentUser!!.uid)
             .child("pic" + ".png")
@@ -164,79 +172,10 @@ class EditProfileActivity : AppCompatActivity() {
                             email
                         )
                     }
-//                    Log.d(TAG, "updateProfile: ${taskUrl.result}")
+                    sharePost(uri.toString(), time)
                     userMap[PROFILE_PIC] = uri.toString()
                     userProfileRef.updateChildren(userMap)
-                    sharePref.writeString(
-                        PROFILE_PIC,
-                        uri.toString()
-                    )
-//                    if (email.isNotEmpty())
-//                        userMap[EMAIL] = email
-//                    if (userName.isNotEmpty())
-//                        userMap[USER_NAME] = userName
-//                    if (fullName.isNotEmpty())
-//                        userMap[FULL_NAME] = fullName
-//                    userMap[FIREBASE_ID] = authFirebase.currentUser!!.uid
-/*                    userProfileRef
-                        .addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                userProfileRef
-                                    .child(
-                                        PROFILE_PIC
-                                    ).setValue(taskUrl.result.toString())
-                                sharePref.writeString(
-                                    PROFILE_PIC,
-                                    snapshot.child(PROFILE_PIC).value.toString()
-                                )
-                                if (userName.isNotEmpty()) {
-                                    userProfileRef
-                                        .child(
-                                            USER_NAME
-                                        ).setValue(userName)
-                                    sharePref.writeString(
-                                        USER_NAME,
-                                        userName
-                                    )
-                                }
-                                if (fullName.isNotEmpty()) {
-                                    userProfileRef
-                                        .child(
-                                            FULL_NAME
-                                        ).setValue(fullName)
-                                    sharePref.writeString(
-                                        FULL_NAME,
-                                        fullName
-                                    )
-                                }
-                                if (email.isNotEmpty()) {
-                                    userProfileRef
-                                        .child(
-                                            EMAIL
-                                        ).setValue(email)
-                                    sharePref.writeString(
-                                        EMAIL,
-                                        email
-                                    )
-                                }
-                                sharePref.writeString(
-                                    PROFILE_PIC,
-                                    snapshot.child(PROFILE_PIC).value.toString()
-                                )
-                                Toast.makeText(
-                                    this@EditProfileActivity,
-                                    "Update successfully",
-                                    Toast.LENGTH_SHORT
-                                )
-                                    .show()
-                                finish()
-                            }
-
-                            override fun onCancelled(error: DatabaseError) {
-                                TODO("Not yet implemented")
-                            }
-
-                        })*/
+                    sharePref.writeString(PROFILE_PIC, uri.toString())
                 }
             } else
                 Toast.makeText(this, "Not updated successfully ${task.error}", Toast.LENGTH_SHORT)
@@ -244,6 +183,38 @@ class EditProfileActivity : AppCompatActivity() {
             binding.progressBar.visibility = View.GONE
             binding.included2.continueBtn.isEnabled = true
         }
+    }
+
+    private fun sharePost(imageUrl: String, time: String) {
+
+        val shareInfo = PostShareInfo(
+            FirebaseAuth.getInstance().currentUser!!.uid,
+            imageUrl,
+            "${sharePref.readString(FULL_NAME, "")} change his profile Picture",
+            time,
+            userName,
+            fullName,
+            "",
+            Constants.REACTION,
+            "image/jpeg",
+            imageUrl, true
+        )
+
+        postRef.push().setValue(shareInfo)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show()
+//                                databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                                    .child(imageUploadId)
+//                                    .setValue(shareInfo)
+//                                    .child(Constants.REACTION)
+//                                    .child(FirebaseAuth.getInstance().currentUser!!.uid)
+//                                    .setValue("")
+                } else
+                    Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
+            }.addOnFailureListener {
+                Toast.makeText(this, "${it.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun updateRealData() {

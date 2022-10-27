@@ -194,9 +194,7 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
         val orientation = getJpegOrientation(characteristics, 0)
         captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation)
         reader.setOnImageAvailableListener(onImageAvailableListener, null)
-        cameraDevice!!.createCaptureSession(
-            outputSurfaces,
-            object : CameraCaptureSession.StateCallback() {
+        cameraDevice!!.createCaptureSession( outputSurfaces, object : CameraCaptureSession.StateCallback() {
                 override fun onConfigured(@NonNull session: CameraCaptureSession) {
                     try {
                         session.capture(captureBuilder.build(), captureListener, null)
@@ -204,10 +202,8 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
                         Log.e(TAG, " exception occurred while accessing " + "1", e)
                     }
                 }
-
                 override fun onConfigureFailed(@NonNull session: CameraCaptureSession) {}
-            },
-            null)
+            }, null)
     }
 
     private fun saveImageToDisk(bytes: ByteArray) {

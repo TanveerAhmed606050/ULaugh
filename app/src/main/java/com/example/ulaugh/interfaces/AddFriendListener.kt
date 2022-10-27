@@ -1,5 +1,5 @@
 package com.example.ulaugh.interfaces
 
-interface addFriendListener {
+interface AddFriendListener {
     fun onClick(post: Any, type:String, emotionList:List<Pair<String?, Int>> = emptyList())
 }

@@ -31,6 +31,8 @@ object Constants {
     const val FOLLOW = "follow"
     const val REQUEST = "request"
     const val REACTED = "reacted"
+    const val ACCEPT = "Accept"
+    const val REJECTED = "Reject"
     const val NOTIFICATION = "notification"
     const val FIREBASE_ID = "firebase_id"
     const val PREFS_TOKEN_FILE = "prefs_token_file"

@@ -4,25 +4,20 @@ import android.Manifest
 import android.annotation.TargetApi
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.util.Pair
 import android.view.View
 import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.databinding.ActivityCameraBinding
 import com.example.ulaugh.interfaces.PictureCapturingListener
-import com.example.ulaugh.ml.ImageUtils
 import com.example.ulaugh.ml.SortingHelper
 import com.example.ulaugh.ml.TFLiteImageClassifier
 import com.example.ulaugh.model.HomeRecyclerViewItem
@@ -45,7 +40,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 
@@ -55,11 +49,12 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
     private var _binding: ActivityCameraBinding? = null
     private val binding get() = _binding!!
     private val MODEL_FILE_NAME = "simple_classifier.tflite"
-    private val SCALED_IMAGE_BIGGEST_SIZE = 480
+//    private val SCALED_IMAGE_BIGGEST_SIZE = 480
     private var mClassifier: TFLiteImageClassifier? = null
     private var mImageView: ImageView? = null
     private var mClassificationResult: HashMap<String, ArrayList<Pair<String, String>>>? = null
     private var postDetail: HomeRecyclerViewItem.SharePostData? = null
+
     @Inject
     lateinit var sharePref: SharePref
 
@@ -72,7 +67,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
     //The capture service
     private var pictureService: APictureCapturingService? = null
     private var postRef: DatabaseReference? = null
-    private lateinit var notificationRef:DatabaseReference
+    private lateinit var notificationRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,6 +98,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
     }
 
     private fun initViews() {
+        notificationRef = FirebaseDatabase.getInstance().getReference(Constants.NOTIFICATION)
         sharePref.writeBoolean(Constants.EMOTION_UPDATE, true)//api home call
         if (intent != null)
             postDetail =
@@ -128,7 +124,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
 //        Log.d("lsdagj", "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}")
     }
 
-    private fun setUserReaction(reaction: String) {
+    private fun setUserReaction(userReaction: String) {
         postRef!!.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 postRef!!.runTransaction(object : Transaction.Handler {
@@ -136,7 +132,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
 //                        val inte = reaction.toInt()
 //                        Log.d(TAG, "Emoji: $inte")
                         val reaction =
-                            Reactions(reaction, FirebaseAuth.getInstance().currentUser!!.uid)
+                            Reactions(userReaction, FirebaseAuth.getInstance().currentUser!!.uid)
                         var lastKey = "-1"
                         for (child in mutableData.children) {
                             lastKey = child.key!!
@@ -186,7 +182,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
 //        })
     }
 
-    private fun postNotification(receiverId:String) {
+    private fun postNotification(receiverId: String) {
         val time = Helper().localToGMT()
         notificationRef.child(receiverId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -197,16 +193,21 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                         Constants.REACTED,
                         "Reaction",
                         "${sharePref.readString(Constants.FULL_NAME, "")} reacted your post", time,
-                        sharePref.readString(Constants.PROFILE_PIC, "")!!
+                        sharePref.readString(Constants.PROFILE_PIC, "")!!,
+                        "",
+                        false,
+                        sharePref.readString(Constants.FULL_NAME, "")!!
                     )
                     notificationRef.child(receiverId).push().setValue(notification)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@CameraActivity, "Error ${error.message}", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(
+                        this@CameraActivity,
+                        "Error ${error.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-
             })
     }
 
@@ -215,57 +216,54 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
     }
 
     // Function to handle successful new image acquisition
-    private fun processImageRequestResult(scaledResultImageBitmap: Bitmap) {
+//    private fun processImageRequestResult(scaledResultImageBitmap: Bitmap) {
 //        val scaledResultImageBitmap = getScaledImageBitmap(resultImageUri)
 //        mImageView!!.setImageBitmap(scaledResultImageBitmap)
+//
+//        // Clear the result of a previous classification
+//    }
 
-        // Clear the result of a previous classification
-        mClassificationResult!!.clear()
-        setCalculationStatusUI(true)
-        detectFaces(scaledResultImageBitmap)
-    }
-
-    private fun getScaledImageBitmap(imageUri: Uri): Bitmap {
-        var scaledImageBitmap: Bitmap? = null
-        try {
-            val imageBitmap = MediaStore.Images.Media.getBitmap(
-                this.contentResolver,
-                imageUri
-            )
-            val scaledHeight: Int
-            val scaledWidth: Int
-
-            // How many times you need to change the sides of an image
-            val scaleFactor: Float
-
-            // Get larger side and start from exactly the larger side in scaling
-            if (imageBitmap.height > imageBitmap.width) {
-                scaledHeight = SCALED_IMAGE_BIGGEST_SIZE
-                scaleFactor = scaledHeight / imageBitmap.height.toFloat()
-                scaledWidth = (imageBitmap.width * scaleFactor).toInt()
-            } else {
-                scaledWidth = SCALED_IMAGE_BIGGEST_SIZE
-                scaleFactor = scaledWidth / imageBitmap.width.toFloat()
-                scaledHeight = (imageBitmap.height * scaleFactor).toInt()
-            }
-            scaledImageBitmap = Bitmap.createScaledBitmap(
-                imageBitmap,
-                scaledWidth,
-                scaledHeight,
-                true
-            )
-
-            // An image in memory can be rotated
-            scaledImageBitmap = ImageUtils.rotateToNormalOrientation(
-                contentResolver,
-                scaledImageBitmap,
-                imageUri
-            )
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return scaledImageBitmap!!
-    }
+//    private fun getScaledImageBitmap(imageUri: Uri): Bitmap {
+//        var scaledImageBitmap: Bitmap? = null
+//        try {
+//            val imageBitmap = MediaStore.Images.Media.getBitmap(
+//                this.contentResolver,
+//                imageUri
+//            )
+//            val scaledHeight: Int
+//            val scaledWidth: Int
+//
+//            // How many times you need to change the sides of an image
+//            val scaleFactor: Float
+//
+//            // Get larger side and start from exactly the larger side in scaling
+//            if (imageBitmap.height > imageBitmap.width) {
+//                scaledHeight = SCALED_IMAGE_BIGGEST_SIZE
+//                scaleFactor = scaledHeight / imageBitmap.height.toFloat()
+//                scaledWidth = (imageBitmap.width * scaleFactor).toInt()
+//            } else {
+//                scaledWidth = SCALED_IMAGE_BIGGEST_SIZE
+//                scaleFactor = scaledWidth / imageBitmap.width.toFloat()
+//                scaledHeight = (imageBitmap.height * scaleFactor).toInt()
+//            }
+//            scaledImageBitmap = Bitmap.createScaledBitmap(
+//                imageBitmap,
+//                scaledWidth,
+//                scaledHeight,
+//                true
+//            )
+//
+//            // An image in memory can be rotated
+//            scaledImageBitmap = ImageUtils.rotateToNormalOrientation(
+//                contentResolver,
+//                scaledImageBitmap,
+//                imageUri
+//            )
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//        }
+//        return scaledImageBitmap!!
+//    }
 
     private fun detectFaces(imageBitmap: Bitmap) {
         val faceDetectorOptions = FirebaseVisionFaceDetectorOptions.Builder()
@@ -277,7 +275,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         val faceDetector = FirebaseVision.getInstance()
             .getVisionFaceDetector(faceDetectorOptions)
         val firebaseImage = FirebaseVisionImage.fromBitmap(imageBitmap)
-        val result = faceDetector.detectInImage(firebaseImage)
+        faceDetector.detectInImage(firebaseImage)
             .addOnSuccessListener { faces ->
 
                 // When the search for faces was successfully completed
@@ -321,7 +319,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                         // Draw a face number in a rectangle
                         paint.style = Paint.Style.FILL
                         tmpCanvas.drawText(
-                            Integer.toString(faceId),
+                            faceId.toString(),
                             faceRect.left +
                                     faceRect.width() * textIndentFactor,
                             faceRect.bottom -
@@ -341,14 +339,6 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                         faceId++
                     }
 
-                    // Set the image with the face designations
-//                    mImageView!!.setImageBitmap(tmpBitmap)
-
-                    // If single face, then immediately open the list
-//                    Log.d(
-//                        "lsdagj",
-//                        "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}"
-//                    )
                     postRef!!.child(postDetail!!.firebase_id).child(postDetail!!.post_id)
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
@@ -361,11 +351,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
                             }
 
                         })
-//                    Toast.makeText(
-//                        this@CameraActivity,
-//                        mClassificationResult!!["Face 1"]?.get(0)!!.first,
-//                        Toast.LENGTH_LONG
-//                    ).show()
+                    postNotification(postDetail!!.firebase_id)
                     setUserReaction(mClassificationResult!!["Face 1"]?.get(0)!!.first)
                     setEmotions(mClassificationResult!!["Face 1"]?.get(0)!!.first)
                     binding.containerLayout.invalidate()
@@ -375,20 +361,14 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
 //                    }
                     // If no faces are found
                 } else {
+                    postNotification(postDetail!!.firebase_id)
                     setUserReaction("neutral")
-//                    setEmotions("neutral")
-//                    Toast.makeText(
-//                        this@CameraActivity,
-//                        getString(R.string.faceless),
-//                        Toast.LENGTH_LONG
-//                    ).show()
-//                    finish()
                 }
-                setCalculationStatusUI(false)
+//                setCalculationStatusUI(false)
             }
             .addOnFailureListener { e ->
                 e.printStackTrace()
-                setCalculationStatusUI(false)
+//                setCalculationStatusUI(false)
             }
     }
 
@@ -411,13 +391,13 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
 
 
     //Change the interface depending on the status of calculations
-    private fun setCalculationStatusUI(isCalculationRunning: Boolean) {
-        if (isCalculationRunning) {
+//    private fun setCalculationStatusUI(isCalculationRunning: Boolean) {
+//        if (isCalculationRunning) {
 //            binding.classificationProgressBar.visibility = ProgressBar.VISIBLE
-        } else {
-            binding.classificationProgressBar.visibility = ProgressBar.INVISIBLE
-        }
-    }
+//        } else {
+//            binding.classificationProgressBar.visibility = ProgressBar.INVISIBLE
+//        }
+//    }
 
     private fun setEmotions(emotion: String) {
         when (emotion) {
@@ -519,7 +499,10 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
 //                val target = File(pictureUrl)
 //                val uri = Uri.parse(path)
                 CoroutineScope(Dispatchers.Main).launch {
-                    processImageRequestResult(bitmap)
+//                    processImageRequestResult(bitmap)
+                    mClassificationResult!!.clear()
+//                    setCalculationStatusUI(true)
+                    detectFaces(bitmap)
                 }
                 //                Log.d(" target_path", "" + pictureUrl);
 //                if (target.exists() && target.isFile && target.canWrite()) {
@@ -575,7 +558,7 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         val neededPermissions: ArrayList<String> = ArrayList()
         for (permission in requiredPermissions) {
             if (ContextCompat.checkSelfPermission(
-                    applicationContext,
+                    this,
                     permission
                 ) !== PackageManager.PERMISSION_GRANTED
             ) {
@@ -595,15 +578,15 @@ class CameraActivity : AppCompatActivity(), PictureCapturingListener,
         }
     }
 
-    private fun visibleViews(vararg views: android.view.View) {
-        for (v in views) {
-            v.visibility = android.view.View.VISIBLE
-        }
-    }
-
-    private fun invisibleViews(vararg views: android.view.View) {
-        for (view in views)
-            view.visibility = android.view.View.GONE
-    }
+//    private fun visibleViews(vararg views: android.view.View) {
+//        for (v in views) {
+//            v.visibility = android.view.View.VISIBLE
+//        }
+//    }
+//
+//    private fun invisibleViews(vararg views: android.view.View) {
+//        for (view in views)
+//            view.visibility = android.view.View.GONE
+//    }
 
 }

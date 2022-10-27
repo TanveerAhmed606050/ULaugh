@@ -16,8 +16,7 @@ import com.example.ulaugh.databinding.ItemGoogleAdBinding
 import com.example.ulaugh.databinding.ItemMainBinding
 import com.example.ulaugh.interfaces.FollowFriendListener
 import com.example.ulaugh.interfaces.OnClickListener
-import com.example.ulaugh.interfaces.addFriendListener
-import com.example.ulaugh.model.Emoji
+import com.example.ulaugh.interfaces.AddFriendListener
 import com.example.ulaugh.model.HomeRecyclerViewItem
 import com.example.ulaugh.model.Reactions
 import com.example.ulaugh.utils.Constants
@@ -31,7 +30,7 @@ class HomeAdapter(
     val context: Context,
     private val itemsList: ArrayList<HomeRecyclerViewItem>,
     private val onClickListener: OnClickListener,
-    private val onPostClickListener: addFriendListener,
+    private val onPostClickListener: AddFriendListener,
     private val followFriendListener: FollowFriendListener
 ) :
     RecyclerView.Adapter<HomeAdapter.HomeRecyclerViewHolder>() {
@@ -50,6 +49,10 @@ class HomeAdapter(
                     false
                 )
             )
+
+//            return ViewHolder(LayoutInflater.from(parent.getContext())
+//                .inflate(R.layout.item_main, parent, false), viewType)
+//                )
             R.layout.item_google_ad -> HomeRecyclerViewHolder.AdsViewHolder(
                 ItemGoogleAdBinding.inflate(
                     LayoutInflater.from(parent.context),
@@ -69,6 +72,7 @@ class HomeAdapter(
     }
 
     override fun onBindViewHolder(holder: HomeRecyclerViewHolder, position: Int) {
+        holder.setIsRecyclable(false)
         when (holder) {
             is HomeRecyclerViewHolder.AdsViewHolder -> holder.bind(
                 context,
@@ -103,17 +107,15 @@ class HomeAdapter(
 
     sealed class HomeRecyclerViewHolder(binding: ViewBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        private val emoji = Emoji("", 0)
-        private val emojiCount = ArrayList<Emoji>()
+//        private val emoji = Emoji("", 0)
+//        private val emojiCount = ArrayList<Emoji>()
 
         class NewsViewHolder(private val binding: ItemMainBinding) :
             HomeRecyclerViewHolder(binding) {
-            fun bind(
-                onClickListener: addFriendListener,
-                context: Context,
-                post: HomeRecyclerViewItem.SharePostData,
-                followFriendListener: FollowFriendListener
-            ) {
+            fun bind(onClickListener: AddFriendListener,
+                     context: Context,
+                     post: HomeRecyclerViewItem.SharePostData,
+                     followFriendListener: FollowFriendListener) {
                 binding.nameTv.text = post.full_name
                 binding.postDetail.text = post.description
                 binding.tagsTv.text = post.tagsList
@@ -126,7 +128,8 @@ class HomeAdapter(
                 binding.timeTv.text = Helper.covertTimeToText(date)
                 binding.reactCount.text = Helper.prettyCount(post.reaction!!.size)
                 val emotionsList = countReactions(post.reaction!!)
-                setEmotions(emotionsList, context, binding)
+                if (emotionsList.isNotEmpty())
+                    setEmotions(emotionsList, context, binding)
                 if (post.reaction_type!!.isNotEmpty()) {
                     Glide.with(context)
                         .load(post.image_url)
@@ -175,7 +178,7 @@ class HomeAdapter(
                 }
                 binding.followView.setOnClickListener {
                     if (post.firebase_id != FirebaseAuth.getInstance().currentUser!!.uid)
-                        followFriendListener.onFollow(post.firebase_id)
+                        followFriendListener.onFollow(post.firebase_id, Constants.REJECTED)
 //                    onClickListener.onClick(post, Constants.FOLLOW)
                 }
             }

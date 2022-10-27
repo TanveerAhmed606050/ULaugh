@@ -4,18 +4,14 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.interfaces.FollowFriendListener
-import com.example.ulaugh.interfaces.addFriendListener
-import com.example.ulaugh.model.Friend
 import com.example.ulaugh.model.SuggestFriends
+import com.example.ulaugh.utils.Constants
 import com.mikhaellopez.circularimageview.CircularImageView
-import java.util.*
 import kotlin.collections.ArrayList
 
 class SearchFilterAdapter(
@@ -46,7 +42,7 @@ class SearchFilterAdapter(
             .into(holder.photoView)
 
         holder.followView.setOnClickListener {
-            followFriendListener.onFollow(user.firebase_id!!)
+            followFriendListener.onFollow(user.firebase_id!!, Constants.REJECTED)
             userList.remove(user)
             notifyDataSetChanged()
         }

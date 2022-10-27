@@ -18,7 +18,7 @@ import com.example.ulaugh.controller.ReactDetailActivity
 import com.example.ulaugh.databinding.FragmentHomeBinding
 import com.example.ulaugh.interfaces.FollowFriendListener
 import com.example.ulaugh.interfaces.OnClickListener
-import com.example.ulaugh.interfaces.addFriendListener
+import com.example.ulaugh.interfaces.AddFriendListener
 import com.example.ulaugh.model.*
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Constants.TAG
@@ -40,7 +40,7 @@ import kotlin.collections.HashMap
 
 
 @AndroidEntryPoint
-class HomeFragment : Fragment(), OnClickListener, addFriendListener, FollowFriendListener {
+class HomeFragment : Fragment(), OnClickListener, AddFriendListener, FollowFriendListener {
     //    private var _binding: FragmentHomeBinding? = null
     private var binding: FragmentHomeBinding? = null
     private var postShareRef: DatabaseReference? = null
@@ -69,6 +69,7 @@ class HomeFragment : Fragment(), OnClickListener, addFriendListener, FollowFrien
         MobileAds.initialize(activity!!) {}
 //        setAdapter()
         clickEvents()
+        searchAdapterFun()
         searchFriend()
         initViews()
     }
@@ -98,10 +99,10 @@ class HomeFragment : Fragment(), OnClickListener, addFriendListener, FollowFrien
     }
 
     private fun setAdapter() {
-//        binding.recyclerView.apply {
-//        binding.recyclerView.setHasFixedSize(true)
-        adapter = HomeAdapter(requireContext(), homeList, this, this, this)
-        binding!!.recyclerView.adapter = adapter
+//        binding!!.recyclerView.apply {
+            binding!!.recyclerView.setHasFixedSize(true)
+            adapter = HomeAdapter(requireContext(), homeList, this, this, this)
+            binding!!.recyclerView.adapter = adapter
 //        }
     }
 
@@ -148,7 +149,7 @@ class HomeFragment : Fragment(), OnClickListener, addFriendListener, FollowFrien
                         for (friendsSnap in snapshot.children) {
                             val friend = friendsSnap.getValue(Friend::class.java)
                             friendsList.add(friendsSnap.getValue(Friend::class.java)!!)
-                            if (friend!!.firebase_id == lastFriend)
+                            if (friend!!.firebase_id == lastFriend || lastFriend.isEmpty())
                                 getHomeData()
 //                            Log.d(TAG, "FriendList: ${friendsList}")
                         }
@@ -197,7 +198,9 @@ class HomeFragment : Fragment(), OnClickListener, addFriendListener, FollowFrien
                                 post.full_name,
                                 post.tagsList,
                                 post.profile_image,
-                                reactionsList, userReaction, friendDetail._follow!!
+                                reactionsList,
+                                post._profile_pic,
+                                userReaction, friendDetail._follow!!
                             )
                             Log.d(TAG, "onDataChange: ${userReaction}\n")
                             newsFeedList.add(postItem)
@@ -403,9 +406,9 @@ class HomeFragment : Fragment(), OnClickListener, addFriendListener, FollowFrien
                                     "lsadjg"
                                 )
                             )
-                            suggestList =
-                                HomeRecyclerViewItem.SuggestList(suggestFriendsList)
-                            homeList.add(suggestList!!)
+//                            suggestList =
+//                                HomeRecyclerViewItem.SuggestList(suggestFriendsList)
+//                            homeList.add(suggestList!!)
                         }
                         2 -> {
                             suggestList =
@@ -520,7 +523,10 @@ class HomeFragment : Fragment(), OnClickListener, addFriendListener, FollowFrien
                         Constants.FOLLOW,
                         "Follow",
                         "${sharePref.readString(Constants.FULL_NAME, "")} is now follow you", time,
-                        sharePref.readString(Constants.PROFILE_PIC, "")!!
+                        sharePref.readString(Constants.PROFILE_PIC, "")!!,
+                        "",
+                        false,
+                        sharePref.readString(Constants.FULL_NAME, "")!!
                     )
                     notificationRef!!.child(firebaseId).push().setValue(notification)
                 }
@@ -670,7 +676,7 @@ class HomeFragment : Fragment(), OnClickListener, addFriendListener, FollowFrien
         }
     }
 
-    override fun onFollow(firebaseId: String) {
+    override fun onFollow(firebaseId: String, rejected: String) {
         callFollowFirebaseApi(firebaseId)
     }
 }

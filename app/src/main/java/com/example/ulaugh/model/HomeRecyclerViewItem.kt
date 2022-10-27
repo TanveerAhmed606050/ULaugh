@@ -13,8 +13,9 @@ sealed class HomeRecyclerViewItem {
         val tagsList: String = "",
         val profile_image: String,
         var reaction: MutableList<Reactions>? = null,
+        val _profile_pic: String = "",
         var reaction_type: String? = null,
-        var is_follow: Boolean? = null
+        var is_follow: Boolean? = null,
     ) : HomeRecyclerViewItem()
 
     data class GoogleAds(

@@ -50,6 +50,7 @@
     <string name="private_account">This Account is Private.</string>
     <string name="info_private_acc">Send Follow Request to see their photos and videos.</string>
     <string name="follow">Follow</string>
+    <string name="accept">Accept</string>
     <string name="post">Posts</string>
     <string name="follower">Followers</string>
     <string name="top_reaction">Top Reactions</string>

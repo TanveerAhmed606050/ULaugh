@@ -131,7 +131,8 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
                             tagsList,
                             Constants.REACTION,
                             mediaTypeRaw,
-                            sharePref.readString(Constants.PROFILE_PIC, "")!!
+                            sharePref.readString(Constants.PROFILE_PIC, "")!!,
+                            false
                         )
                         val imageUploadId = postShareDbRef.push().key
 

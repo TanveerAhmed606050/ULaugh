@@ -14,11 +14,8 @@ import com.example.ulaugh.R
 import com.example.ulaugh.adapter.PostsAdapter
 import com.example.ulaugh.controller.SettingActivity
 import com.example.ulaugh.databinding.FragmentProfileBinding
-import com.example.ulaugh.interfaces.addFriendListener
-import com.example.ulaugh.model.Emoji
-import com.example.ulaugh.model.HomeRecyclerViewItem
-import com.example.ulaugh.model.PostItem
-import com.example.ulaugh.model.Reactions
+import com.example.ulaugh.interfaces.AddFriendListener
+import com.example.ulaugh.model.*
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.SharePref
 import com.google.firebase.auth.FirebaseAuth
@@ -31,7 +28,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ProfileFragment : Fragment(), addFriendListener {
+class ProfileFragment : Fragment(), AddFriendListener {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
@@ -41,7 +38,8 @@ class ProfileFragment : Fragment(), addFriendListener {
 
     @Inject
     lateinit var sharePref: SharePref
-    private lateinit var databaseReference: DatabaseReference
+    private lateinit var profileDataRef: DatabaseReference
+    private lateinit var followerRef: DatabaseReference
     lateinit var postsAdapter: PostsAdapter
     var userName = ""
     var fullName = ""
@@ -56,31 +54,20 @@ class ProfileFragment : Fragment(), addFriendListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        profileDataRef = FirebaseDatabase.getInstance().getReference(Constants.POST_SHARE_REF)
+        followerRef = FirebaseDatabase.getInstance().getReference(Constants.USERS_REF)
 
-        databaseReference =
-            FirebaseDatabase.getInstance().getReference(Constants.POST_SHARE_REF)
         setAdapter()
         clickListener()
         CoroutineScope(Dispatchers.Main).launch {
             binding.progressBar.visibility = View.VISIBLE
             getProfileData()
+            getFollowers()
             binding.progressBar.visibility = View.GONE
         }
-//        postItems.add(PostItem(R.drawable.seokangjoon))
-//        postItems.add(PostItem(R.drawable.parkseojoon))
-//        postItems.add(PostItem(R.drawable.yooseungho))
-//        postItems.add(PostItem(R.drawable.seokangjoon))
-//        postItems.add(PostItem(R.drawable.parkseojoon))
-//        postItems.add(PostItem(R.drawable.yooseungho))
-//        postItems.add(PostItem(R.drawable.seokangjoon))
-//        postItems.add(PostItem(R.drawable.parkseojoon))
-//        postItems.add(PostItem(R.drawable.yooseungho))
-//        postItems.add(PostItem(R.drawable.seokangjoon))
-
     }
 
     private fun initViews() {
-
         val url = sharePref.readString(Constants.PROFILE_PIC, null)
         userName = sharePref.readString(Constants.USER_NAME, "").toString()
         fullName = sharePref.readString(Constants.FULL_NAME, "").toString()
@@ -91,7 +78,7 @@ class ProfileFragment : Fragment(), addFriendListener {
                 .centerCrop()
                 .fitCenter()
                 .thumbnail()
-                .placeholder(R.drawable.seokangjoon)
+                .placeholder(R.drawable.user_logo)
                 .into(binding.profileIv)
 
             Glide.with(requireContext())
@@ -100,7 +87,7 @@ class ProfileFragment : Fragment(), addFriendListener {
                 .fitCenter()
                 .thumbnail()
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 4)))
-                .placeholder(R.drawable.seokangjoon)
+                .placeholder(R.drawable.user_logo)
                 .into(binding.coverIv)
         }
         binding.nameTv.text = fullName
@@ -126,21 +113,17 @@ class ProfileFragment : Fragment(), addFriendListener {
     }
 
     private fun getProfileData() {
-        databaseReference.child(FirebaseAuth.getInstance().currentUser!!.uid)
+        profileDataRef.child(FirebaseAuth.getInstance().currentUser!!.uid)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     postItemsList.clear()
                     for (postSnap in snapshot.children) {
                         val keyValue = postSnap.key.toString()
-//                        val totalReactions = postSnap.child(Constants.FRIENDS_REF).childrenCount
-                        var userReaction = ""
+                        val userReaction = ""
                         val reactionsList: MutableList<Reactions> = ArrayList()
 
                         for (reactionItem in postSnap.child(Constants.REACTION).children) {
                             val reactions = reactionItem.getValue(Reactions::class.java)!!
-//                            if (reactions.user_id == FirebaseAuth.getInstance().currentUser!!.uid)
-//                                userReaction = reactions.reaction_type!!
-//                                else
                             reactionsList.add(reactions)
                         }
                         val post = postSnap.getValue(PostItem::class.java)
@@ -155,20 +138,16 @@ class ProfileFragment : Fragment(), addFriendListener {
                             post.full_name,
                             post.tagsList,
                             post.profile_image,
-                            reactionsList, userReaction
+                            reactionsList,
+                            post._profile_pic,
+                            userReaction,
                         )
                         Log.d(Constants.TAG, "onDataChange: ${userReaction}\n")
                         postItemsList.add(postItem)
-                        //                        postItemsList.add(postSnap.getValue(HomeRecyclerViewItem.SharePostData::class.java)!!)
-//                        postItemsList.add(
-//                            PostItem(
-//                                dataSnapshot.key.toString(),
-//                                dataSnapshot.child(Constants.DATE_TIME).value.toString(),
-//                                dataSnapshot.child(Constants.DESCRIPTION).value.toString(),
-//                                dataSnapshot.child(Constants.IMAGE_URL).value.toString(),
-//                                dataSnapshot.child(Constants.TAGS_LIST).value.toString()
-//                            )
-//                        )
+                        if (post._profile_pic == "true"){
+                            val emotionsList = countReactions(reactionsList)
+                            setEmotions(emotionsList, requireContext())
+                        }
                     }
                     binding.postTv.text = "${postItemsList.size}"
                     postsAdapter.notifyDataSetChanged()
@@ -185,239 +164,123 @@ class ProfileFragment : Fragment(), addFriendListener {
             })
     }
 
+    private fun getFollowers(): Int {
+        var followerCount = 0
+        followerRef.child(FirebaseAuth.getInstance().currentUser!!.uid).child(Constants.FRIENDS_REF)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (friendSnap in snapshot.children) {
+                        val friend = friendSnap.getValue(Friend::class.java)
+                        if (friend!!._follow!!)
+                            followerCount++
+                    }
+                    binding.followerTv.text = "$followerCount"
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+            })
+        return followerCount
+    }
+
     private fun clickListener() {
         binding.menuIv.setOnClickListener {
             startActivity(Intent(context, SettingActivity::class.java))
         }
     }
-
-    private fun setEmotions(emotionsList: List<Emoji>, context: Context) {
+    private fun countReactions(reactionList: MutableList<Reactions>): List<Pair<String?, Int>> {
+        val frequencies = reactionList.groupingBy { it.reaction_type }.eachCount()
+        return frequencies.toList().sortedByDescending { (key, value) -> value }
+    }
+    private fun setEmotions(emotionsList: List<Pair<String?, Int>>, context: Context) {
         var position = 1 //set half emotions
         for (emotion in emotionsList) {
             when (position) {
                 1 -> {
-                    when (emotion.name) {
-                        "happy" -> {
-                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
-                            binding.reactIv1.visibility = View.VISIBLE
-                        }
-                        "sad" -> {
-                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv1.visibility = View.VISIBLE
-                        }
-                        "fear" -> {
-                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv1.visibility = View.VISIBLE
-                        }
-                        "neutral" -> {
-                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
-                            binding.reactIv1.visibility = View.VISIBLE
-                        }
-                        "angry" -> {
-                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
-                            binding.reactIv1.visibility = View.VISIBLE
-                        }
-                        "surprise" -> {
-                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv1.visibility = View.VISIBLE
-                        }
-                        "disgust" -> {
-                            binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv1.visibility = View.VISIBLE
-                        }
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
                     }
+                    binding.reactIv1.visibility = View.VISIBLE
                 }
                 2 -> {
-                    when (emotion.name) {
-                        "happy" -> {
-                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
-                            binding.reactIv2.visibility = View.VISIBLE
-                        }
-                        "sad" -> {
-                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv2.visibility = View.VISIBLE
-                        }
-                        "fear" -> {
-                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv2.visibility = View.VISIBLE
-                        }
-                        "neutral" -> {
-                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
-                            binding.reactIv2.visibility = View.VISIBLE
-                        }
-                        "angry" -> {
-                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
-                            binding.reactIv2.visibility = View.VISIBLE
-                        }
-                        "surprise" -> {
-                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv2.visibility = View.VISIBLE
-                        }
-                        "disgust" -> {
-                            binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv2.visibility = View.VISIBLE
-                        }
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
                     }
+                    binding.reactIv2.visibility = View.VISIBLE
                 }
                 3 -> {
-                    when (emotion.name) {
-                        "happy" -> {
-                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
-                            binding.reactIv3.visibility = View.VISIBLE
-                        }
-                        "sad" -> {
-                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv3.visibility = View.VISIBLE
-                        }
-                        "fear" -> {
-                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv3.visibility = View.VISIBLE
-                        }
-                        "neutral" -> {
-                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
-                            binding.reactIv3.visibility = View.VISIBLE
-                        }
-                        "angry" -> {
-                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
-                            binding.reactIv3.visibility = View.VISIBLE
-                        }
-                        "surprise" -> {
-                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv3.visibility = View.VISIBLE
-                        }
-                        "disgust" -> {
-                            binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv3.visibility = View.VISIBLE
-                        }
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
                     }
+                    binding.reactIv3.visibility = View.VISIBLE
                 }
                 4 -> {
-                    when (emotion.name) {
-                        "happy" -> {
-                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
-                            binding.reactIv4.visibility = View.VISIBLE
-                        }
-                        "sad" -> {
-                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv4.visibility = View.VISIBLE
-                        }
-                        "fear" -> {
-                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv4.visibility = View.VISIBLE
-                        }
-                        "neutral" -> {
-                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
-                            binding.reactIv4.visibility = View.VISIBLE
-                        }
-                        "angry" -> {
-                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
-                            binding.reactIv4.visibility = View.VISIBLE
-                        }
-                        "surprise" -> {
-                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv4.visibility = View.VISIBLE
-                        }
-                        "disgust" -> {
-                            binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv4.visibility = View.VISIBLE
-                        }
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
                     }
+                    binding.reactIv4.visibility = View.VISIBLE
                 }
                 5 -> {
-                    when (emotion.name) {
-                        "happy" -> {
-                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
-                            binding.reactIv5.visibility = View.VISIBLE
-                        }
-                        "sad" -> {
-                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv5.visibility = View.VISIBLE
-                        }
-                        "fear" -> {
-                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv5.visibility = View.VISIBLE
-                        }
-                        "neutral" -> {
-                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
-                            binding.reactIv5.visibility = View.VISIBLE
-                        }
-                        "angry" -> {
-                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
-                            binding.reactIv5.visibility = View.VISIBLE
-                        }
-                        "surprise" -> {
-                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv5.visibility = View.VISIBLE
-                        }
-                        "disgust" -> {
-                            binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv5.visibility = View.VISIBLE
-                        }
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
                     }
+                    binding.reactIv5.visibility = View.VISIBLE
                 }
                 6 -> {
-                    when (emotion.name) {
-                        "happy" -> {
-                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
-                            binding.reactIv6.visibility = View.VISIBLE
-                        }
-                        "sad" -> {
-                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv6.visibility = View.VISIBLE
-                        }
-                        "fear" -> {
-                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv6.visibility = View.VISIBLE
-                        }
-                        "neutral" -> {
-                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
-                            binding.reactIv6.visibility = View.VISIBLE
-                        }
-                        "angry" -> {
-                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
-                            binding.reactIv6.visibility = View.VISIBLE
-                        }
-                        "surprise" -> {
-                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv6.visibility = View.VISIBLE
-                        }
-                        "disgust" -> {
-                            binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv6.visibility = View.VISIBLE
-                        }
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
                     }
+                    binding.reactIv6.visibility = View.VISIBLE
                 }
                 7 -> {
-                    when (emotion.name) {
-                        "happy" -> {
-                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
-                            binding.reactIv7.visibility = View.VISIBLE
-                        }
-                        "sad" -> {
-                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv7.visibility = View.VISIBLE
-                        }
-                        "fear" -> {
-                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv7.visibility = View.VISIBLE
-                        }
-                        "neutral" -> {
-                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
-                            binding.reactIv7.visibility = View.VISIBLE
-                        }
-                        "angry" -> {
-                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
-                            binding.reactIv7.visibility = View.VISIBLE
-                        }
-                        "surprise" -> {
-                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
-                            binding.reactIv7.visibility = View.VISIBLE
-                        }
-                        "disgust" -> {
-                            binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
-                            binding.reactIv7.visibility = View.VISIBLE
-                        }
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
                     }
+                    binding.reactIv7.visibility = View.VISIBLE
                 }
             }
             position++

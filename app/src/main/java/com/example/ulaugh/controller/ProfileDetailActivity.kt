@@ -18,7 +18,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.PostsAdapter
 import com.example.ulaugh.databinding.ActivityProfileDetailBinding
-import com.example.ulaugh.interfaces.addFriendListener
+import com.example.ulaugh.interfaces.AddFriendListener
 import com.example.ulaugh.model.*
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.SharePref
@@ -29,7 +29,7 @@ import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.*
 import javax.inject.Inject
 import android.Manifest
-import androidx.core.content.ContentProviderCompat.requireContext
+import android.content.Context
 import com.example.ulaugh.api.RetrofitInstance
 import com.example.ulaugh.utils.Constants.TAG
 import com.example.ulaugh.utils.Helper
@@ -38,7 +38,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 const val TOPIC = "/topics/myTopic2"
 
 @AndroidEntryPoint
-class ProfileDetailActivity : AppCompatActivity(), addFriendListener {
+class ProfileDetailActivity : AppCompatActivity(), AddFriendListener {
     private var _binding: ActivityProfileDetailBinding? = null
     private val binding get() = _binding!!
     private var profileData: UserRequest? = null
@@ -51,7 +51,7 @@ class ProfileDetailActivity : AppCompatActivity(), addFriendListener {
     lateinit var sharePref: SharePref
     private lateinit var allPostRef: DatabaseReference
     private lateinit var profileRef: DatabaseReference
-    private lateinit var notificationRef:DatabaseReference
+    private lateinit var notificationRef: DatabaseReference
     private var isPrivate: Boolean = false
     private var messageToken = ""
 
@@ -77,6 +77,7 @@ class ProfileDetailActivity : AppCompatActivity(), addFriendListener {
 //            binding.progressBar.visibility = View.VISIBLE
 //            fetchToken()
             getProfileData()
+            getFollowers()
 //            delay(1000)
 
 //            binding.progressBar.visibility = View.GONE
@@ -168,6 +169,35 @@ class ProfileDetailActivity : AppCompatActivity(), addFriendListener {
         }
     }
 
+    private fun getFollowers(): Int {
+        var followerCount = 0
+        profileRef.child(friendFirebaseId).child(Constants.FRIENDS_REF)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (friendSnap in snapshot.children) {
+                        val friend = friendSnap.getValue(Friend::class.java)
+//                        Log.d(TAG, "Inside for friends: $friend")
+                        if (friend!!._follow!!) {
+                            followerCount++
+//                            Log.d(TAG, "Inside if: $followerCount")
+                        }
+                    }
+//                    Log.d(TAG, "Outside for: $followerCount")
+                    binding.followerTv.text = "$followerCount"
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(
+                        this@ProfileDetailActivity,
+                        "Error: ${error.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            })
+        return followerCount
+    }
+
     private fun getProfileData() {
         profileRef.child(friendFirebaseId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -177,8 +207,8 @@ class ProfileDetailActivity : AppCompatActivity(), addFriendListener {
                     messageToken = snapshot.child(Constants.MESSAGE_TOKEN).value.toString()
                     profileData = snapshot.getValue(UserRequest::class.java)
                     setProfileData(isPrivate)
-                    if (!isPrivate)
-                        getPostData()
+//                    if (!isPrivate)
+                    getPostData()
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -233,10 +263,16 @@ class ProfileDetailActivity : AppCompatActivity(), addFriendListener {
                             post.full_name,
                             post.tagsList,
                             post.profile_image,
-                            reactionsList, userReaction
+                            reactionsList,
+                            post._profile_pic,
+                            userReaction
                         )
-                        Log.d(Constants.TAG, "onDataChange: ${userReaction}\n")
+                        Log.d(TAG, "onDataChange: ${userReaction}\n")
                         postItemsList.add(postItem)
+                        if (post._profile_pic == "true") {
+                            val emotionsList = countReactions(reactionsList)
+                            setEmotions(emotionsList, this@ProfileDetailActivity)
+                        }
                     }
                     binding.postTv.text = "${postItemsList.size}"
                     postsAdapter.notifyDataSetChanged()
@@ -251,6 +287,104 @@ class ProfileDetailActivity : AppCompatActivity(), addFriendListener {
                 }
 
             })
+    }
+
+    private fun countReactions(reactionList: MutableList<Reactions>): List<Pair<String?, Int>> {
+        val frequencies = reactionList.groupingBy { it.reaction_type }.eachCount()
+        return frequencies.toList().sortedByDescending { (key, value) -> value }
+    }
+
+    private fun setEmotions(emotionsList: List<Pair<String?, Int>>, context: Context) {
+        var position = 1 //set half emotions
+        for (emotion in emotionsList) {
+            when (position) {
+                1 -> {
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv1.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    binding.reactIv1.visibility = View.VISIBLE
+                }
+                2 -> {
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv2.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    binding.reactIv2.visibility = View.VISIBLE
+                }
+                3 -> {
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv3.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    binding.reactIv3.visibility = View.VISIBLE
+                }
+                4 -> {
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv4.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    binding.reactIv4.visibility = View.VISIBLE
+                }
+                5 -> {
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv5.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    binding.reactIv5.visibility = View.VISIBLE
+                }
+                6 -> {
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv6.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    binding.reactIv6.visibility = View.VISIBLE
+                }
+                7 -> {
+                    when (emotion.first) {
+                        "happy" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.haha_ic))
+                        "sad" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                        "fear" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "neutral" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.neutral_ic))
+                        "angry" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.anger_emotion))
+                        "surprise" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.fear_ic))
+                        "disgust" -> binding.reactIv7.setImageDrawable(context.getDrawable(R.drawable.sad_ic))
+                    }
+                    binding.reactIv7.visibility = View.VISIBLE
+                }
+            }
+            position++
+        }
     }
 
     private fun createBlurImage() {
@@ -272,9 +406,7 @@ class ProfileDetailActivity : AppCompatActivity(), addFriendListener {
                 createNotification()
                 // FCM SDK (and your app) can post notifications.
             } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_NOTIFICATION_POLICY)) {
-
             } else {
-                // Directly ask for the permission
                 requestPermissionLauncher.launch(Manifest.permission.ACCESS_NOTIFICATION_POLICY)
             }
         }
@@ -310,7 +442,7 @@ class ProfileDetailActivity : AppCompatActivity(), addFriendListener {
         // [END fcm_send_upstream]
     }
 
-    private fun postNotification(receiverId:String) {
+    private fun postNotification(receiverId: String) {
         val time = Helper().localToGMT()
         notificationRef.child(receiverId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -320,17 +452,28 @@ class ProfileDetailActivity : AppCompatActivity(), addFriendListener {
                         receiverId,
                         Constants.REQUEST,
                         "Request",
-                        "${sharePref.readString(Constants.FULL_NAME, "")} is sent you friend request", time,
-                        sharePref.readString(Constants.PROFILE_PIC, "")!!
+                        "${
+                            sharePref.readString(
+                                Constants.FULL_NAME,
+                                ""
+                            )
+                        } is sent you friend request", time,
+                        sharePref.readString(Constants.PROFILE_PIC, "")!!,
+                        "",
+                        false,
+                        sharePref.readString(Constants.FULL_NAME, "")!!
                     )
                     notificationRef.child(receiverId).push().setValue(notification)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@ProfileDetailActivity, "Error ${error.message}", Toast.LENGTH_SHORT)
+                    Toast.makeText(
+                        this@ProfileDetailActivity,
+                        "Error ${error.message}",
+                        Toast.LENGTH_SHORT
+                    )
                         .show()
                 }
-
             })
     }
 

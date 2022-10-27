@@ -80,7 +80,8 @@ class RewardActivity : AppCompatActivity() {
                                 post.full_name,
                                 post.tagsList,
                                 post.profile_image,
-                                reactionsList
+                                reactionsList,
+                                post._profile_pic
                             )
                             postList.add(postItem)
                         }
