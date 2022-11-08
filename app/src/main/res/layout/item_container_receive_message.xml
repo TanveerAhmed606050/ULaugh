@@ -1,55 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:layout_marginTop="8dp"
-    android:layout_marginBottom="4dp"
-    android:layout_height="wrap_content">
+    android:layout_marginBottom="4dp">
 
-    <com.mikhaellopez.circularimageview.CircularImageView
+    <!--    <com.mikhaellopez.circularimageview.CircularImageView-->
 
-        android:id="@+id/chat_receive_image"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        app:layout_constraintBottom_toBottomOf="@+id/view3"
-        app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/imageback_icon" />
+    <!--        android:id="@+id/chat_receive_image"-->
+    <!--        android:layout_width="40dp"-->
+    <!--        android:layout_height="40dp"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@+id/view3"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:srcCompat="@drawable/imageback_icon" />-->
 
-    <View
-        android:id="@+id/view3"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@drawable/recieve_message_backgournd"
-
-        app:layout_constraintBottom_toTopOf="@+id/seen_text"
-        app:layout_constraintStart_toEndOf="@+id/chat_receive_image"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        app:layout_constraintWidth_percent="0.7" />
-
-    <TextView
-        android:id="@+id/time_text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="6dp"
-        android:text="TextView"
-        android:textColor="@color/black"
-        android:textSize="12sp"
-        app:layout_constraintTop_toBottomOf="@+id/view3"
-        app:layout_constraintEnd_toEndOf="@+id/view3" />
+<!--    <View-->
+<!--        android:id="@+id/view3"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:background="@drawable/recieve_message_backgournd"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/seen_text"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintVertical_bias="0.0"-->
+<!--        app:layout_constraintWidth_percent="0.7" />-->
 
     <TextView
         android:id="@+id/message_text"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="6dp"
         android:padding="8dp"
-        android:gravity="center_vertical"
         android:text="TextView"
+        android:background="@drawable/recieve_message_backgournd"
         android:textColor="@color/black"
         android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="@+id/view3"
+        app:layout_constraintTop_toBottomOf="@+id/view3" />
+
+    <TextView
+        android:id="@+id/time_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="4dp"
+        android:gravity="center_vertical"
+        android:text="2022/10/11 1:12 PM"
+        android:textColor="@color/black"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@+id/view3"
         app:layout_constraintEnd_toEndOf="@+id/view3"
         app:layout_constraintStart_toStartOf="@+id/view3"
@@ -67,4 +69,4 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@id/view3"
         app:layout_constraintTop_toBottomOf="@id/view3" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

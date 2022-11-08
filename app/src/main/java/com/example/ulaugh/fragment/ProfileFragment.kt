@@ -144,7 +144,7 @@ class ProfileFragment : Fragment(), AddFriendListener {
                         )
                         Log.d(Constants.TAG, "onDataChange: ${userReaction}\n")
                         postItemsList.add(postItem)
-                        if (post._profile_pic == "true"){
+                        if (post._profile_pic!!){
                             val emotionsList = countReactions(reactionsList)
                             setEmotions(emotionsList, requireContext())
                         }

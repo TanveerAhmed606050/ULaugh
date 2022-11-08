@@ -99,6 +99,7 @@
             </intent-filter>
 
         </service>
+        <service android:name=".service.CamService"/>
 
         <meta-data
             android:name="firebase_messaging_auto_init_enabled"

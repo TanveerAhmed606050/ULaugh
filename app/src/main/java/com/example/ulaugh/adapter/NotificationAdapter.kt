@@ -53,18 +53,20 @@ class NotificationAdapter(
             binding.followBtn.visibility = View.VISIBLE
             binding.declineBtn.visibility = View.VISIBLE
         }
-        if (!notification.seen!!) {
-            binding.titleTv.typeface = Typeface.DEFAULT_BOLD
-            binding.descriptionTv.typeface = Typeface.DEFAULT_BOLD
-            binding.timeTv.typeface = Typeface.DEFAULT_BOLD
-            binding.followBtn.typeface = Typeface.DEFAULT_BOLD
-            binding.declineBtn.typeface = Typeface.DEFAULT_BOLD
-        }else{
-            binding.titleTv.typeface = Typeface.DEFAULT
-            binding.descriptionTv.typeface = Typeface.DEFAULT
-            binding.timeTv.typeface = Typeface.DEFAULT
-            binding.followBtn.typeface = Typeface.DEFAULT
-            binding.declineBtn.typeface = Typeface.DEFAULT
+        if (notification.seen != null) {
+            if (!notification.seen!!) {
+                binding.titleTv.typeface = Typeface.DEFAULT_BOLD
+                binding.descriptionTv.typeface = Typeface.DEFAULT_BOLD
+                binding.timeTv.typeface = Typeface.DEFAULT_BOLD
+                binding.followBtn.typeface = Typeface.DEFAULT_BOLD
+                binding.declineBtn.typeface = Typeface.DEFAULT_BOLD
+            } else {
+                binding.titleTv.typeface = Typeface.DEFAULT
+                binding.descriptionTv.typeface = Typeface.DEFAULT
+                binding.timeTv.typeface = Typeface.DEFAULT
+                binding.followBtn.typeface = Typeface.DEFAULT
+                binding.declineBtn.typeface = Typeface.DEFAULT
+            }
         }
         binding.titleTv.text = notification.title
         binding.descriptionTv.text = notification.description

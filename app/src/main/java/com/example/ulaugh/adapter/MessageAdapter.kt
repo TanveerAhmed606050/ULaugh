@@ -7,12 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.model.ChatModel
 import com.example.ulaugh.utils.Helper
-import com.google.firebase.storage.FirebaseStorage
-import com.mikhaellopez.circularimageview.CircularImageView
 
 class MessageAdapter(
     var context: Context,
@@ -57,25 +54,25 @@ class MessageAdapter(
                 val vholder = holder as SendMessage
                 vholder.messageText.text = chat.content_message
                 vholder.timeText.text = Helper.convertToLocal(chat.date)
-                Glide.with(context)
-                    .load(senderPic)
-                    .centerCrop()
-                    .fitCenter()
-                    .thumbnail()
-                    .placeholder(R.drawable.user_logo)
-                    .into(vholder.senderImage)
+//                Glide.with(context)
+//                    .load(senderPic)
+//                    .centerCrop()
+//                    .fitCenter()
+//                    .thumbnail()
+//                    .placeholder(R.drawable.user_logo)
+//                    .into(vholder.senderImage)
             }
             RECEIVE_MESSAGE -> {
                 val vholder = holder as ReceiveMessage
                 vholder.messageText.text = chat.content_message
                 vholder.timeText.text = Helper.convertToLocal(chat.date)
-                Glide.with(context)
-                    .load(receiverPic)
-                    .centerCrop()
-                    .fitCenter()
-                    .thumbnail()
-                    .placeholder(R.drawable.user_logo)
-                    .into(vholder.receiverImage)
+//                Glide.with(context)
+//                    .load(receiverPic)
+//                    .centerCrop()
+//                    .fitCenter()
+//                    .thumbnail()
+//                    .placeholder(R.drawable.user_logo)
+//                    .into(vholder.receiverImage)
 //                val filePath = "Photos/user_image$receiverFirebaseId"
 //                val storageReference = FirebaseStorage.getInstance().getReference(filePath)
 //                storageReference.downloadUrl.addOnSuccessListener { downloadUrl ->
@@ -124,15 +121,15 @@ class MessageAdapter(
         var messageText: TextView = view.findViewById(R.id.message_text)
         var timeText: TextView = view.findViewById(R.id.time_text)
         var isSeenText: TextView = view.findViewById(R.id.seen_text)
-        var senderImage: CircularImageView = view.findViewById(R.id.send_chat_image)
+//        var senderImage: CircularImageView = view.findViewById(R.id.send_chat_image)
 
     }
 
     inner class ReceiveMessage(view: View) : MyViewHolder(view) {
         var messageText: TextView = view.findViewById(R.id.message_text)
         var timeText: TextView = view.findViewById(R.id.time_text)
-        var isSeenText: TextView = view.findViewById(R.id.seen_text)
-        var receiverImage: CircularImageView = view.findViewById(R.id.chat_receive_image)
+//        var isSeenText: TextView = view.findViewById(R.id.seen_text)
+//        var receiverImage: CircularImageView = view.findViewById(R.id.chat_receive_image)
 
 
     }

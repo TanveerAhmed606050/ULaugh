@@ -10,6 +10,6 @@ data class PostItem(
     val full_name: String = "",
     val tagsList: String = "",
     val profile_image:String = "",
-    val _profile_pic: String = ""
+    val _profile_pic: Boolean? = false
 )
 

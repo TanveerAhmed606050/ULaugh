@@ -1,7 +1,6 @@
 package com.example.ulaugh.fragment
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,9 +12,7 @@ import com.example.ulaugh.databinding.FragmentNotificationBinding
 import com.example.ulaugh.interfaces.NotificationListener
 import com.example.ulaugh.model.Friend
 import com.example.ulaugh.model.Notification
-import com.example.ulaugh.model.UserRequest
 import com.example.ulaugh.utils.Constants
-import com.example.ulaugh.utils.Constants.TAG
 import com.example.ulaugh.utils.SharePref
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -136,25 +133,29 @@ class NotificationFragment : Fragment(), NotificationListener {
             })
     }
 
-    private fun notificationSeen(){
-        notificationRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid).addValueEventListener(object :ValueEventListener{
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for (notificationSnap in snapshot.children){
-                    val notificationItem = notificationSnap.getValue(Notification::class.java)
-                    notificationItem!!.seen = true
+    private fun notificationSeen() {
+        notificationRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (notificationSnap in snapshot.children) {
+                        val notificationItem = notificationSnap.getValue(Notification::class.java)
+//                        if (!notificationItem!!.seen!!)
+//                            return
+                        notificationItem!!.seen = true
+                        notificationRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                            .child(notificationItem.notificationId).setValue(notificationItem)
+                    }
                 }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
-            }
-
-        })
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     override fun onPause() {
         super.onPause()
-        notificationSeen()
-//        Log.d(TAG, "onPause notification: ")
+//        CoroutineScope(Dispatchers.IO).launch {
+//            notificationSeen()
+//        }
     }
 }

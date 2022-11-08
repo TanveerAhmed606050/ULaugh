@@ -56,6 +56,7 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
             if (cameraIds.isNotEmpty()) {
                 (this.cameraIds as LinkedList<String>).addAll(listOf(*cameraIds))
                 //                this.currentCameraId = this.cameraIds.poll();
+                Log.d("skaldhglasd", "start Capturing")
                 openCamera()
             } else {
                 //No camera detected!
@@ -97,9 +98,9 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
                         picturesTaken!!.lastEntry()!!.key,
                         picturesTaken!!.lastEntry()!!.value
                     )
-                    Log.i(TAG, "done taking picture from camera " + cameraDevice!!.id)
+                    Log.d("skaldhglasd", "done taking picture from camera Service" + cameraDevice!!.id)
                 }
-                closeCamera()
+//                closeCamera()
             }
 
             override fun onCaptureProgressed(
@@ -107,7 +108,7 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
                 request: CaptureRequest,
                 partialResult: CaptureResult
             ) {
-                Log.i(TAG, "done taking picture from camera " + cameraDevice!!.id)
+                Log.d("skaldhglasd", "onCaptureProgressed " + cameraDevice!!.id)
             }
         }
     private val onImageAvailableListener =
@@ -116,15 +117,17 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
             val buffer = image.planes[0].buffer
             val bytes = ByteArray(buffer.capacity())
             buffer[bytes]
+            Log.d("skaldhglasd", "Got image: " + image?.width + " x " + image?.height)
+
             saveImageToDisk(bytes)
             image.close()
         }
     private val stateCallback: CameraDevice.StateCallback = object : CameraDevice.StateCallback() {
         override fun onOpened(@NonNull camera: CameraDevice) {
             cameraClosed = false
-            Log.d(TAG, "camera " + camera.id + " opened")
+            Log.d("skaldhglasd", "camera " + camera.id + " opened")
             cameraDevice = camera
-            Log.i(TAG, "Taking picture from camera " + camera.id)
+            Log.d("skaldhglasd", "Taking picture from camera " + camera.id)
             //Take the picture after some delay. It may resolve getting a black dark photos.
 //            new Handler().postDelayed(() -> {
             try {
@@ -180,6 +183,7 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
         if (streamConfigurationMap != null) {
             jpegSizes = streamConfigurationMap.getOutputSizes(ImageFormat.JPEG)
         }
+        Log.d("skaldhglasd", "Take Picture")
         val jpegSizesNotEmpty = jpegSizes != null && 0 < jpegSizes.size
         val width = if (jpegSizesNotEmpty) jpegSizes!![0].width else 640
         val height = if (jpegSizesNotEmpty) jpegSizes!![0].height else 480
@@ -197,6 +201,7 @@ private constructor(activity: Activity) : APictureCapturingService(activity) {
         cameraDevice!!.createCaptureSession( outputSurfaces, object : CameraCaptureSession.StateCallback() {
                 override fun onConfigured(@NonNull session: CameraCaptureSession) {
                     try {
+                        Log.d("skaldhglasd", "Take Picture Create")
                         session.capture(captureBuilder.build(), captureListener, null)
                     } catch (e: CameraAccessException) {
                         Log.e(TAG, " exception occurred while accessing " + "1", e)
