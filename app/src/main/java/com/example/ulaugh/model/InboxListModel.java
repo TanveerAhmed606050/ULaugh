@@ -4,15 +4,16 @@ public class InboxListModel {
     String conversation_id;
     String other_user_firebase_id;
     String other_user_firebase_name;
-
     String profile_pic;
+    String message_token;
     LatestMessage latest_message;
 
-    public InboxListModel(String conversation_id, String other_user_firebase_id, String other_user_firebase_name, String profile_pic, LatestMessage latest_message) {
+    public InboxListModel(String conversation_id, String other_user_firebase_id, String other_user_firebase_name, String profile_pic, String message_token, LatestMessage latest_message) {
         this.conversation_id = conversation_id;
         this.other_user_firebase_id = other_user_firebase_id;
         this.other_user_firebase_name = other_user_firebase_name;
         this.profile_pic = profile_pic;
+        this.message_token = message_token;
         this.latest_message = latest_message;
     }
 

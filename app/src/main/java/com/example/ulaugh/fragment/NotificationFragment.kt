@@ -88,17 +88,17 @@ class NotificationFragment : Fragment(), NotificationListener {
             })
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+//    override fun onDestroyView() {
+//        super.onDestroyView()
+//        _binding = null
+//    }
 
     override fun onNotification(notification: Notification, message: String) {
         if (message == Constants.ACCEPT) {
             userRef.child(notification.senderId)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        val selfId = Friend(notification.senderId, false) // isFollow
+                        val selfId = Friend(notification.senderId, false, seen = true) // isFollow
                         userRef.child(FirebaseAuth.getInstance().currentUser!!.uid)
                             .child(Constants.FRIENDS_REF).child(notification.senderId)
                             .setValue(selfId)
@@ -121,6 +121,7 @@ class NotificationFragment : Fragment(), NotificationListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     notification.title = message
                     notification.description = "$message your friend request"
+                    notification.seen = true
                     notificationRef!!.child(FirebaseAuth.getInstance().currentUser!!.uid)
                         .child(notification.notificationId).setValue(notification)
                     notificationList.clear()

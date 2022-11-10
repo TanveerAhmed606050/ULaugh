@@ -3,7 +3,6 @@ package com.example.ulaugh.service
 import android.Manifest
 import android.app.*
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
@@ -16,12 +15,9 @@ import android.util.Log
 import android.util.Size
 import android.view.*
 import androidx.core.app.ActivityCompat
-import androidx.core.view.ContentInfoCompat
-import com.example.ulaugh.R
-import com.example.ulaugh.controller.CameraActivity
 import com.example.ulaugh.interfaces.CameraImageReceiver
-import java.io.File
-import java.io.IOException
+import com.example.ulaugh.utils.ImageUtils
+import com.example.ulaugh.utils.ImageUtils.convertYUV420ToARGB8888
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.absoluteValue
@@ -49,6 +45,17 @@ class CamService : Service() {
 
     // You can start service in 2 modes - 1.) with preview 2.) without preview (only bg processing)
     private var shouldShowPreview = true
+
+    //frame to bitmap
+    private var previewWidth = 250
+    private var previewHeight = 250
+    private val yuvBytes = arrayOfNulls<ByteArray>(3)
+    private var rgbBytes: IntArray? = null
+    private var yRowStride = 0
+    private var postInferenceCallback: Runnable? = null
+    private var imageConverter: Runnable? = null
+    private var rgbFrameBitmap: Bitmap? = null
+    private var isProcessingFrame = false
 
     private val captureCallback = object : CameraCaptureSession.CaptureCallback() {
         override fun onCaptureProgressed(
@@ -83,51 +90,78 @@ class CamService : Service() {
     }
 
     private val imageListener = ImageReader.OnImageAvailableListener { reader ->
-        val image = reader?.acquireLatestImage()
-
-        Log.d(TAG, "Got image: " + image?.width + " x " + image?.height)
-        count++
-        val buffer = image!!.planes[0].buffer
-        val bytes = ByteArray(buffer.capacity())
-//        buffer[bytes]
-//        buffer.get(bytes)
-        if (count > 2) {
-            saveImageToDisk(bytes)
-//            val bitmap = byteToBitmap(bytes)
-//            imageArray.add(bitmap)
+        // We need wait until we have some size from onPreviewSizeChosen
+        if (previewWidth == 0 || previewHeight == 0) {
+            return@OnImageAvailableListener
         }
-//        val intent = Intent()
-//        intent.putExtra("sdaglsd", bytes)
-        if (count == 5) {
-//            sendBroadcast(Intent("intent"))
+//        val image = reader?.acquireLatestImage()
+        if (rgbBytes == null) {
+            rgbBytes = IntArray(previewWidth * previewHeight)
+        }
+        try {
+            val image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
+            if (isProcessingFrame) {
+                image.close()
+                return@OnImageAvailableListener
+            }
+            isProcessingFrame = true
+            val planes = image.planes
+            fillBytes(planes, yuvBytes)
+            yRowStride = planes[0].rowStride
+            val uvRowStride = planes[1].rowStride
+            val uvPixelStride = planes[1].pixelStride
+            imageConverter = Runnable {
+                convertYUV420ToARGB8888(
+                    yuvBytes[0]!!,
+                    yuvBytes[1]!!,
+                    yuvBytes[2]!!,
+                    previewWidth,
+                    previewHeight,
+                    yRowStride,
+                    uvRowStride,
+                    uvPixelStride,
+                    rgbBytes!!
+                )
+            }
+            postInferenceCallback = Runnable {
+                image.close()
+                isProcessingFrame = false
+            }
+            processImage()
+            image.close()
+        } catch (e: Exception) {
+            return@OnImageAvailableListener
+        }
+    }
+
+    private fun processImage() {
+        imageConverter!!.run()
+        rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888)
+        rgbFrameBitmap?.setPixels(rgbBytes, 0, previewWidth, 0, 0, previewWidth, previewHeight)
+        count++
+        if (count > 5)
+            imageArray.add(rgbFrameBitmap!!)
+        if (count == 8) {
             mImageReceiver!!.onImageReceived(imageArray)
             stopCamera()
         }
-
-        // Process image here..ideally async so that you don't block the callback
-        // ..
-        image!!.close()
+//        Log.d("ldsajgldsa", "${rgbFrameBitmap!!.width}: ${rgbFrameBitmap!!.height}")
+//        Toast.makeText(applicationContext, "${rgbFrameBitmap!!.width}: ${rgbFrameBitmap!!.height}", Toast.LENGTH_SHORT).show()
+        postInferenceCallback!!.run()
     }
 
-    private fun byteToBitmap(pictureData: ByteArray): Bitmap {
-        try {
-        } catch (e: IOException) {
-        }
-        val bmp = BitmapFactory.decodeByteArray(pictureData, 0, pictureData.size)
-        return bmp
-    }
-
-    private fun saveImageToDisk(bytes: ByteArray) {
-
-        val cw = ContextWrapper(mContext)
-        val directory = cw.getDir("imageDir", Context.MODE_PRIVATE)
-        val file = File(directory, "picture.jpg")
-        try {
-            val myBitmap = BitmapFactory.decodeFile(file.absolutePath)
-            imageArray.add(myBitmap)
-//            picturesTaken!![file.path] = bytes
-//            }
-        } catch (e: IOException) {
+    private fun fillBytes(
+        planes: Array<Image.Plane>,
+        yuvBytes: Array<ByteArray?>
+    ) {
+        // Because of the variable row stride it's not possible to know in
+        // advance the actual necessary dimensions of the yuv planes.
+        for (i in planes.indices) {
+            val buffer = planes[i].buffer
+            if (yuvBytes[i] == null) {
+                yuvBytes[i] = ByteArray(buffer.capacity())
+            }
+            buffer[yuvBytes[i]!!]
         }
     }
 
@@ -261,7 +295,6 @@ class CamService : Service() {
     }
 
     private fun startForeground() {
-
 //        val pendingIntent: PendingIntent =
 //            Intent(this, CameraActivity::class.java).let { notificationIntent ->
 //                PendingIntent.getActivity(this, 0, notificationIntent, 1)
@@ -291,7 +324,6 @@ class CamService : Service() {
         try {
             // Prepare surfaces we want to use in capture session
             val targetSurfaces = ArrayList<Surface>()
-
             // Prepare CaptureRequest that can be used with CameraCaptureSession
             val requestBuilder =
                 cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW).apply {
@@ -307,7 +339,7 @@ class CamService : Service() {
 
                     // Configure target surface for background processing (ImageReader)
                     imageReader = ImageReader.newInstance(
-                        previewSize!!.getWidth(), previewSize!!.getHeight(),
+                        previewSize!!.width, previewSize!!.height,
                         ImageFormat.YUV_420_888, 2
                     )
                     imageReader!!.setOnImageAvailableListener(imageListener, null)
@@ -340,7 +372,7 @@ class CamService : Service() {
                         captureSession = cameraCaptureSession
                         try {
                             // Now we can start capturing
-                            captureRequest = requestBuilder!!.build()
+                            captureRequest = requestBuilder.build()
                             captureSession!!.setRepeatingRequest(
                                 captureRequest!!,
                                 captureCallback,

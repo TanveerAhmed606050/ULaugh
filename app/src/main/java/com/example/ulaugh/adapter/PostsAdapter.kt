@@ -56,7 +56,6 @@ class PostsAdapter internal constructor(
 
     fun countReactions(reactionList: MutableList<Reactions>): List<Pair<String?, Int>> {
         val frequencies = reactionList.groupingBy { it.reaction_type }.eachCount()
-
         return frequencies.toList().sortedByDescending { (key, value) -> value }
     }
 

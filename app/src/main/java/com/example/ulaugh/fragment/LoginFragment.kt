@@ -1,9 +1,7 @@
 package com.example.ulaugh.fragment
 
 import android.app.Activity
-import android.app.ProgressDialog.show
 import android.content.Intent
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.os.Bundle
 import android.telephony.PhoneNumberUtils
 import android.util.Log
@@ -46,7 +44,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.mukesh.countrypicker.CountryPicker
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.ResourceBundle.getBundle
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 

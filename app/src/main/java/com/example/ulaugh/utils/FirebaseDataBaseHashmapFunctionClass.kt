@@ -11,7 +11,8 @@ class FirebaseDataBaseHashmapFunctionClass {
         dateAndTime: String,
         message: String,
         messageType: String,
-        pic: String
+        pic: String,
+        messageToken:String
     ): HashMap<String, Any> {
         val inboxHashmap = HashMap<String, Any>()
         inboxHashmap["conversation_id"] = messageId
@@ -19,6 +20,7 @@ class FirebaseDataBaseHashmapFunctionClass {
         inboxHashmap["other_user_firebase_name"] = otherFirebaseName
         inboxHashmap["latest_message"] = latestMessageHashmapFun(dateAndTime, message, messageType)
         inboxHashmap[Constants.PROFILE_PIC] = pic
+        inboxHashmap["message_token"] = messageToken
         return inboxHashmap
     }
 
@@ -46,7 +48,7 @@ class FirebaseDataBaseHashmapFunctionClass {
         return messageHashMap
     }
 
-    fun latestMessageHashmapFun(
+    private fun latestMessageHashmapFun(
         dateAndTime: String,
         message: String,
         messageType: String

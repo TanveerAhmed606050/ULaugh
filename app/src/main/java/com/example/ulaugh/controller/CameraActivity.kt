@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.graphics.*
 import android.os.Build
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
 import android.util.Pair
 import android.view.View
@@ -41,9 +40,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.IOException
 import javax.inject.Inject
-import kotlin.math.log
 
 
 @AndroidEntryPoint
@@ -58,6 +55,7 @@ class CameraActivity : AppCompatActivity(),
     private var mImageView: ImageView? = null
     private var mClassificationResult: HashMap<String, ArrayList<Pair<String, String>>>? = null
     private var postDetail: HomeRecyclerViewItem.SharePostData? = null
+    private var emotionList = ArrayList<String>()
 
     @Inject
     lateinit var sharePref: SharePref
@@ -80,6 +78,7 @@ class CameraActivity : AppCompatActivity(),
     var surpriseReaction = 0
     var disgustReaction = 0
     var topReactions = ""
+    var count = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -133,7 +132,6 @@ class CameraActivity : AppCompatActivity(),
             binding.tagsTv.text = postDetail!!.tagsList
         }
 
-//        Log.d("lsdagj", "detectFaces: ${mClassificationResult.toString()} ${mClassificationResult!!.size}")
     }
 
     private fun setUserReaction(userReaction: String) {
@@ -227,55 +225,6 @@ class CameraActivity : AppCompatActivity(),
         runOnUiThread { Toast.makeText(this, text, Toast.LENGTH_SHORT).show() }
     }
 
-    // Function to handle successful new image acquisition
-//    private fun processImageRequestResult(scaledResultImageBitmap: Bitmap) {
-//        val scaledResultImageBitmap = getScaledImageBitmap(resultImageUri)
-//        mImageView!!.setImageBitmap(scaledResultImageBitmap)
-//
-//        // Clear the result of a previous classification
-//    }
-
-//    private fun getScaledImageBitmap(imageUri: Uri): Bitmap {
-//        var scaledImageBitmap: Bitmap? = null
-//        try {
-//            val imageBitmap = MediaStore.Images.Media.getBitmap(
-//                this.contentResolver,
-//                imageUri
-//            )
-//            val scaledHeight: Int
-//            val scaledWidth: Int
-//
-//            // How many times you need to change the sides of an image
-//            val scaleFactor: Float
-//
-//            // Get larger side and start from exactly the larger side in scaling
-//            if (imageBitmap.height > imageBitmap.width) {
-//                scaledHeight = SCALED_IMAGE_BIGGEST_SIZE
-//                scaleFactor = scaledHeight / imageBitmap.height.toFloat()
-//                scaledWidth = (imageBitmap.width * scaleFactor).toInt()
-//            } else {
-//                scaledWidth = SCALED_IMAGE_BIGGEST_SIZE
-//                scaleFactor = scaledWidth / imageBitmap.width.toFloat()
-//                scaledHeight = (imageBitmap.height * scaleFactor).toInt()
-//            }
-//            scaledImageBitmap = Bitmap.createScaledBitmap(
-//                imageBitmap,
-//                scaledWidth,
-//                scaledHeight,
-//                true
-//            )
-//
-//            // An image in memory can be rotated
-//            scaledImageBitmap = ImageUtils.rotateToNormalOrientation(
-//                contentResolver,
-//                scaledImageBitmap,
-//                imageUri
-//            )
-//        } catch (e: IOException) {
-//            e.printStackTrace()
-//        }
-//        return scaledImageBitmap!!
-//    }
 
     private fun detectFaces(imageBitmap: Bitmap) {
         Log.d("ksdahgsd", "bitmap ${imageBitmap.width}")
@@ -359,7 +308,18 @@ class CameraActivity : AppCompatActivity(),
 //                        override fun onCancelled(error: DatabaseError) {
 //                        }
 //                    })
-                setEmotions(mClassificationResult!!["Face 1"]?.get(0)!!.first)
+                count++
+                emotionList.add(mClassificationResult!!["Face 1"]?.get(0)!!.first)
+//                setEmotions(mClassificationResult!!["Face 1"]?.get(0)!!.first)
+                Log.d("skadhg", "detectFaces: ${mClassificationResult!!["Face 1"]?.get(0)!!.first}")
+                if (count == 3) {
+                    val frequencies = emotionList.groupingBy { it }.eachCount()
+                    val sortedList = frequencies.toList().sortedByDescending { (_, value) -> value }
+//                    val reaction = findMeanEmotion()
+                    Log.d("skadhg", "detectFace: ${sortedList[0].first}")
+                    setUserReaction(sortedList[0].first)
+                    postNotification(postDetail!!.firebase_id)
+                }
                 binding.containerLayout.invalidate()
 //                    finish()
 //                    if (faces.size == 1) {
@@ -367,6 +327,7 @@ class CameraActivity : AppCompatActivity(),
 //                    }
                 // If no faces are found
             } else {
+                Log.d("skadhg", "detectFaces: ")
 //                postNotification(postDetail!!.firebase_id)
 //                setUserReaction("neutral")
             }
@@ -377,7 +338,7 @@ class CameraActivity : AppCompatActivity(),
             }
     }
 
-    private fun findMeanEmotion() {
+    private fun findMeanEmotion(): String {
         if (happyReaction > fearReaction && happyReaction > disgustReaction && happyReaction > angryReaction && happyReaction > neutralReaction && happyReaction > sadReaction && happyReaction > surpriseReaction)
             topReactions = "happy"
         else if (fearReaction > happyReaction && fearReaction > disgustReaction && fearReaction > angryReaction && fearReaction > neutralReaction && fearReaction > sadReaction && fearReaction > surpriseReaction)
@@ -390,6 +351,7 @@ class CameraActivity : AppCompatActivity(),
             topReactions = "neutral"
         else if (sadReaction > happyReaction && sadReaction > disgustReaction && sadReaction > angryReaction && sadReaction > neutralReaction && sadReaction > fearReaction && sadReaction > surpriseReaction)
             topReactions = "sad"
+        return topReactions
     }
 
     private fun classifyEmotions(imageBitmap: Bitmap, faceId: Int) {
@@ -411,9 +373,9 @@ class CameraActivity : AppCompatActivity(),
 
 
     private fun setEmotions(emotion: String) {
-        Log.d("ksdahgsd", "Byte: $emotion")
+        Log.d("skadhg", "Emotion: $emotion")
         when (emotion) {
-                "angry" -> {
+            "angry" -> {
                 angryReaction++
                 binding.reactDetail.text = "You're feeling angry"
                 binding.reactIv.setImageDrawable(getDrawable(R.drawable.anger_emotion))
@@ -465,7 +427,7 @@ class CameraActivity : AppCompatActivity(),
             }
             "neutral" -> {
                 neutralReaction++
-                binding.reactDetail.text = "Your expressions are emotionless"
+                binding.reactDetail.text = "Your expressions are neutral"
                 binding.reactIv.setImageDrawable(getDrawable(R.drawable.neutral_ic))
                 binding.reactDetail.visibility = View.VISIBLE
                 binding.reactIv.visibility = View.VISIBLE
@@ -535,26 +497,9 @@ class CameraActivity : AppCompatActivity(),
     }*/
 
     private fun notifyService(action: String) {
-
         val intent = Intent(this, CamService::class.java)
         intent.action = action
         startService(intent)
-    }
-
-    private fun byteToBitmap(pictureData: ByteArray): Bitmap {
-//        val file = File(this.getApplicationContext().filesDir, "name")
-        try {
-//            FileOutputStream(file).use { output ->
-//                output.write(pictureData)
-//                picturesTaken!!.put(file.path, bytes)
-//                Toast.makeText(this, "Saved", Toast.LENGTH_LONG).show()
-//            }
-        } catch (e: IOException) {
-//            Toast.makeText(this, "Exception occurred while saving picture to external storage $e", Toast.LENGTH_LONG).show()
-        }
-        val bmp = BitmapFactory.decodeByteArray(pictureData, 0, pictureData.size)
-//        binding.imageView.setImageBitmap(bmp)
-        return bmp
     }
 
     override fun onRequestPermissionsResult(
@@ -608,27 +553,40 @@ class CameraActivity : AppCompatActivity(),
 
     override fun onImageReceived(imageList: ArrayList<Bitmap>) {
         val job = CoroutineScope(Dispatchers.Main).launch {
-            Log.d("ksdahgsd", "imageList ${imageList}")
-            for (bytes in imageList) {
-//                val buffer = image.planes[0].buffer
-//                val bytes = ByteArray(buffer.capacity())
-//                buffer[bytes]
-//                buffer.get(bytes)
-//                val bitmapImage = byteToBitmap(bytes)
-//                Log.d("ksdahgsd", "bitmap ${bitmapImage.width}")
-//                val decodeResponse: ByteArray = Base64.decode(bytes, Base64.DEFAULT or Base64.NO_WRAP)
-//                val options = BitmapFactory.Options()
-//                val bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            for (bitmap in imageList) {
+                val convertBitmap: Bitmap? = rotateBitmap(bitmap, 270f)
+
+                mImageView!!.setImageBitmap(convertBitmap)
                 mClassificationResult!!.clear()
-                detectFaces(bytes)
+                detectFaces(convertBitmap!!)
+                Log.d("skadhg", "Job1: $topReactions")
             }
         }
-        CoroutineScope(Dispatchers.Main).launch {
+        val job2 = CoroutineScope(Dispatchers.Main).launch {
             job.join()
-            findMeanEmotion()
-            setUserReaction(topReactions)
-            postNotification(postDetail!!.firebase_id)
+            val reaction = findMeanEmotion()
+            Log.d("skadhg", "Job2: ${emotionList}")
+//            setUserReaction(reaction)
+//            postNotification(postDetail!!.firebase_id)
         }
+//        CoroutineScope(Dispatchers.Main).launch {
+//            job2.join()
+//        }
+    }
+
+    private fun rotateBitmap(original: Bitmap, degrees: Float): Bitmap? {
+        val width = original.width
+        val height = original.height
+        val matrix = Matrix()
+        matrix.preRotate(degrees)
+        //        val canvas = Canvas(rotatedBitmap)
+//        canvas.drawBitmap(original, 5.0f, 0.0f, null)
+        return Bitmap.createBitmap(original, 0, 0, width, height, matrix, true)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopService(Intent(this, CamService::class.java))
     }
 
     override fun onResume() {

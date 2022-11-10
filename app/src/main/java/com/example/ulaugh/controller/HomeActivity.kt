@@ -363,6 +363,7 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
             FirebaseDatabase.getInstance().reference.child(Constants.USERS_REF)
                 .child(FirebaseAuth.getInstance().currentUser!!.uid).child(Constants.MESSAGE_TOKEN)
                 .setValue(token)
+            sharePref.writeString(Constants.MESSAGE_TOKEN, token)
             // Log and toast
             val msg = getString(R.string.msg_token_fmt, token)
             Log.d(Constants.TAG, msg)

@@ -2,23 +2,17 @@ package com.example.ulaugh.adapter
 
 import android.content.Context
 import android.graphics.Typeface
-import android.graphics.fonts.Font
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.ulaugh.R
 import com.example.ulaugh.databinding.AdapterNotificationBinding
-import com.example.ulaugh.interfaces.FollowFriendListener
 import com.example.ulaugh.interfaces.NotificationListener
 import com.example.ulaugh.model.Notification
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.Helper
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
 
 class NotificationAdapter(
     private val notificationList: ArrayList<Notification>,

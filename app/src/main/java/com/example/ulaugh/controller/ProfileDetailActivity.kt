@@ -154,6 +154,7 @@ class ProfileDetailActivity : AppCompatActivity(), AddFriendListener {
                 intent.putExtra("IsChecked", true)
                 intent.putExtra("receiverName", profileData!!.full_name)
                 intent.putExtra(Constants.PROFILE_PIC, profileData!!.profile_pic)
+                intent.putExtra(Constants.MESSAGE_TOKEN, messageToken)
 //                intent.putExtra(Constants.PROFILE, Gson().toJson(profileData))
                 intent.putExtra(Constants.IS_CHECKED, true)
                 startActivity(intent)
