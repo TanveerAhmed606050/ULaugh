@@ -6,14 +6,16 @@ public class InboxListModel {
     String other_user_firebase_name;
     String profile_pic;
     String message_token;
+    Boolean unReadMsg;
     LatestMessage latest_message;
 
-    public InboxListModel(String conversation_id, String other_user_firebase_id, String other_user_firebase_name, String profile_pic, String message_token, LatestMessage latest_message) {
+    public InboxListModel(String conversation_id, String other_user_firebase_id, String other_user_firebase_name, String profile_pic, String message_token, Boolean unRead, LatestMessage latest_message) {
         this.conversation_id = conversation_id;
         this.other_user_firebase_id = other_user_firebase_id;
         this.other_user_firebase_name = other_user_firebase_name;
         this.profile_pic = profile_pic;
         this.message_token = message_token;
+        unReadMsg = unRead;
         this.latest_message = latest_message;
     }
 
@@ -25,6 +27,22 @@ public class InboxListModel {
     }
 
     public void setProfile_pic(String profile_pic) {
+        this.profile_pic = profile_pic;
+    }
+
+    public Boolean getUnReadMsg() {
+        return unReadMsg;
+    }
+
+    public void setUnReadMsg(Boolean unReadMsg1) {
+        this.unReadMsg = unReadMsg1;
+    }
+
+    public String getMessage_token() {
+        return profile_pic;
+    }
+
+    public void setMessage_token(String profile_pic) {
         this.profile_pic = profile_pic;
     }
 

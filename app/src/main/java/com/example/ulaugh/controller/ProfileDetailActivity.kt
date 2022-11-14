@@ -152,6 +152,10 @@ class ProfileDetailActivity : AppCompatActivity(), AddFriendListener {
                 val intent = Intent(this, ChatActivity::class.java)
                 intent.putExtra(Constants.FIREBASE_ID, profileData!!.firebase_id)
                 intent.putExtra("IsChecked", true)
+                intent.putExtra(
+                    "conversationId",
+                    "${profileData!!.firebase_id}+${FirebaseAuth.getInstance().currentUser!!.uid}"
+                )
                 intent.putExtra("receiverName", profileData!!.full_name)
                 intent.putExtra(Constants.PROFILE_PIC, profileData!!.profile_pic)
                 intent.putExtra(Constants.MESSAGE_TOKEN, messageToken)
@@ -507,7 +511,7 @@ class ProfileDetailActivity : AppCompatActivity(), AddFriendListener {
         }
     }
 
-//    private fun fetchToken() {
+    //    private fun fetchToken() {
 //        // [START fcm_runtime_enable_auto_init]
 //        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
 //            if (!task.isSuccessful) {
@@ -525,6 +529,14 @@ class ProfileDetailActivity : AppCompatActivity(), AddFriendListener {
 //        })
 //        // [END fcm_runtime_enable_auto_init]
 //    }
+
+    override fun onPause() {
+        super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+    }
 
     override fun onDestroy() {
         super.onDestroy()

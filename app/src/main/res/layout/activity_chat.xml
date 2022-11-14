@@ -53,7 +53,7 @@
         android:id="@+id/status_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="online"
+        android:text=""
         android:textColor="@color/green"
         android:fontFamily="@font/poppins_semibold"
         android:textSize="8sp"

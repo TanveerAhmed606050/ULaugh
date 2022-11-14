@@ -3,12 +3,12 @@ package com.example.ulaugh.model;
 public class LatestMessage {
 
     String date, message;
-    boolean seen_message;
+    String type;
 
-    public LatestMessage(String date, String message, boolean seen_message) {
+    public LatestMessage(String date, String message, String messageType) {
         this.date = date;
         this.message = message;
-        this.seen_message = seen_message;
+        this.type = messageType;
     }
 
     public LatestMessage() {
@@ -30,11 +30,11 @@ public class LatestMessage {
         this.message = message;
     }
 
-    public boolean isSeen_message() {
-        return seen_message;
+    public String getType() {
+        return type;
     }
 
-    public void setSeen_message(boolean seen_message) {
-        this.seen_message = seen_message;
+    public void setType(String seen_message) {
+        this.type = seen_message;
     }
 }

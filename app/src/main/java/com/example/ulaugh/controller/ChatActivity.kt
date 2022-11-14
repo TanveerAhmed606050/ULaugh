@@ -45,6 +45,7 @@ class ChatActivity : AppCompatActivity() {
     private var receiverName = ""
     private var receiverPic = ""
     var senderName = ""
+    var isDetailActivity = false
     private val firebaseDataBaseHashmapFunctionClass = FirebaseDataBaseHashmapFunctionClass()
     private lateinit var notificationRef: DatabaseReference
     private var receiverMessageToken = ""
@@ -57,6 +58,11 @@ class ChatActivity : AppCompatActivity() {
         clickListener()
         initView()
         setAdapter()
+        CoroutineScope(Dispatchers.Main).launch {
+            getReadyToReadAllMessages()
+            checkOnlineStatus()
+            markAsRead()
+        }
     }
 
     private fun initView() {
@@ -90,28 +96,64 @@ class ChatActivity : AppCompatActivity() {
             senderName = sharePref.readString(Constants.USER_NAME, "").toString()
         }
 
-        val isBool = intent.extras?.getBoolean(Constants.IS_CHECKED) == true
-        if (!isBool) {
-            readMessagesFromAllConversation(conversationId)
-        } else {
-            conversationId = "${senderFirebaseId}+${receiverFirebaseId}"
-            FirebaseDatabase.getInstance()
-                .getReference("All_Conversations")
-                .child(conversationId)
-                .child("messages").addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        if (snapshot.exists()) {
-                            conversationId = "${senderFirebaseId}+${receiverFirebaseId}"
-                            readMessagesFromAllConversation(conversationId)
-                        } else {
-                            conversationId = "${receiverFirebaseId}+${senderFirebaseId}"
-                            readMessagesFromAllConversation(conversationId)
+        isDetailActivity = intent.extras?.getBoolean(Constants.IS_CHECKED) == true
+    }
+
+    private fun checkOnlineStatus() {
+        val onLineFbRef: DatabaseReference =
+            FirebaseDatabase.getInstance().reference.child(Constants.USERS_REF)
+                .child(receiverFirebaseId)
+        onLineFbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val status = snapshot.child(Constants.IS_ONLINE).value.toString().toBoolean()
+                if (!status) {
+                    binding.statusTv.text = "Offline"
+                    binding.statusTv.setTextColor(getColor(R.color.orange))
+                } else {
+                    binding.statusTv.text = "Online"
+                    binding.statusTv.setTextColor(getColor(R.color.green))
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+
+        })
+    }
+
+    private fun markAsRead() {
+        val receiverDatabaseReference =
+            FirebaseDatabase.getInstance().getReference("Inbox").child(receiverFirebaseId)
+                .child("conversations").child(conversationId)
+        receiverDatabaseReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val msgSeenHashMap = HashMap<String, Any>()
+                msgSeenHashMap[Constants.IS_SEEN] = true
+                if (snapshot.exists()) {
+                    snapshot.ref.updateChildren(msgSeenHashMap)
+                } else {
+                    conversationId = "${receiverFirebaseId}+${senderFirebaseId}"
+                    val receiverRef =
+                        FirebaseDatabase.getInstance().getReference("Inbox")
+                            .child(receiverFirebaseId)
+                            .child("conversations").child(conversationId)
+                    receiverRef.addValueEventListener(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if (snapshot.exists())
+                                snapshot.ref.updateChildren(msgSeenHashMap)
                         }
-                    }
-                    override fun onCancelled(error: DatabaseError) {
-                    }
-                })
-        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                        }
+
+                    })
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+
+        })
     }
 
     private fun clickListener() {
@@ -135,6 +177,30 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
+    private fun getReadyToReadAllMessages() {
+        if (!isDetailActivity) {
+            readMessagesFromAllConversation(conversationId)
+        } else {
+            conversationId = "${senderFirebaseId}+${receiverFirebaseId}"
+            FirebaseDatabase.getInstance()
+                .getReference("All_Conversations")
+                .child(conversationId)
+                .child("messages").addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+//                            conversationId = "${senderFirebaseId}+${receiverFirebaseId}"
+                            readMessagesFromAllConversation(conversationId)
+                        } else {
+                            conversationId = "${receiverFirebaseId}+${senderFirebaseId}"
+                            readMessagesFromAllConversation(conversationId)
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                    }
+                })
+        }
+    }
 //    private fun getFriendProfile() {
 //        profileRef.child(friendFirebaseId)
 //            .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -188,7 +254,8 @@ class ChatActivity : AppCompatActivity() {
                 message,
                 messageType,
                 receiverPic,
-                senderMessageToken
+                senderMessageToken,
+                false
             )
         val receiverConversionHashmap =
             firebaseDataBaseHashmapFunctionClass.inboxConversationHashmapFun(
@@ -199,7 +266,8 @@ class ChatActivity : AppCompatActivity() {
                 message,
                 messageType,
                 senderPic,
-                receiverMessageToken
+                receiverMessageToken,
+                true
             )
 
         val senderDatabaseReference =
@@ -209,6 +277,7 @@ class ChatActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 senderDatabaseReference.setValue(senderConversionHashmap)
             }
+
             override fun onCancelled(error: DatabaseError) {
             }
         })
@@ -216,11 +285,13 @@ class ChatActivity : AppCompatActivity() {
         val receiverDatabaseReference =
             FirebaseDatabase.getInstance().getReference("Inbox").child(receiverFirebaseId)
                 .child("conversations").child(conversationId)
+                .child("messages")
 
         receiverDatabaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 receiverDatabaseReference.setValue(receiverConversionHashmap)
             }
+
             override fun onCancelled(error: DatabaseError) {
             }
         })
@@ -233,6 +304,7 @@ class ChatActivity : AppCompatActivity() {
             senderName,
             receiverFirebaseId,
             receiverName,
+            false
         )
         val messageReference =
             FirebaseDatabase.getInstance()
@@ -243,16 +315,20 @@ class ChatActivity : AppCompatActivity() {
         messageReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 messageReference.push().setValue(messageHashmap)
+                askNotificationPermission()
             }
+
             override fun onCancelled(error: DatabaseError) {
             }
         })
         readMessagesFromAllConversation(conversationId)
     }
 
-    private fun readMessagesFromAllConversation(messageId: String) {
+    private fun readMessagesFromAllConversation(conversationId: String) {
+        val hashMap = HashMap<String, Any>()
+        hashMap[Constants.IS_SEEN] = true
         val messageReference = FirebaseDatabase.getInstance().getReference("All_Conversations")
-            .child(messageId)
+            .child(conversationId)
             .child("messages")
         messageReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -262,8 +338,12 @@ class ChatActivity : AppCompatActivity() {
                     if (chatModel!!.receiver_firebase_id == senderFirebaseId && chatModel.sender_firebase_id == receiverFirebaseId || chatModel.receiver_firebase_id == receiverFirebaseId && chatModel.sender_firebase_id == senderFirebaseId) {
                         chatModelList.add(chatModel)
                     }
+                    Log.d("lsjdag", "data: ${chatModel.my_seen}")
+                    if (chatModel.receiver_firebase_id == senderFirebaseId)
+                        ds.ref.updateChildren(hashMap)
                 }
-                messageAdapter.notifyDataSetChanged()
+                setAdapter()
+//                messageAdapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -280,10 +360,7 @@ class ChatActivity : AppCompatActivity() {
             MessageAdapter(
                 this@ChatActivity,
                 chatModelList,
-                receiverFirebaseId,
                 senderFirebaseId,
-                senderPic,
-                receiverPic
             )
         binding.chatRc.adapter = messageAdapter
     }
@@ -305,6 +382,7 @@ class ChatActivity : AppCompatActivity() {
             }
         }
     }
+
     // [START ask_post_notifications]
     // Declare the launcher at the top of your Activity/Fragment:
     private val requestPermissionLauncher = registerForActivityResult(
@@ -317,6 +395,7 @@ class ChatActivity : AppCompatActivity() {
             Toast.makeText(this, "Please enable notifications", Toast.LENGTH_SHORT).show()
         }
     }
+
     private fun createNotification() {
         val title = "Message"
         val message =
@@ -333,6 +412,7 @@ class ChatActivity : AppCompatActivity() {
         }
         // [END fcm_send_upstream]
     }
+
     private fun sendNotification(notification: PushNotification) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
@@ -347,9 +427,28 @@ class ChatActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun onlineUser(isOnline: Boolean) {
+        val onLineFbRef: DatabaseReference =
+            FirebaseDatabase.getInstance().reference.child(Constants.ONLINE_USER_REF)
+        if (isOnline)
+            onLineFbRef.child(getInstance().currentUser!!.uid).child("isOnline")
+                .setValue(isOnline)
+        else
+            onLineFbRef.child(getInstance().currentUser!!.uid).removeValue()
+    }
+
+    override fun onPause() {
+        super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        _binding = null
+//        _binding = null
     }
 
 }

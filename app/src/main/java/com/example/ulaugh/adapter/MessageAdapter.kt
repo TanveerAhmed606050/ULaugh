@@ -14,10 +14,7 @@ import com.example.ulaugh.utils.Helper
 class MessageAdapter(
     var context: Context,
     private var chatModelList: List<ChatModel>,
-    var receiverFirebaseId: String,
     var senderFirebaseId: String,
-    val senderPic: String,
-    val receiverPic: String
 ) :
     RecyclerView.Adapter<MessageAdapter.MyViewHolder>() {
     //    @Inject
@@ -54,13 +51,11 @@ class MessageAdapter(
                 val vholder = holder as SendMessage
                 vholder.messageText.text = chat.content_message
                 vholder.timeText.text = Helper.convertToLocal(chat.date)
-//                Glide.with(context)
-//                    .load(senderPic)
-//                    .centerCrop()
-//                    .fitCenter()
-//                    .thumbnail()
-//                    .placeholder(R.drawable.user_logo)
-//                    .into(vholder.senderImage)
+                if (chat.my_seen != null)
+                    if (chat.my_seen)
+                        vholder.isSeenText.visibility = View.VISIBLE
+                    else
+                        vholder.isSeenText.visibility = View.GONE
             }
             RECEIVE_MESSAGE -> {
                 val vholder = holder as ReceiveMessage
@@ -90,11 +85,8 @@ class MessageAdapter(
 //                        }
 //                    }
 //                }
-
-
             }
         }
-
     }
 
     override fun getItemCount(): Int {
@@ -102,7 +94,6 @@ class MessageAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-
         return if (chatModelList[position].sender_firebase_id == senderFirebaseId) {
             SENT_MESSAGE
         } else {
@@ -110,11 +101,8 @@ class MessageAdapter(
         }
     }
 
-
     open class MyViewHolder(v: View) : RecyclerView.ViewHolder(
         v
-
-
     )
 
     inner class SendMessage(view: View) : MyViewHolder(view) {
@@ -122,16 +110,13 @@ class MessageAdapter(
         var timeText: TextView = view.findViewById(R.id.time_text)
         var isSeenText: TextView = view.findViewById(R.id.seen_text)
 //        var senderImage: CircularImageView = view.findViewById(R.id.send_chat_image)
-
     }
 
     inner class ReceiveMessage(view: View) : MyViewHolder(view) {
         var messageText: TextView = view.findViewById(R.id.message_text)
         var timeText: TextView = view.findViewById(R.id.time_text)
-//        var isSeenText: TextView = view.findViewById(R.id.seen_text)
+        var isSeenText: TextView = view.findViewById(R.id.seen_text)
 //        var receiverImage: CircularImageView = view.findViewById(R.id.chat_receive_image)
-
-
     }
 
     companion object {

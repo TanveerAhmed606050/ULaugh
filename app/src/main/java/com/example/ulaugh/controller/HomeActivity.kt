@@ -14,13 +14,13 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.example.ulaugh.R
 import com.example.ulaugh.adapter.ViewPagerAdapter
 import com.example.ulaugh.databinding.ActivityHomeBinding
 import com.example.ulaugh.model.PostShareInfo
+import com.example.ulaugh.service.ClosingService
 import com.example.ulaugh.utils.Constants
 import com.example.ulaugh.utils.DecodeImage
 import com.example.ulaugh.utils.Helper
@@ -62,17 +62,14 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
     private var imageUri: Uri? = null
     private var mediaTypeRaw = ""
 
-    //    private val storagePath = "All_Image_Uploads/"
     var postShareStorageRef: StorageReference? = null
     private lateinit var postShareDbRef: DatabaseReference
+    private lateinit var onLineFbRef: DatabaseReference
     var description: String? = null
 
-    //    val authFirebase = Firebase.auth
     var userName = ""
     var fullName = ""
-//    var reaction: ReactionDetails? = null
 
-    //    var tags: String? = null
     @Inject
     lateinit var sharePref: SharePref
 
@@ -85,6 +82,7 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
         CoroutineScope(Dispatchers.IO).launch {
             fetchToken()
         }
+        startStopService("start")//start service for user online status
         setTabLayout()
         sharePref.writeBoolean(Constants.EMOTION_UPDATE, true)//stop api calling
     }
@@ -92,6 +90,7 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
     private fun init() {
         // Assign FirebaseDatabase instance with root database name.
         postShareDbRef = FirebaseDatabase.getInstance().reference.child(Constants.POST_SHARE_REF)
+        onLineFbRef = FirebaseDatabase.getInstance().reference.child(Constants.ONLINE_USER_REF)
         postShareStorageRef =
             FirebaseStorage.getInstance().reference.child(Constants.POST_SHARE_REF)
         clickEvents()
@@ -395,47 +394,45 @@ class HomeActivity : AppCompatActivity(), View.OnKeyListener {
 
     }
 
-//    private fun setTagsText(tag: ArrayList<String>) {
-//        val layoutParams = LinearLayout.LayoutParams(
-//            LinearLayout.LayoutParams.WRAP_CONTENT,
-//            LinearLayout.LayoutParams.WRAP_CONTENT
-//        )
-//        layoutParams.setMargins(4, 0, 0, 0)
-//        container_ll?.visibility = View.VISIBLE
-//        for (i in 0 until tag.size) {
-//            val tagLl = LinearLayout(this)
-//            tagLl.layoutParams = layoutParams
-//            tagLl.orientation = LinearLayout.HORIZONTAL
-//            tagLl.gravity = Gravity.CENTER_VERTICAL
-//            tagLl.background = getDrawable(R.drawable.purple_rc)
-//            tagLl.id = R.id.tag_tv + i
-//
-//            //textView
-//            val tagTv = TextView(this)
-//            tagTv.layoutParams = layoutParams
-//            tagTv.text = tag[0]
-//            tagTv.textSize = 14f
-//            tagTv.id = R.id.id_tv + i
-//            tagTv.setPadding(4, 4, 4, 4)
-//            tagTv.gravity = Gravity.CENTER_VERTICAL
-//            tagTv.setTextColor(getColor(R.color.white))
-////            tagTv.text = tagList[i]
-//
-//            //ImageView
-//            val cancelIv = ImageView(this)
-//            cancelIv.layoutParams = LinearLayout.LayoutParams(18, 18)
-//            cancelIv.setImageResource(R.drawable.bell)
-//            tagLl.addView(tagTv)
-//            tagLl.addView(cancelIv)
-//
-//            container_ll?.addView(tagLl)
-//
-//        }
-//    }
+    private fun onlineUser(isOnline: Boolean) {
+        if (isOnline)
+            onLineFbRef.child(FirebaseAuth.getInstance().currentUser!!.uid).child("isOnline")
+                .setValue(isOnline)
+        else
+            onLineFbRef.child(FirebaseAuth.getInstance().currentUser!!.uid).removeValue()
+    }
+
+    override fun onPause() {
+        super.onPause()
+//        onlineUser(false)
+    }
+
+    override fun onResume() {
+        super.onResume()
+//        onlineUser(true)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("lsajdgl", "onStop: ")
+    }
+
+    private fun startStopService(status: String) {
+        val intent = Intent(this, ClosingService::class.java)
+        if (status == "start")
+            startService(intent)
+        else
+            stopService(intent)
+
+    }
 
     override fun onDestroy() {
         super.onDestroy()
-        _binding = null
+        startStopService("stop")
+//        CoroutineScope(Dispatchers.IO).launch {
+//            onlineUser(false)
+//        }
+//        _binding = null
     }
 
     override fun onKey(view: View?, p: Int, event: KeyEvent?): Boolean {

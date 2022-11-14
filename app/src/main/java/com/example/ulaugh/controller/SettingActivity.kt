@@ -79,6 +79,24 @@ class SettingActivity : AppCompatActivity() {
         }
     }
 
+    private fun onlineUser(isOnline: Boolean) {
+        val onLineFbRef: DatabaseReference = FirebaseDatabase.getInstance().reference.child(Constants.ONLINE_USER_REF)
+        if (isOnline)
+            onLineFbRef.child(FirebaseAuth.getInstance().currentUser!!.uid).child("isOnline")
+                .setValue(isOnline)
+        else
+            onLineFbRef.child(FirebaseAuth.getInstance().currentUser!!.uid).removeValue()
+    }
+
+    override fun onPause() {
+        super.onPause()
+//        onlineUser(false)
+    }
+
+    override fun onResume() {
+        super.onResume()
+//        onlineUser(true)
+    }
     override fun onDestroy() {
         super.onDestroy()
         _binding = null

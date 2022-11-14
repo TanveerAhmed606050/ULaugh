@@ -100,6 +100,8 @@
 
         </service>
         <service android:name=".service.CamService"/>
+        <service android:name=".service.ClosingService"
+            android:stopWithTask="false"/>
 
         <meta-data
             android:name="firebase_messaging_auto_init_enabled"

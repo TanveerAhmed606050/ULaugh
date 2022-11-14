@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/container"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="75dp"
-    android:background="@drawable/shadow_border"
+    android:layout_height="wrap_content"
     android:layout_margin="8dp">
 
     <com.mikhaellopez.circularimageview.CircularImageView
@@ -45,30 +44,9 @@
         android:textColor="@color/grey_2"
         android:textSize="11sp"
         app:layout_constraintBottom_toBottomOf="@+id/mufti_profile_image"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/un_read_msg"
         app:layout_constraintStart_toEndOf="@+id/mufti_profile_image"
         app:layout_constraintTop_toBottomOf="@+id/mufti_name_text" />
-
-    <!--<com.mikhaellopez.circularimageview.CircularImageView
-        android:id="@+id/chat_online_icon"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:layout_marginEnd="2dp"
-        android:layout_marginBottom="2dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/chat_profile_image"
-        app:layout_constraintEnd_toEndOf="@+id/chat_profile_image"
-        app:srcCompat="@drawable/online_icon" />
-    <com.mikhaellopez.circularimageview.CircularImageView
-        android:id="@+id/chat_offline_icon"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:layout_marginEnd="2dp"
-        android:visibility="gone"
-        android:layout_marginBottom="2dp"
-        app:layout_constraintBottom_toBottomOf="@+id/chat_profile_image"
-        app:layout_constraintEnd_toEndOf="@+id/chat_profile_image"
-        app:srcCompat="@drawable/offline_icon" />-->
 
     <TextView
         android:id="@+id/chat_time_text"
@@ -80,5 +58,19 @@
         android:textSize="11sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/mufti_name_text" />
+
+    <ImageView
+        android:id="@+id/un_read_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:padding="6dp"
+        android:visibility="gone"
+        android:background="@drawable/dark_purple_circle"
+        app:layout_constraintBottom_toBottomOf="@id/chat_message_text"
+        app:layout_constraintEnd_toEndOf="@id/chat_time_text"
+        app:layout_constraintTop_toTopOf="@+id/chat_message_text" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

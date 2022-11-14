@@ -2,9 +2,11 @@ package com.example.ulaugh.adapter
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -37,6 +39,10 @@ class InboxConversationAdapter(var context: Context, var usersList: List<InboxLi
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val inbox = usersList[position]
         holder.userName.text = inbox.other_user_firebase_name
+        if (inbox.unReadMsg != null)
+            if (inbox.unReadMsg)
+                holder.unReadMsgTv.visibility = View.VISIBLE
+//        Log.d("lskjdgla", "inbox: ${inbox.latest_message.message}")
         holder.timeText.text = Helper.convertToLocal(inbox.latest_message!!.date)
         friendid = inbox.other_user_firebase_id
         holder.lastMessage.text = inbox.latest_message!!.message
@@ -48,22 +54,6 @@ class InboxConversationAdapter(var context: Context, var usersList: List<InboxLi
             .thumbnail()
             .placeholder(R.drawable.user_logo)
             .into(holder.imageView)
-//        val filePath = "Photos/" + "user_image" + inbox.other_user_firebase_id
-//        val storageReference = FirebaseStorage.getInstance().getReference(filePath)
-//        storageReference.downloadUrl.addOnSuccessListener { downloadUrl ->
-//            if (downloadUrl == null) {
-//                try {
-//                    holder.imageView.setImageResource(R.drawable.seokangjoon)
-//                } catch (e: NullPointerException) {
-//
-//                }
-//            } else {
-//                try {
-//                    Glide.with(context).load(downloadUrl).into(holder.imageView)
-//                } catch (e: NullPointerException) {
-//                }
-//            }
-//        }
 
         holder.itemView.setOnClickListener {
             val receiverFirebaseId = inbox.other_user_firebase_id
@@ -71,6 +61,7 @@ class InboxConversationAdapter(var context: Context, var usersList: List<InboxLi
             val intent = Intent(context, ChatActivity::class.java)
             intent.putExtra(Constants.FIREBASE_ID, receiverFirebaseId)
             intent.putExtra("conversationId", conversationId)
+            intent.putExtra(Constants.MESSAGE_TOKEN, inbox.message_token)
             intent.putExtra("IsChecked", false)
             intent.putExtra("receiverName", inbox.other_user_firebase_name)
             intent.putExtra(Constants.PROFILE_PIC, inbox.profile_pic)
@@ -87,6 +78,7 @@ class InboxConversationAdapter(var context: Context, var usersList: List<InboxLi
         RecyclerView.ViewHolder(itemView) {
         var userName: TextView = itemView.findViewById(R.id.mufti_name_text)
         var timeText: TextView = itemView.findViewById(R.id.chat_time_text)
+        var unReadMsgTv: ImageView = itemView.findViewById(R.id.un_read_msg)
         var lastMessage: TextView = itemView.findViewById(R.id.chat_message_text)
         var imageView: CircularImageView = itemView.findViewById(R.id.mufti_profile_image)
 //        var view: ConstraintLayout = itemView.findViewById(R.id.container)

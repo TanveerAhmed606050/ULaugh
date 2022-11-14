@@ -62,8 +62,6 @@
         android:textColor="@color/black"
         android:textSize="12sp"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/message_text"
-        app:layout_constraintTop_toBottomOf="@id/message_text" />
+        android:layout_gravity="end" />
 
 </LinearLayout>

@@ -12,12 +12,14 @@ class FirebaseDataBaseHashmapFunctionClass {
         message: String,
         messageType: String,
         pic: String,
-        messageToken:String
+        messageToken:String,
+        seenMsg:Boolean
     ): HashMap<String, Any> {
         val inboxHashmap = HashMap<String, Any>()
         inboxHashmap["conversation_id"] = messageId
         inboxHashmap["other_user_firebase_id"] = otherFireBaseId
         inboxHashmap["other_user_firebase_name"] = otherFirebaseName
+        inboxHashmap[Constants.IS_SEEN] = seenMsg
         inboxHashmap["latest_message"] = latestMessageHashmapFun(dateAndTime, message, messageType)
         inboxHashmap[Constants.PROFILE_PIC] = pic
         inboxHashmap["message_token"] = messageToken
@@ -32,12 +34,14 @@ class FirebaseDataBaseHashmapFunctionClass {
         senderFirebaseId: String,
         senderName: String,
         receiverFirebaseId: String,
-        receiverName: String
+        receiverName: String,
+        isSeen:Boolean
     ): HashMap<String, Any> {
 
         val messageHashMap = HashMap<String, Any>()
         messageHashMap["message_id"] = messageId
         messageHashMap["type"] = messageType
+        messageHashMap[Constants.IS_SEEN] = isSeen
         messageHashMap["content_message"] = contentMessage
         messageHashMap["date"] = dateAndTime
         messageHashMap["sender_firebase_id"] = senderFirebaseId
